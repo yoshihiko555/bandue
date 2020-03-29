@@ -3,7 +3,7 @@ const BundleTracker = require('webpack-bundle-tracker')
 
 module.exports = {
     transpileDependencies: [
-    'vuetify'
+        'vuetify'
     ],
     // publicPathはdjango-webpack-loaderがパスをbundleにリダイレクトしたときに
     // http://192.168.33.12:8080/http://192.168.33.12:8080みたいに意味不明なURLを生み出さないための回避策

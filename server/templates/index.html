@@ -1,1 +1,14 @@
-Hello World
+{% extends 'base.html' %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+
+{% block title %}TOP{% endblock %}
+
+{% block content %}
+<h1>TOP PAGE</h1>
+<div id="app">
+	<app></app>
+</div>
+
+{% render_bundle 'app' %}
+{% endblock %}

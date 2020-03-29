@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     # 'rest_framework_jwt',
     'webpack_loader',
     'api.apps.ApiConfig',
+    'front_view.apps.FrontViewConfig',
 ]
 
 REST_FRAMEWORK = {
