@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load render_bundle from webpack_loader %}
+
 
 {% block title %}TOP{% endblock %}
 
@@ -9,6 +9,8 @@
 <div id="app">
 	<app></app>
 </div>
+<div id="login">
+	<login></login>
+</div>
 
-{% render_bundle 'app' %}
 {% endblock %}
