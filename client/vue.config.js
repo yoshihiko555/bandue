@@ -1,16 +1,38 @@
 const path = require('path')
 const BundleTracker = require('webpack-bundle-tracker')
+// const VuetifyLoaderPlugin = require('vuetify-loader/lib/plugin')
 
 module.exports = {
     transpileDependencies: [
         'vuetify'
     ],
+
     // publicPathはdjango-webpack-loaderがパスをbundleにリダイレクトしたときに
     // http://192.168.33.12:8080/http://192.168.33.12:8080みたいに意味不明なURLを生み出さないための回避策
     publicPath: 'http://192.168.33.12:8080',
 
     // ビルド先のディレクトリの設定
     outputDir: './bundles/',
+
+    pages: {
+        index: {
+            entry: 'src/main.js',
+            template: 'public/index.html',
+            filename: 'index.html'
+        },
+        register: {
+            // entry: 'src/signin.js',
+            entry: 'src/components/register/register.js',
+            template: 'public/index.html',
+            filename: 'register.html'
+        }
+    },
+
+    configureWebpack: {
+        // plugins: [
+        //     new VuetifyLoaderPlugin()
+        // ]
+    },
 
     chainWebpack: config => {
         // チャンクの設定
@@ -36,5 +58,27 @@ module.exports = {
             .watchOptions({poll: 1000})
             .https(false)
             .headers({"Access-Control-Allow-Origin": ["\*"]})
+
+        config.resolve.alias
+            .set('vue$', 'vue/dist/vue.esm.js')
+
+        // config.module
+        //     .rule('sass')
+        //     .test('/\.s(c|a)ss$/')
+        //     .use('vue-style-loader')
+        //         .loader('sass-loader')
+        //         .tap(options => {
+        //             implementation: require('sass'),
+        //             sassOptions: {
+        //                 fiber: require('fibers'),
+        //                 indentedSyntax: true
+        //             }
+        //             return options
+        //         })
+        //         .end()
+        //     .use('css-loader')
+        //         .loader('sass-loader')
+        //         .end()
+
     }
 }

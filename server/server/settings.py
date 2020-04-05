@@ -76,7 +76,7 @@ REST_FRAMEWORK = {
 WEBPACK_LOADER = {
     'DEFAULT' : {
         'CACHE' : DEBUG,
-        'BUNDLE_DIR_NAME' : '/bundles/',
+        'BUNDLE_DIR_NAME' : 'bundles/',
         'STATS_FILE' : os.path.join(FRONTEND_DIR, 'webpak-stats.json'),
     }
 }

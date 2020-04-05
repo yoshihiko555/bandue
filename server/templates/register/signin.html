@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+
+{% block title %}SignIn{% endblock %}
+
+{% block content %}
+<div id="register">
+	<my-header></my-header>
+	<signin></signin>
+	<my-footer></my-footer>
+</div>
+{% render_bundle 'register' %}
+{% endblock %}

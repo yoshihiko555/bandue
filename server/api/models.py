@@ -1,12 +1,4 @@
 from django.db import models
-<<<<<<< HEAD
-from django.contrib.auth.models import PermissionsMixin
-from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
-import os, uuid, logging
-
-
-logger = logging.getLogger(__name__)
-=======
 from django.core.mail import send_mail
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
@@ -17,8 +9,6 @@ import os, uuid, logging
 
 def content_file_name(instance, filename):
     return 'upload/{0}/{1}/{2}'.format(instance.author, instance.title, filename)
-
->>>>>>> e04c6d3ca4e0d4ad54b1c9c98516fb53ba7138b1
 
 class UserManager(BaseUserManager):
 
@@ -259,4 +249,3 @@ class MemberShip(models.Model):
         related_name='membership_invites',
     )
     invite_reason = models.CharField(_('Invites Reason'), max_length=100)
->>>>>>> e04c6d3ca4e0d4ad54b1c9c98516fb53ba7138b1
