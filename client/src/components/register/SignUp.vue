@@ -21,7 +21,13 @@
 								<h1 class="register_title">BandueにSignUpする</h1>
 							</v-card-title>
 
+							<!-- v-model='valid'で、入力項目のvalidationがすべてOKになったらtrueになる。
+							それまではvalidはfalse -->
 							<v-form ref='form' v-model='valid'>
+								<!-- v-modelでデータとの紐付け
+								:rulesでscript内で設定したValidationとの紐付け
+								:idでpropsで親コンポーネント側からデータを紐付ける
+								今回の場合の親コンポーネントは、Djangoテンプレート側 -->
 								<v-text-field
 									v-model='credentials.username'
 									:rules='rules.username'

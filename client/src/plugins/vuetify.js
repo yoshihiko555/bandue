@@ -4,6 +4,7 @@ import Vuetify from 'vuetify/lib'
 Vue.use(Vuetify)
 
 export default new Vuetify({
+	// TODO: Icon読み込みの設定
 	icons: {
 		iconfont: 'mdiSvg'
 	}

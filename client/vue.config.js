@@ -1,6 +1,5 @@
 const path = require('path')
 const BundleTracker = require('webpack-bundle-tracker')
-// const VuetifyLoaderPlugin = require('vuetify-loader/lib/plugin')
 
 module.exports = {
     transpileDependencies: [
@@ -15,23 +14,19 @@ module.exports = {
     outputDir: './bundles/',
 
     pages: {
+
+        // MPAのための設定
+        // それぞれのページ毎にエントリーポイントを設定している
         index: {
             entry: 'src/main.js',
             template: 'public/index.html',
             filename: 'index.html'
         },
         register: {
-            // entry: 'src/signin.js',
             entry: 'src/components/register/register.js',
             template: 'public/index.html',
             filename: 'register.html'
         }
-    },
-
-    configureWebpack: {
-        // plugins: [
-        //     new VuetifyLoaderPlugin()
-        // ]
     },
 
     chainWebpack: config => {
@@ -62,6 +57,7 @@ module.exports = {
         config.resolve.alias
             .set('vue$', 'vue/dist/vue.esm.js')
 
+        // Loaderの設定
         // config.module
         //     .rule('sass')
         //     .test('/\.s(c|a)ss$/')
