@@ -92,6 +92,7 @@
 		}),
 		methods: {
 			login () {
+				// test()
 				axios.post('http://192.168.33.12/auth/', this.credentials)
 				.then(res => {
 					console.log(res)
@@ -110,7 +111,7 @@
 		min-height: inherit;
 	}
 	.register_card_wrap {
-		height: calc(100vh - 105px);
+		height: calc(100vh - #{($header + $footer)});
 	}
 	.register_title {
 		font-size: 28px;

@@ -1,10 +1,13 @@
 import Vue from 'vue'
+import test from '@/static/js/inclueds'
 import SignIn from './SignIn'
 import SignUp from './SignUp'
 import Header from '../common/Header'
 import Footer from '../common/Footer'
 import vuetify from '../../plugins/vuetify'
 import 'vuetify/dist/vuetify.min.css'
+require('@/static/scss/main.scss')
+// require('@/static/js/inclueds')
 
 Vue.config.productionTip = false
 
@@ -16,5 +19,6 @@ Vue.component('my-header', Header)
 Vue.component('my-footer', Footer)
 
 new Vue({
-	vuetify
+	vuetify,
+	test
 }).$mount('#register')

@@ -29,6 +29,16 @@ module.exports = {
         }
     },
 
+    css: {
+        loaderOptions: {
+            scss: {
+                // 生のCSSを吐き出さないファイルの指定
+                // 主にmixinやvariableなどのファイル
+                prependData: '@import "./src/static/scss/prepends.scss";'
+            }
+        }
+    },
+
     chainWebpack: config => {
         // チャンクの設定
         // チャンク自体まだよくわからない
@@ -55,26 +65,7 @@ module.exports = {
             .headers({"Access-Control-Allow-Origin": ["\*"]})
 
         config.resolve.alias
+            // 完全ビルドにすることで、Django側でVueコンポーネントを使用可能にする
             .set('vue$', 'vue/dist/vue.esm.js')
-
-        // Loaderの設定
-        // config.module
-        //     .rule('sass')
-        //     .test('/\.s(c|a)ss$/')
-        //     .use('vue-style-loader')
-        //         .loader('sass-loader')
-        //         .tap(options => {
-        //             implementation: require('sass'),
-        //             sassOptions: {
-        //                 fiber: require('fibers'),
-        //                 indentedSyntax: true
-        //             }
-        //             return options
-        //         })
-        //         .end()
-        //     .use('css-loader')
-        //         .loader('sass-loader')
-        //         .end()
-
     }
 }

@@ -22,6 +22,7 @@
 <style lang='scss'>
 #footer_wrap {
 	padding: 0;
+	height: $footer;
 
 	small {
 		float: right;

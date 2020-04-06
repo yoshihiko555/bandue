@@ -23,6 +23,8 @@
 #header_wrap {
 	padding: 0;
 
+	height: $header;
+
 	.logo{
 		padding-left: 2%;
 		font-size: 22px;
