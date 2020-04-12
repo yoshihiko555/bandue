@@ -1,91 +1,72 @@
 <template>
-	<v-app id='register_wrap'>
-		<v-container
-			fluid
-			class='pa-0'
-		>
+	<v-card
+		class='pa-3'
+		outlined
+	>
+		<v-card-title class="text-center">
+			<h1 class="register_title">BandueにSignInする</h1>
+		</v-card-title>
+
+		<v-form ref='form' v-model='valid'>
+			<v-text-field
+				v-model='credentials.username'
+				:rules='rules.username'
+				:counter='70'
+				maxlength='70'
+				label='Mail or UserId'
+				required
+				clear-icon='✕'
+				clearable
+			></v-text-field>
+
+			<v-text-field
+				v-model='credentials.password'
+				:rules='rules.password'
+				:counter='70'
+				maxlength='70'
+				label='Password'
+				required
+				clear-icon='✕'
+				clearable
+			></v-text-field>
+
+			<v-col class='text-center' cols='12'>
+				<v-btn
+					depressed
+					x-large
+					class='teal lighten-4'
+					:disabled='!valid'
+					@click='login'
+				>SignIn</v-btn>
+			</v-col>
+
 			<v-row>
-				<v-col cols='12' class="pa-0">
-					<v-row
-						align='center'
-						justify='center'
-						class='teal darken-4 register_card_wrap'
 
-					>
-
-					<v-col cols='4'>
-
-							<v-card
-								class='pa-3'
-								outlined
-							>
-								<v-card-title class="text-center">
-									<h1 class="register_title">BandueにSignInする</h1>
-								</v-card-title>
-
-								<v-form ref='form' v-model='valid'>
-									<v-text-field
-										v-model='credentials.username'
-										:rules='rules.username'
-										:counter='70'
-										maxlength='70'
-										label='Mail or UserId'
-										:id='id'
-										required
-										clear-icon='✕'
-										clearable
-									></v-text-field>
-
-									<v-text-field
-										v-model='credentials.password'
-										:rules='rules.password'
-										:counter='70'
-										maxlength='70'
-										label='Password'
-										required
-										clear-icon='✕'
-										clearable
-									></v-text-field>
-
-									<v-col class='text-center' cols='12'>
-										<v-btn
-											depressed
-											x-large
-											class='teal lighten-4'
-											:disabled='!valid'
-											@click='login'
-										>SignIn</v-btn>
-									</v-col>
-
-									<v-row>
-
-										<v-col class='text-center' cols='6'>
-											<v-btn
-												href='#'
-											>パスワードを<br>お忘れですか？</v-btn>
-										</v-col>
-										<v-col class='text-center' cols='6'>
-											<v-btn
-												href='#'
-											>SignUp</v-btn>
-										</v-col>
-
-									</v-row>
-								</v-form>
-
-							</v-card>
-						</v-col>
-					</v-row>
+				<v-col class='text-center' cols='6'>
+					<v-btn
+						href='#'
+					>パスワードを<br>お忘れですか？</v-btn>
 				</v-col>
+				<v-col class='text-center' cols='6'>
+					<v-btn
+						to='/signup'
+						@click='reload'
+					>SignUp</v-btn>
+				</v-col>
+
 			</v-row>
-		</v-container>
-	</v-app>
+		</v-form>
+	</v-card>
 </template>
 
 <script>
 	import axios from 'axios'
+	import { Common } from '@/static/js/common'
+
+	const Com = new Common()
 	export default {
-		props: ['id'],
+		props: ['signupUrl'],
+		name: 'signin',
 		data: () => ({
 			valid: true,
 			loading: false,
@@ -102,6 +83,9 @@
 				]
 			}
 		}),
+		created: function () {
+			console.log(this.signupUrl)
+		},
 		methods: {
 			login () {
 				axios.post('http://192.168.33.12/auth/', this.credentials)
@@ -111,6 +95,10 @@
 				.catch(e => {
 					console.log(e)
 				})
+			},
+
+			reload () {
+				Com.reload(this.$router)
 			}
 		}
 	}

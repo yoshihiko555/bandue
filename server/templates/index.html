@@ -6,7 +6,8 @@
 
 {% block content %}
 <h1>TOP PAGE</h1>
-<div id="app">
-</div>
+<a href="{% url 'front_view:index' %}">TOP</a>
+<a href="{% url 'front_view:signup' %}">SIGNUP</a>
+<a href="{% url 'front_view:signin' %}">SIGNIN</a>
 {% render_bundle 'index' %}
 {% endblock %}

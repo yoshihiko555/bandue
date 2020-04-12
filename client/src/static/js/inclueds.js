@@ -1,8 +1,9 @@
-require('./common.js')
-require('./const.js')
-
-function test () {
-	console.log('test_ok')
+const Common = require('@/static/js/common')
+const Const = require('@/static/js/const')
+class Inclueds {
+	init () {
+		console.log('inclueds')
+	}
 }
 
-export default { test }
+export { Inclueds, Common, Const }

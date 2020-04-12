@@ -1,83 +1,70 @@
 <template>
-	<v-app id='register_wrap'>
-		<v-container
-			fluid
-			class='pa-0'
-		>
-			<v-row>
-				<v-col cols='12' class="pa-0">
-					<v-row
-						align='center'
-						justify='center'
-						class='teal darken-4 register_card_wrap'
+	<v-card
+		class='pa-3'
+		outlined
+	>
+		<v-card-title>
+			<h1 class="register_title" val='Testデータ'>BandueにSignUpする</h1>
+		</v-card-title>
 
-					>
+		<!-- v-model='valid'で、入力項目のvalidationがすべてOKになったらtrueになる。
+		それまではvalidはfalse -->
+		<v-form ref='form' v-model='valid'>
+			<!-- v-modelでデータとの紐付け
+			:rulesでscript内で設定したValidationとの紐付け
+			:idでpropsで親コンポーネント側からデータを紐付ける
+			今回の場合の親コンポーネントは、Djangoテンプレート側 -->
+			<v-text-field
+				v-model='credentials.username'
+				:rules='rules.username'
+				:counter='70'
+				maxlength='70'
+				label='Mail or UserId'
+				required
+				clear-icon='✕'
+				clearable
+			></v-text-field>
 
-						<v-card
-							class='pa-3'
-							outlined
-						>
-							<v-card-title>
-								<h1 class="register_title">BandueにSignUpする</h1>
-							</v-card-title>
+			<v-text-field
+				v-model='credentials.password'
+				:rules='rules.password'
+				:counter='70'
+				maxlength='70'
+				label='Password'
+				required
+				clear-icon='✕'
+				clearable
+			></v-text-field>
 
-							<!-- v-model='valid'で、入力項目のvalidationがすべてOKになったらtrueになる。
-							それまではvalidはfalse -->
-							<v-form ref='form' v-model='valid'>
-								<!-- v-modelでデータとの紐付け
-								:rulesでscript内で設定したValidationとの紐付け
-								:idでpropsで親コンポーネント側からデータを紐付ける
-								今回の場合の親コンポーネントは、Djangoテンプレート側 -->
-								<v-text-field
-									v-model='credentials.username'
-									:rules='rules.username'
-									:counter='70'
-									maxlength='70'
-									label='Mail or UserId'
-									:id='id'
-									required
-									clear-icon='✕'
-									clearable
-								></v-text-field>
-
-								<v-text-field
-									v-model='credentials.password'
-									:rules='rules.password'
-									:counter='70'
-									maxlength='70'
-									label='Password'
-									required
-									clear-icon='✕'
-									clearable
-								></v-text-field>
-
-								<v-col class='text-center' cols='12'>
-									<v-btn
-										depressed
-										x-large
-										class='teal lighten-4'
-										:disabled='!valid'
-										@click='login'
-									>SignUp</v-btn>
-								</v-col>
-							</v-form>
-
-						</v-card>
-					</v-row>
-				</v-col>
-			</v-row>
-		</v-container>
-	</v-app>
+			<v-col class='text-center' cols='12'>
+				<v-btn
+					depressed
+					x-large
+					class='teal lighten-4 ma-1'
+					:disabled='!valid'
+					@click='confirm'
+				>次へ</v-btn>
+			</v-col>
+		</v-form>
+	</v-card>
 </template>
 
 <script>
-	import axios from 'axios'
+	import { Const } from '@/static/js/const'
+
+	const Con = new Const()
+
 	export default {
-		props: ['id'],
+		props: [],
+		name: 'signup',
+		components: {
+
+		},
 		data: () => ({
 			valid: true,
 			loading: false,
 			credentials: {},
+			msg: 'メッセージ',
 			rules: {
 				username: [
 					v => !!v || '必須項目です',
@@ -91,30 +78,13 @@
 			}
 		}),
 		methods: {
-			login () {
-				// test()
-				axios.post('http://192.168.33.12/auth/', this.credentials)
-				.then(res => {
-					console.log(res)
-				})
-				.catch(e => {
-					console.log(e)
-				})
+			confirm () {
+				this.$emit('signup-change-view', Con.SIGNUP_CONFRIM_VIEW, this.credentials)
 			}
 		}
 	}
 </script>
 
 <style lang='scss'>
-#register_wrap {
-	> div {
-		min-height: inherit;
-	}
-	.register_card_wrap {
-		height: calc(100vh - #{($header + $footer)});
-	}
-	.register_title {
-		font-size: 28px;
-	}
-}
+
 </style>

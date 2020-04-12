@@ -7,7 +7,10 @@
 {% block content %}
 <div id="register">
 	<my-header></my-header>
-	<signin></signin>
+	<register-wrap
+		view=1
+		signup-url={% url 'front_view:signup' %}
+	></register-wrap>
 	<my-footer></my-footer>
 </div>
 {% render_bundle 'register' %}
