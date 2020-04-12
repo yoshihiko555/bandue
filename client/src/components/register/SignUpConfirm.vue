@@ -2,6 +2,8 @@
 	<v-card
 		class='pa-3'
 		outlined
+		width=368.8
+		height=314
 	>
 		<v-card-title>
 			<h1 class="register_title">確認画面</h1>
@@ -23,18 +25,20 @@
 		</v-simple-table>
 		<p>上記の内容でよろしいですか？</p>
 		<v-form ref='form'>
-			<v-btn
-				depressed
-				x-large
-				class='teal lighten-4 ma-3'
-				@click='back'
-			>戻る</v-btn>
-			<v-btn
-				depressed
-				x-large
-				class='teal lighten-4 ma-3'
-				@click='signup'
-			>SignUp</v-btn>
+			<v-col class='text-center' cols='12'>
+				<v-btn
+					depressed
+					x-large
+					class='teal lighten-4 ma-3'
+					@click='back'
+				>戻る</v-btn>
+				<v-btn
+					depressed
+					x-large
+					class='teal lighten-4 ma-3'
+					@click='signup'
+				>SignUp</v-btn>
+			</v-col>
 		</v-form>
 	</v-card>
 </template>

@@ -65,7 +65,6 @@
 
 	const Com = new Common()
 	export default {
-		props: ['signupUrl'],
 		name: 'signin',
 		data: () => ({
 			valid: true,
@@ -83,9 +82,6 @@
 				]
 			}
 		}),
-		created: function () {
-			console.log(this.signupUrl)
-		},
 		methods: {
 			login () {
 				axios.post('http://192.168.33.12/auth/', this.credentials)

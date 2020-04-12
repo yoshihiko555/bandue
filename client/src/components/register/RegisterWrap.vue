@@ -1,5 +1,6 @@
 <template>
 	<v-app id='register_wrap'>
+		<Header></Header>
 		<v-container
 			fluid
 			class='pa-0'
@@ -12,23 +13,20 @@
 						class='teal darken-4 register_card_wrap'
 
 					>
+					<!-- Django側から受け取ったviewの値で表示するコンポーネントを判定
+					0 = signup
+					1 = signin -->
 					<div v-if='view == 0'>
-							<keep-alive>
-								<SignUp
-									v-if='signupCnt === 0'
-									@signup-change-view='signupView'
-								>
-								</SignUp>
-								<SignUpConf
-									v-else-if='signupCnt === 1'
-									@signup-change-view='signupView'
-									:data='credentials'
-								></SignUpConf>
-								<SignUpDone
-									v-else-if='signupCnt === 2'
-								>
-								</SignUpDone>
-							</keep-alive>
+						<keep-alive>
+							<!-- pageメソッドでコンポーネントの切り替え
+							子コンポーネントのsignuo-change-viewが発火されたことを確認して、signupViewメソッドが発火
+							signupViewメソッドで受け取ったsignUpCntで表示切り替え -->
+							<component
+								:is='page'
+								@signup-change-view='signupView'
+								:data='credentials'
+							></component>
+						</keep-alive>
 					</div>
 
 					<div v-else-if='view == 1'>
@@ -42,18 +40,27 @@
 				</v-col>
 			</v-row>
 		</v-container>
+		<Footer></Footer>
 	</v-app>
 </template>
 
 <script>
+	import Header from '../common/Header'
+	import Footer from '../common/Footer'
 	import SignUp from './SignUp'
 	import SignUpConf from './SignUpConfirm'
 	import SignUpDone from './SignUpDone'
 	import SignIn from './SignIn'
 
+	import { Const } from '@/static/js/const'
+
+	const Con = new Const()
+
 	export default {
-		props: ['data', 'view', 'signupUrl'],
+		props: ['view'],
 		components: {
+			Header,
+			Footer,
 			SignUp,
 			SignUpConf,
 			SignUpDone,
@@ -63,8 +70,22 @@
 			signupCnt: 0,
 			credentials: {}
 		}),
-		created: function () {
-			console.log(this.signupUrl)
+		computed: {
+			page () {
+				switch (this.signupCnt) {
+				case Con.SIGNUP_VIEW:
+					return SignUp
+
+				case Con.SIGNUP_CONFRIM_VIEW:
+					return SignUpConf
+
+				case Con.SIGNUP_DONE_VIEW:
+					return SignUpDone
+
+				default:
+					return SignUp
+				}
+			}
 		},
 		methods: {
 			signupView (currentNo, credentials) {

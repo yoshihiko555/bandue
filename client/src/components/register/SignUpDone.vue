@@ -15,7 +15,6 @@
 
 <script>
 	export default {
-		props: [],
 		name: 'signup-done',
 		data: () => ({
 

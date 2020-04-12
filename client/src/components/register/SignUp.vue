@@ -55,11 +55,7 @@
 	const Con = new Const()
 
 	export default {
-		props: [],
 		name: 'signup',
-		components: {
-
-		},
 		data: () => ({
 			valid: true,
 			loading: false,
