@@ -84,8 +84,15 @@
 		}),
 		methods: {
 			login () {
-				axios.post('http://192.168.33.12/auth/', this.credentials)
+				axios.post('http://192.168.33.12:8000/auth/', this.credentials)
 				.then(res => {
+					this.$session.start()
+					this.$session.set('token', res.data.token)
+					// this.$router.go({
+					// 	path: this.$router.currentRoute.path, force: true
+					// })
+					this.$router.push('/')
+					Com.reload(this.$router)
 					console.log(res)
 				})
 				.catch(e => {

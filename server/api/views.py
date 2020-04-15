@@ -49,10 +49,17 @@ from .models import (
     Entry
 )
 
+logger = logging.getLogger(__name__)
+
 class IndexView(generic.TemplateView):
     template_name = 'index.html'
 
 class TweetListView(generics.ListCreateAPIView):
+
+    def get(self, request, *args, **kwargs):
+        logger.info('GETした')
+        return super().get(self, **kwargs)
+
     queryset = Tweet.objects.all()
     serializer_class = TweetSerializer
 

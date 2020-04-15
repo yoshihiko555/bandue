@@ -9,5 +9,11 @@
 <a href="{% url 'front_view:index' %}">TOP</a>
 <a href="{% url 'front_view:signup' %}">SIGNUP</a>
 <a href="{% url 'front_view:signin' %}">SIGNIN</a>
+<div id="app">
+	<index
+		:datas='datas'
+		:is-auth='isAuth'
+	></index>
+</div>
 {% render_bundle 'index' %}
 {% endblock %}

@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+import datetime
+import logging
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,6 +27,20 @@ SECRET_KEY = 'c&h4a)zuz(@kt1((c67*d!^-gclzlq!!!!@t)ljh0$9e+q7w81'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+if DEBUG:
+    logging.basicConfig(
+        level = logging.DEBUG,
+        format = '''%(levelname)s %(asctime)s %(pathname)s:%(funcName)s:%(lineno)s
+        %(message)s''')
+else:
+    logging.basicConfig(
+        level = logging.DEBUG,
+        format = '''%(levelname)s %(asctime)s %(pathname)s:%(funcName)s 行数:%(lineno)s:%(lineno)s
+        %(message)s'''
+        # filename = 'logs/debug.log',
+        # filemode = 'a'
+    )
 
 ALLOWED_HOSTS = [
     '192.168.33.12',
@@ -44,7 +60,7 @@ INSTALLED_APPS = [
     'rest_framework',
     # Django既存のAuth認証で行けるならそれでもOK?
     # 一旦試しになしでやってみる
-    # 'rest_framework_jwt',
+    'rest_framework_jwt',
     'webpack_loader',
     'api.apps.ApiConfig',
     'front_view.apps.FrontViewConfig',
@@ -63,14 +79,14 @@ REST_FRAMEWORK = {
 }
 
 # JWT認証設定
-# JWT_AUTH = {
-#     'JWT_VERIFY': True,
-#     'JWT_VERIFY_EXPIRATION': True,
-#     'JWT_LEEWAY': 0,
-#     'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=86400), # Sessionの保存期間を設定(24時間)
-#     'JWT_ALLOW_REFRESH': True,
-#     'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
-# }
+JWT_AUTH = {
+    'JWT_VERIFY': True,
+    'JWT_VERIFY_EXPIRATION': True,
+    'JWT_LEEWAY': 0,
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=86400), # Sessionの保存期間を設定(24時間)
+    'JWT_ALLOW_REFRESH': True,
+    'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=7),
+}
 
 # webpak-stats.jsonの読み込み設定
 WEBPACK_LOADER = {
