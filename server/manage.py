@@ -3,6 +3,7 @@
 import os
 import sys
 
+sys.dont_write_bytecode = True
 
 def main():
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'server.settings')

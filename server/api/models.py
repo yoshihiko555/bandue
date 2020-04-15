@@ -229,19 +229,22 @@ class mAccessLog(models.Model):
     language = models.CharField(_('Language'), max_length=30)
 
 
-class Group(models.Model):
+class Band(models.Model):
 
     name = models.CharField(_('Community Name'), max_length=100)
     members = models.ManyToManyField(
         mUser,
         through='MemberShip',
-        through_fields=('group', 'muser'),
+        through_fields=('band', 'muser'),
     )
+
+    def __str__(self):
+        return self.name
 
 
 class MemberShip(models.Model):
 
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    band = models.ForeignKey(Band, on_delete=models.CASCADE)
     muser = models.ForeignKey(mUser, on_delete=models.CASCADE)
     inviter = models.ForeignKey(
         mUser,
@@ -249,3 +252,86 @@ class MemberShip(models.Model):
         related_name='membership_invites',
     )
     invite_reason = models.CharField(_('Invites Reason'), max_length=100)
+
+    def __str__(self):
+        return self.inviter.username + ' が ' + self.band.name + ' に ' + self.muser.username + ' を招待'
+
+class Entry(models.Model):
+
+    title = models.CharField(_('Title'), max_length=100)
+    content = models.TextField(_('Content'))
+    author = models.ForeignKey(mUser, on_delete=models.CASCADE)
+    ENTRY_TYPE_CHOICES = (
+        ('RE', _('Recruitment Member')),
+        ('JO', _('Join a Group')),
+        ('SU', _('Support')),
+    )
+    type = models.CharField(choices=ENTRY_TYPE_CHOICES, max_length=30)
+    PREFECTURE_CHOICES = (
+        (1, _('Hokkaido')),
+        (2, _('Aomori Prefecture')),
+        (3, _('Iwate Prefecture')),
+        (4, _('Miyagi Prefecture')),
+        (5, _('Akita Prefecture')),
+        (6, _('Yamagata Prefecture')),
+        (7, _('Fukushima Prefecture')),
+        (8, _('Ibaraki Prefecture')),
+        (9, _('Tochigi Prefecture')),
+        (10, _('Gunma Prefecture')),
+        (11, _('Saitama Prefecture')),
+        (12, _('Chiba Prefecture')),
+        (13, _('Tokyo Prefecture')),
+        (14, _('Kanagawa Prefecture')),
+        (15, _('Niigata Prefecture')),
+        (16, _('Toyama Prefecture')),
+        (17, _('Ishikawa Prefecture')),
+        (18, _('Fukui Prefecture')),
+        (19, _('Yamanashi Prefecture')),
+        (20, _('Nagano Prefecture')),
+        (21, _('Gifu Prefecture')),
+        (22, _('Shizuoka Prefecture')),
+        (23, _('Aichi Prefecture')),
+        (24, _('Mie Prefecture')),
+        (25, _('Shiga Prefecture')),
+        (26, _('Kyoto Prefecture')),
+        (27, _('Osaka Prefecture')),
+        (28, _('Hyogo Prefecture')),
+        (29, _('Nara Prefecture')),
+        (30, _('Wakayama Prefecture')),
+        (31, _('Tottori Prefecture')),
+        (32, _('Shimane Prefecture')),
+        (33, _('Okayama Prefecture')),
+        (34, _('Hiroshima Prefecture')),
+        (35, _('Yamaguchi Prefecture')),
+        (36, _('Tokushima Prefecture')),
+        (37, _('Kagawa Prefecture')),
+        (38, _('Ehime Prefecture')),
+        (39, _('Kochi Prefecture')),
+        (40, _('Fukuoka Prefecture')),
+        (41, _('Saga Prefecture')),
+        (42, _('Nagasaki Prefecture')),
+        (43, _('Kumamoto Prefecture')),
+        (44, _('Oita Prefecture')),
+        (45, _('Miyazaki Prefecture')),
+        (46, _('Kagoshima Prefecture')),
+        (47, _('Okinawa Prefecture')),
+    )
+    prefecture = models.IntegerField(choices=PREFECTURE_CHOICES, null=True, blank=True)
+    area = models.CharField(_('Area'), max_length=20 , null=True, blank=True)
+    DAY_WEEK_CHOICES = (
+        ('WD', _('Weekdays')),
+        ('WE', _('Weekends')),
+        ('AL', _('Always')),
+    )
+    day_week = models.CharField(choices=DAY_WEEK_CHOICES, max_length=20, null=True, blank=True)
+    DIRECTION_CHOICES = (
+        ('OR', _('Original')),
+        ('CO', _('Copy')),
+        ('AL', _('All')),
+    )
+    direction = models.CharField(choices=DIRECTION_CHOICES, max_length=20, null=True, blank=True)
+    part = models.TextField(_('Part'), null=True, blank=True)
+    genre = models.TextField(_('Genre'), null=True, blank=True)
+
+    def __str__(self):
+        return self.title

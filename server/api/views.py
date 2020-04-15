@@ -28,6 +28,46 @@ from functools import reduce
 import operator
 from datetime import datetime, timedelta
 from rest_framework import generics, permissions
+from rest_framework.decorators import action
+from .serializers import (
+    ProfileSerializer,
+    TweetSerializer,
+    EntrySerializer,
+)
+from .models import (
+    mUser,
+    Message,
+    HashTag,
+    Tweet,
+    Reply,
+    mSetting,
+    hUserUpd,
+    hTweetUpd,
+    mAccessLog,
+    Band,
+    MemberShip,
+    Entry
+)
 
 class IndexView(generic.TemplateView):
     template_name = 'index.html'
+
+class TweetListView(generics.ListCreateAPIView):
+    queryset = Tweet.objects.all()
+    serializer_class = TweetSerializer
+
+class TweetDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Tweet.objects.all()
+    serializer_class = TweetSerializer
+
+class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = mUser.objects.all()
+    serializer_class = ProfileSerializer
+
+class BbsListView(generics.ListCreateAPIView):
+    queryset = Entry.objects.all()
+    serializer_class = EntrySerializer
+
+class BbsDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Entry.objects.all()
+    serializer_class = EntrySerializer
