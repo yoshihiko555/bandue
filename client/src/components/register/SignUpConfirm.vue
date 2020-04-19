@@ -17,13 +17,16 @@
 					<td>{{ data.username }}</td>
 				</tr>
 				<tr>
+					<th class="text-left">EMail</th>
+					<td>{{ data.email }}</td>
+				</tr>
+				<tr>
 					<th class='text-left'>Password</th>
 					<td>{{ data.password }}</td>
 				</tr>
 			</tbody>
 			</template>
 		</v-simple-table>
-		<p>上記の内容でよろしいですか？</p>
 		<v-form ref='form'>
 			<v-col class='text-center' cols='12'>
 				<v-btn
@@ -48,6 +51,7 @@
 	import { Const } from '@/static/js/const'
 
 	const Con = new Const()
+
 	export default {
 		props: ['data'],
 		name: 'signup-conf',
@@ -58,14 +62,24 @@
 		methods: {
 			signup () {
 				console.log(this.data)
-				axios.post('http://192.168.33.12/auth/', this.data)
+				axios.defaults.xsrfCookieName = 'csrftoken'
+				axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
+				axios.post('http://192.168.33.12:8000/api/signup/', this.data)
 				.then(res => {
 					console.log(res)
-					this.$emit('signup-change-view', Con.SIGNUP_DONE_VIEW)
+					axios.post('http://192.168.33.12:8000/auth/', this.data)
+					.then(res => {
+						console.log(res)
+						this.$session.start()
+						this.$session.set('token', res.data.token)
+						this.$emit('signup-change-view', Con.SIGNUP_DONE_VIEW)
+					})
+					.catch(e => {
+						console.log(e)
+					})
 				})
 				.catch(e => {
 					console.log(e)
-					this.$emit('signup-change-view', Con.SIGNUP_DONE_VIEW)
 				})
 			},
 			back () {

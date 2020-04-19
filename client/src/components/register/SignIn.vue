@@ -15,8 +15,8 @@
 				maxlength='70'
 				label='Mail or UserId'
 				required
-				clear-icon='✕'
 				clearable
+				tabindex='1'
 			></v-text-field>
 
 			<v-text-field
@@ -26,8 +26,8 @@
 				maxlength='70'
 				label='Password'
 				required
-				clear-icon='✕'
 				clearable
+				tabindex='2'
 			></v-text-field>
 
 			<v-col class='text-center' cols='12'>

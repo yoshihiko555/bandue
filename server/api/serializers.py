@@ -136,3 +136,17 @@ class EntrySerializer(serializers.ModelSerializer):
     def get_author(self, obj):
         author_contents = obj.author.username
         return author_contents
+
+class MUserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False)
+
+    class Meta:
+        model = mUser
+        fields = [
+            'username',
+            'email',
+            'password',
+        ]
+
+    def create(self, validated_data):
+        return mUser.objects.create_user(username=validated_data['username'], email=validated_data['email'], password=validated_data['password'])

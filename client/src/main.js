@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import Index from './components/Index.vue'
+import Index from './Index.vue'
 import router from './router'
 import store from './store'
 import vuetify from './plugins/vuetify'

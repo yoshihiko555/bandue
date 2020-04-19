@@ -6,6 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 import os, uuid, logging
 
+logger = logging.getLogger(__name__)
 
 def content_file_name(instance, filename):
     return 'upload/{0}/{1}/{2}'.format(instance.author, instance.title, filename)
@@ -15,7 +16,6 @@ class UserManager(BaseUserManager):
     use_in_migrations = True
 
     def _create_user(self, username, email, password, **extra_fields):
-
         if not username:
             raise ValueError('ユーザーネームは必須項目です。')
 
@@ -25,10 +25,12 @@ class UserManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
 
-    def create_user(self, username, email, password=None, **extra_fields):
+        return user
 
+    def create_user(self, username, email, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
+        logger.info(extra_fields)
         return self._create_user(username, email, password, **extra_fields)
 
     def create_superuser(self, username, email=None, password=None, **extra_fields):

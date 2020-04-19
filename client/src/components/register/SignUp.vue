@@ -19,10 +19,21 @@
 				:rules='rules.username'
 				:counter='70'
 				maxlength='70'
-				label='Mail or UserId'
+				label='UserName'
 				required
-				clear-icon='✕'
 				clearable
+				tabindex='1'
+			></v-text-field>
+
+			<v-text-field
+				v-model='credentials.email'
+				:rules='rules.email'
+				:counter='70'
+				maxlength='70'
+				label='Mail'
+				required
+				clearable
+				tabindex='2'
 			></v-text-field>
 
 			<v-text-field
@@ -32,8 +43,8 @@
 				maxlength='70'
 				label='Password'
 				required
-				clear-icon='✕'
 				clearable
+				tabindex='3'
 			></v-text-field>
 
 			<v-col class='text-center' cols='12'>
@@ -43,6 +54,7 @@
 					class='teal lighten-4 ma-1'
 					:disabled='!valid'
 					@click='confirm'
+					tabindex='4'
 				>次へ</v-btn>
 			</v-col>
 		</v-form>
@@ -65,6 +77,9 @@
 				username: [
 					v => !!v || '必須項目です',
 					v => (v && v.length <= 70) || '70文字以内で入力してください'
+				],
+				email: [
+					v => !!v || '必須項目です'
 				],
 				password: [
 					v => !!v || '必須項目です',

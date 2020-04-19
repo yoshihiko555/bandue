@@ -9,7 +9,7 @@ from django.views import generic
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.db.models import Count, Q
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.hashers import check_password
 from django.contrib import messages
@@ -19,6 +19,7 @@ from django.contrib.auth.views import (
     PasswordChangeView,
     PasswordChangeDoneView
 )
+from django.db import transaction
 import logging
 import json
 import re
@@ -27,12 +28,18 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from functools import reduce
 import operator
 from datetime import datetime, timedelta
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, authentication
 from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework_jwt.settings import api_settings
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework import status, viewsets, filters
+from rest_framework.views import APIView
 from .serializers import (
     ProfileSerializer,
     TweetSerializer,
     EntrySerializer,
+    MUserSerializer,
 )
 from .models import (
     mUser,
@@ -57,7 +64,6 @@ class IndexView(generic.TemplateView):
 class TweetListView(generics.ListCreateAPIView):
 
     def get(self, request, *args, **kwargs):
-        logger.info('GETした')
         return super().get(self, **kwargs)
 
     queryset = Tweet.objects.all()
@@ -78,3 +84,18 @@ class BbsListView(generics.ListCreateAPIView):
 class BbsDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Entry.objects.all()
     serializer_class = EntrySerializer
+
+class SignUpView(generics.CreateAPIView):
+    permission_classes = (permissions.AllowAny,)
+    queryset = mUser.objects.all()
+    serializer_class = MUserSerializer
+
+    @transaction.atomic
+    def post(self, request, format=None):
+        serializer = MUserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
