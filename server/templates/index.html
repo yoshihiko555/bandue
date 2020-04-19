@@ -11,8 +11,8 @@
 <a href="{% url 'front_view:signin' %}">SIGNIN</a>
 <div id="app">
 	<index
-		:datas='datas'
 		:is-auth='isAuth'
+		:lodding='lodding'
 	></index>
 </div>
 {% render_bundle 'index' %}
