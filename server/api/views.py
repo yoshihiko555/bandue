@@ -55,6 +55,7 @@ from .models import (
     MemberShip,
     Entry
 )
+from .permissions import IsMyselfOrReadOnly
 
 logger = logging.getLogger(__name__)
 
@@ -63,11 +64,23 @@ class IndexView(generic.TemplateView):
 
 class TweetListView(generics.ListCreateAPIView):
 
-    def get(self, request, *args, **kwargs):
-        return super().get(self, **kwargs)
-
+    permission_classes = (permissions.AllowAny,)
     queryset = Tweet.objects.all()
     serializer_class = TweetSerializer
+
+    def post(self, request, *args, **kwargs):
+        request.data.update({
+            'author_pk': str(request.user.pk)
+        })
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(self.get_serializer(queryset, many=True).data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class TweetDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Tweet.objects.all()
@@ -76,6 +89,16 @@ class TweetDetailView(generics.RetrieveUpdateDestroyAPIView):
 class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = mUser.objects.all()
     serializer_class = ProfileSerializer
+
+class mUserViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = (permissions.AllowAny,)
+    queryset = mUser.objects.all()
+    serializer_class = MUserSerializer
+
+    @action(methods=['post'], detail=False)
+    def follow(self, request):
+        logger.debug('followきたーーーーーーーーーーーーー')
+        return Response({'data': ['SUCCESS']}, status=status.HTTP_201_CREATED)
 
 class BbsListView(generics.ListCreateAPIView):
     queryset = Entry.objects.all()
@@ -92,7 +115,7 @@ class SignUpView(generics.CreateAPIView):
 
     @transaction.atomic
     def post(self, request, format=None):
-        serializer = MUserSerializer(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
 

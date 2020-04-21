@@ -1,5 +1,9 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register('users', views.mUserViewSet)
 
 app_name = 'api'
 urlpatterns = [
@@ -10,4 +14,5 @@ urlpatterns = [
     path('bbs/', views.BbsListView.as_view(), name='bbs-list'),
     path('bbs/<int:pk>/', views.BbsDetailView.as_view(), name='bbs-detail'),
     path('signup/', views.SignUpView.as_view(), name='signup'),
+    path('', include(router.urls))
 ]
