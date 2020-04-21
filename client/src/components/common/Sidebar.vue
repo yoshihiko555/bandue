@@ -32,70 +32,70 @@
 </template>
 
 <script>
-import SignOut from '@/components/register/SignOut'
-export default {
-	name: 'Sidebar',
-	components: {
-		SignOut
-	},
-	data: () => ({
-		sidebarItem: 7,
-		items: [
-			{
-				icon: 'mdi-home',
-				title: 'Home',
-				url: '/',
-				no: 1
-			},
-			{
-				icon: 'mdi-file-document-edit',
-				title: 'BBS',
-				url: '/',
-				no: 2
-			},
-			{
-				icon: 'mdi-forum',
-				title: 'Message',
-				url: '/',
-				no: 3
-			},
-			{
-				icon: 'mdi-information',
-				title: 'info',
-				url: '/',
-				no: 4
-			},
-			{
-				icon: 'mdi-account',
-				title: 'Profile',
-				url: '/',
-				no: 5
-			},
-			{
-				icon: 'mdi-cogs',
-				title: 'Setting',
-				url: '/',
-				no: 6
-			},
-			{
-				icon: 'mdi-logout-variant',
-				title: 'Signout',
-				url: '/',
-				no: 7
-			}
-		],
+	import SignOut from '@/components/register/SignOut'
+	export default {
+		name: 'Sidebar',
+		components: {
+			SignOut
+		},
+		data: () => ({
+			sidebarItem: 7,
+			items: [
+				{
+					icon: 'mdi-home',
+					title: 'Home',
+					url: '/',
+					no: 1
+				},
+				{
+					icon: 'mdi-file-document-edit',
+					title: 'BBS',
+					url: '/',
+					no: 2
+				},
+				{
+					icon: 'mdi-forum',
+					title: 'Message',
+					url: '/',
+					no: 3
+				},
+				{
+					icon: 'mdi-information',
+					title: 'info',
+					url: '/',
+					no: 4
+				},
+				{
+					icon: 'mdi-account',
+					title: 'Profile',
+					url: '/',
+					no: 5
+				},
+				{
+					icon: 'mdi-cogs',
+					title: 'Setting',
+					url: '/',
+					no: 6
+				},
+				{
+					icon: 'mdi-logout-variant',
+					title: 'Signout',
+					url: '/',
+					no: 7
+				}
+			],
 
-		dialog: false
-	}),
+			dialog: false
+		}),
 
-	methods: {
-		changeView (no) {
-			if (no === 7) {
-				this.dialog = true
-			} else {
+		methods: {
+			changeView (no) {
+				if (no === 7) {
+					this.dialog = true
+				} else {
 
+				}
 			}
 		}
 	}
-}
 </script>

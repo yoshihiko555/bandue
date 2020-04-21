@@ -20,22 +20,22 @@
 </template>
 
 <script>
-	import { Common } from '@/static/js/common'
+import { Common } from '@/static/js/common'
 
-	const Com = new Common()
+const Com = new Common()
 
-	export default {
-		name: 'signup-done',
-		data: () => ({
+export default {
+  name: 'signup-done',
+  data: () => ({
 
-		}),
-		methods: {
-			top () {
-				this.$router.push('/')
-				Com.reload(this.$router)
-			}
-		}
-	}
+  }),
+  methods: {
+    top () {
+      this.$router.push('/')
+      Com.reload(this.$router)
+    }
+  }
+}
 </script>
 
 <style lang='scss'>

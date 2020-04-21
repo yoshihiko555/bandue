@@ -9,19 +9,19 @@
 </template>
 
 <script>
-	import { Common } from '@/static/js/common'
+import { Common } from '@/static/js/common'
 
-	const Com = new Common()
-	export default {
-		data: () => ({
+const Com = new Common()
+export default {
+  data: () => ({
 
-		}),
-		methods: {
-			reload () {
-				Com.reload(this.$router)
-			}
-		}
-	}
+  }),
+  methods: {
+    reload () {
+      Com.reload(this.$router)
+    }
+  }
+}
 </script>
 
 <style lang='scss'>

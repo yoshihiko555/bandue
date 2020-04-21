@@ -33,10 +33,12 @@ class ProfileSerializer(serializers.ModelSerializer):
     followers = serializers.SerializerMethodField()
     followees_count = serializers.SerializerMethodField()
     followers_count = serializers.SerializerMethodField()
+    tweet = serializers.SerializerMethodField()
 
     class Meta:
         model = mUser
         fields = [
+            'id',
             'username',
             'email',
             'address',
@@ -48,6 +50,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'followers',
             'followees_count',
             'followers_count',
+            'tweet',
         ]
 
     def get_followees(self, obj):
@@ -70,25 +73,37 @@ class ProfileSerializer(serializers.ModelSerializer):
         return obj.followees.count()
 
     def get_followers_count(self, obj):
-        return len(self.get_followers(obj))
+        return len(self.get_followers(obj)) if self.get_followers(obj) != None else 0
+
+    def get_tweet(self, obj):
+        try:
+            tweet_contents = TweetSerializer(mUser.objects.get(id=obj.id).tweet_set.all(), many=True).data
+            return tweet_contents
+        except:
+            tweet_contents = None
+            return tweet_contents
 
 class ProfileSubSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = mUser
         fields = [
+            'id',
             'username',
         ]
 
 class TweetSerializer(serializers.ModelSerializer):
 
     author = serializers.SerializerMethodField()
+    author_pk = serializers.CharField(required=False)
     hashTag = serializers.SerializerMethodField()
 
     class Meta:
         model = Tweet
         fields = [
+            'id',
             'author',
+            'author_pk',
             'content',
             'liked',
             'hashTag',
@@ -105,6 +120,11 @@ class TweetSerializer(serializers.ModelSerializer):
         hashTag_contents = HashTagSerializer(obj.hashTag.all(), many=True).data
         return hashTag_contents
 
+    def create(self, validated_data):
+        user = mUser.objects.get(pk=validated_data['author_pk'])
+        content = validated_data['content']
+        return Tweet.objects.create(author=user, content=content)
+
 class HashTagSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -117,13 +137,16 @@ class HashTagSerializer(serializers.ModelSerializer):
 class EntrySerializer(serializers.ModelSerializer):
 
     author = serializers.SerializerMethodField()
+    author_pk = serializers.SerializerMethodField()
 
     class Meta:
         model = Entry
         fields = [
+            'id',
             'title',
             'content',
             'author',
+            'author_pk',
             'type',
             'prefecture',
             'area',
@@ -137,7 +160,13 @@ class EntrySerializer(serializers.ModelSerializer):
         author_contents = obj.author.username
         return author_contents
 
+    def get_author_pk(self, obj):
+        author_pk_contents = obj.author.pk
+        return author_pk_contents
+
+
 class MUserSerializer(serializers.ModelSerializer):
+
     password = serializers.CharField(write_only=True, required=False)
 
     class Meta:
