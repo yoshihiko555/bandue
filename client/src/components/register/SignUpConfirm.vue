@@ -47,46 +47,46 @@
 </template>
 
 <script>
-	import axios from 'axios'
-	import { Const } from '@/static/js/const'
+import axios from 'axios'
+import { Const } from '@/static/js/const'
 
-	const Con = new Const()
+const Con = new Const()
 
-	export default {
-		props: ['data'],
-		name: 'signup-conf',
-		data: () => ({
-			valid: true,
-			loading: false
-		}),
-		methods: {
-			signup () {
-				console.log(this.data)
-				axios.defaults.xsrfCookieName = 'csrftoken'
-				axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
-				axios.post('http://192.168.33.12:8000/api/signup/', this.data)
-				.then(res => {
-					console.log(res)
-					axios.post('http://192.168.33.12:8000/auth/', this.data)
-					.then(res => {
-						console.log(res)
-						this.$session.start()
-						this.$session.set('token', res.data.token)
-						this.$emit('signup-change-view', Con.SIGNUP_DONE_VIEW)
-					})
-					.catch(e => {
-						console.log(e)
-					})
-				})
-				.catch(e => {
-					console.log(e)
-				})
-			},
-			back () {
-				this.$emit('signup-change-view', Con.SIGNUP_VIEW)
-			}
-		}
-	}
+export default {
+  props: ['data'],
+  name: 'signup-conf',
+  data: () => ({
+    valid: true,
+    loading: false
+  }),
+  methods: {
+    signup () {
+      console.log(this.data)
+      axios.defaults.xsrfCookieName = 'csrftoken'
+      axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
+      axios.post('http://192.168.33.12:8000/api/signup/', this.data)
+        .then(res => {
+          console.log(res)
+          axios.post('http://192.168.33.12:8000/auth/', this.data)
+            .then(res => {
+              console.log(res)
+              this.$session.start()
+              this.$session.set('token', res.data.token)
+              this.$emit('signup-change-view', Con.SIGNUP_DONE_VIEW)
+            })
+            .catch(e => {
+              console.log(e)
+            })
+        })
+        .catch(e => {
+          console.log(e)
+        })
+    },
+    back () {
+      this.$emit('signup-change-view', Con.SIGNUP_VIEW)
+    }
+  }
+}
 </script>
 
 <style lang='scss'>

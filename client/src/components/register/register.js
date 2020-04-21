@@ -15,12 +15,12 @@ Vue.use(VueSession)
 Vue.component('register-wrap', RegisterWrap)
 
 new Vue({
-	vuetify,
-	router,
-	data: {
+  vuetify,
+  router,
+  data: {
 
-	},
-	methods: {
+  },
+  methods: {
 
-	}
+  }
 }).$mount('#register')

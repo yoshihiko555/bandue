@@ -49,56 +49,56 @@
 </template>
 
 <script>
-	import Header from '../common/Header'
-	import Footer from '../common/Footer'
-	import SignUp from './SignUp'
-	import SignUpConf from './SignUpConfirm'
-	import SignUpDone from './SignUpDone'
-	import SignIn from './SignIn'
+import Header from '../common/Header'
+import Footer from '../common/Footer'
+import SignUp from './SignUp'
+import SignUpConf from './SignUpConfirm'
+import SignUpDone from './SignUpDone'
+import SignIn from './SignIn'
 
-	import { Const } from '@/static/js/const'
+import { Const } from '@/static/js/const'
 
-	const Con = new Const()
+const Con = new Const()
 
-	export default {
-		props: ['view'],
-		components: {
-			Header,
-			Footer,
-			SignUp,
-			SignUpConf,
-			SignUpDone,
-			SignIn
-		},
-		data: () => ({
-			signupCnt: 0,
-			credentials: {}
-		}),
-		computed: {
-			page () {
-				switch (this.signupCnt) {
-				case Con.SIGNUP_VIEW:
-					return SignUp
+export default {
+  props: ['view'],
+  components: {
+    Header,
+    Footer,
+    SignUp,
+    SignUpConf,
+    SignUpDone,
+    SignIn
+  },
+  data: () => ({
+    signupCnt: 0,
+    credentials: {}
+  }),
+  computed: {
+    page () {
+      switch (this.signupCnt) {
+        case Con.SIGNUP_VIEW:
+          return SignUp
 
-				case Con.SIGNUP_CONFRIM_VIEW:
-					return SignUpConf
+        case Con.SIGNUP_CONFRIM_VIEW:
+          return SignUpConf
 
-				case Con.SIGNUP_DONE_VIEW:
-					return SignUpDone
+        case Con.SIGNUP_DONE_VIEW:
+          return SignUpDone
 
-				default:
-					return SignUp
-				}
-			}
-		},
-		methods: {
-			signupView (currentNo, credentials) {
-				this.signupCnt = currentNo
-				this.credentials = credentials
-				console.log(this.credentials)
-			}
-		}
-	}
+        default:
+          return SignUp
+      }
+    }
+  },
+  methods: {
+    signupView (currentNo, credentials) {
+      this.signupCnt = currentNo
+      this.credentials = credentials
+      console.log(this.credentials)
+    }
+  }
+}
 </script>
 
 <style lang='scss'>

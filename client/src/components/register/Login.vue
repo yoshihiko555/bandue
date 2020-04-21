@@ -59,28 +59,28 @@
 </template>
 
 <script>
-	import axios from 'axios'
-	export default {
-		name: 'Login',
-		data: () => ({
-			credentials: {},
-			valid: true,
-			loading: false
-		}),
-		methods: {
-			login () {
-				if (this.$refs.form.validate()) {
-					this.loading = true
-					axios.post('http://192.168.33.12:8000/auth/', this.credentials)
-						.then(res => {
-							this.$session.start()
-							this.session.set('token', res.data.token)
-						})
-						.catch(e => {
-							this.loading = false
-						})
-				}
-			}
-		}
-	}
+import axios from 'axios'
+export default {
+  name: 'Login',
+  data: () => ({
+    credentials: {},
+    valid: true,
+    loading: false
+  }),
+  methods: {
+    login () {
+      if (this.$refs.form.validate()) {
+        this.loading = true
+        axios.post('http://192.168.33.12:8000/auth/', this.credentials)
+          .then(res => {
+            this.$session.start()
+            this.session.set('token', res.data.token)
+          })
+          .catch(e => {
+            this.loading = false
+          })
+      }
+    }
+  }
+}
 </script>

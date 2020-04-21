@@ -23,14 +23,14 @@ const routes = [
   // 試しに定義してみたけど、あまり関係なさそう
   // そもそもルーティングはDjangoで行っているから
   {
-      path: '/signup',
-      name: 'SignUp',
-      component: SignUp
+    path: '/signup',
+    name: 'SignUp',
+    component: SignUp
   },
   {
-      path: '/signin',
-      name: 'SignIn',
-      component: SignIn
+    path: '/signin',
+    name: 'SignIn',
+    component: SignIn
   }
 
 ]

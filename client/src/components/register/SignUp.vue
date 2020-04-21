@@ -62,38 +62,38 @@
 </template>
 
 <script>
-	import { Const } from '@/static/js/const'
+import { Const } from '@/static/js/const'
 
-	const Con = new Const()
+const Con = new Const()
 
-	export default {
-		name: 'signup',
-		data: () => ({
-			valid: true,
-			loading: false,
-			credentials: {},
-			msg: 'メッセージ',
-			rules: {
-				username: [
-					v => !!v || '必須項目です',
-					v => (v && v.length <= 70) || '70文字以内で入力してください'
-				],
-				email: [
-					v => !!v || '必須項目です'
-				],
-				password: [
-					v => !!v || '必須項目です',
-					v => (v && v.length >= 8 && v.length <= 70) || '8文字以上、70文字以内で入力してください'
-					// v => //.test(v) || '半角英数字を1文字以上含めてください'		// TODO: 正規表現後で考える
-				]
-			}
-		}),
-		methods: {
-			confirm () {
-				this.$emit('signup-change-view', Con.SIGNUP_CONFRIM_VIEW, this.credentials)
-			}
-		}
-	}
+export default {
+  name: 'signup',
+  data: () => ({
+    valid: true,
+    loading: false,
+    credentials: {},
+    msg: 'メッセージ',
+    rules: {
+      username: [
+        v => !!v || '必須項目です',
+        v => (v && v.length <= 70) || '70文字以内で入力してください'
+      ],
+      email: [
+        v => !!v || '必須項目です'
+      ],
+      password: [
+        v => !!v || '必須項目です',
+        v => (v && v.length >= 8 && v.length <= 70) || '8文字以上、70文字以内で入力してください'
+        // v => //.test(v) || '半角英数字を1文字以上含めてください'		// TODO: 正規表現後で考える
+      ]
+    }
+  }),
+  methods: {
+    confirm () {
+      this.$emit('signup-change-view', Con.SIGNUP_CONFRIM_VIEW, this.credentials)
+    }
+  }
+}
 </script>
 
 <style lang='scss'>

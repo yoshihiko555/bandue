@@ -17,14 +17,14 @@ new Vue({
   store,
   vuetify,
   data: {
-      isAuth: false,
-      lodding: true
+    isAuth: false,
+    lodding: true
   },
   mounted: function () {
-      this.$session.start()
-      console.log('ログイン状態', this.$session.has('token'))
-      this.isAuth = this.$session.has('token')
-      this.lodding = false
+    this.$session.start()
+    console.log('ログイン状態', this.$session.has('token'))
+    this.isAuth = this.$session.has('token')
+    this.lodding = false
   },
   methods: {
 

@@ -60,51 +60,51 @@
 </template>
 
 <script>
-	import axios from 'axios'
-	import { Common } from '@/static/js/common'
+import axios from 'axios'
+import { Common } from '@/static/js/common'
 
-	const Com = new Common()
-	export default {
-		name: 'signin',
-		data: () => ({
-			valid: true,
-			loading: false,
-			credentials: {},
-			rules: {
-				username: [
-					v => !!v || '必須項目です',
-					v => (v && v.length <= 70) || '70文字以内で入力してください'
-				],
-				password: [
-					v => !!v || '必須項目です',
-					v => (v && v.length >= 8 && v.length <= 70) || '8文字以上、70文字以内で入力してください'
-					// v => //.test(v) || '半角英数字を1文字以上含めてください'		// TODO: 正規表現後で考える
-				]
-			}
-		}),
-		methods: {
-			login () {
-				axios.post('http://192.168.33.12:8000/auth/', this.credentials)
-				.then(res => {
-					this.$session.start()
-					this.$session.set('token', res.data.token)
-					// this.$router.go({
-					// 	path: this.$router.currentRoute.path, force: true
-					// })
-					this.$router.push('/')
-					Com.reload(this.$router)
-					console.log(res)
-				})
-				.catch(e => {
-					console.log(e)
-				})
-			},
+const Com = new Common()
+export default {
+  name: 'signin',
+  data: () => ({
+    valid: true,
+    loading: false,
+    credentials: {},
+    rules: {
+      username: [
+        v => !!v || '必須項目です',
+        v => (v && v.length <= 70) || '70文字以内で入力してください'
+      ],
+      password: [
+        v => !!v || '必須項目です',
+        v => (v && v.length >= 8 && v.length <= 70) || '8文字以上、70文字以内で入力してください'
+        // v => //.test(v) || '半角英数字を1文字以上含めてください'		// TODO: 正規表現後で考える
+      ]
+    }
+  }),
+  methods: {
+    login () {
+      axios.post('http://192.168.33.12:8000/auth/', this.credentials)
+        .then(res => {
+          this.$session.start()
+          this.$session.set('token', res.data.token)
+          // this.$router.go({
+          // 	path: this.$router.currentRoute.path, force: true
+          // })
+          this.$router.push('/')
+          Com.reload(this.$router)
+          console.log(res)
+        })
+        .catch(e => {
+          console.log(e)
+        })
+    },
 
-			reload () {
-				Com.reload(this.$router)
-			}
-		}
-	}
+    reload () {
+      Com.reload(this.$router)
+    }
+  }
+}
 </script>
 
 <style lang='scss'>

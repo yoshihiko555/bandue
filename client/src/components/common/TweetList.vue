@@ -19,7 +19,6 @@
 								<v-list-content v-for='tag in tweet.hashTag' :key='tag.title'>
 									<v-list-item-title>{{ tag.title }}</v-list-item-title>
 								</v-list-content>
-
 								<v-row
 									align='center'
 									justify='end'
@@ -40,25 +39,25 @@
 import axios from 'axios'
 
 export default {
-	name: 'TweetList',
-	data: () => ({
-		tweetList: {}
-	}),
-	mounted: function () {
-		axios.get('http://192.168.33.12:8000/api/tweet/')
-		.then(res => {
-			console.log(res)
-			for (var i in res.data) {
-				var updatedAt = res.data[i].updated_at.substr(0, 10)
-				console.log(updatedAt)
-				res.data[i].updated_at = updatedAt
-			}
-			this.tweetList = res.data
-			console.log(this.tweetList)
-		})
-		.catch(e => {
-			console.log(e)
-		})
-	}
+  name: 'TweetList',
+  data: () => ({
+    tweetList: {}
+  }),
+  mounted: function () {
+    axios.get('http://192.168.33.12:8000/api/tweet/')
+      .then(res => {
+        console.log(res)
+        for (var i in res.data) {
+          var updatedAt = res.data[i].updated_at.substr(0, 10)
+          console.log(updatedAt)
+          res.data[i].updated_at = updatedAt
+        }
+        this.tweetList = res.data
+        console.log(this.tweetList)
+      })
+      .catch(e => {
+        console.log(e)
+      })
+  }
 }
 </script>

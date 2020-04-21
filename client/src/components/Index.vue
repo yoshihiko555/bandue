@@ -16,10 +16,10 @@
 
 <script>
 export default {
-	name: 'Index',
-	props: ['datas', 'isAuth'],
-	data: () => ({
+  name: 'Index',
+  props: ['datas', 'isAuth'],
+  data: () => ({
 
-	})
+  })
 }
 </script>

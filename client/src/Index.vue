@@ -23,24 +23,24 @@
 </template>
 
 <script>
-	import Header from '@/components/common/Header'
-	import Footer from '@/components/common/Footer'
-	import Sidebar from '@/components/common/Sidebar'
-	import Tweet from '@/components/common/Tweet'
-	import TweetList from '@/components/common/TweetList'
+import Header from '@/components/common/Header'
+import Footer from '@/components/common/Footer'
+import Sidebar from '@/components/common/Sidebar'
+import Tweet from '@/components/common/Tweet'
+import TweetList from '@/components/common/TweetList'
 
-	export default {
-		props: ['isAuth', 'lodding'],
-		name: 'Index',
-		components: {
-			Header,
-			Footer,
-			Sidebar,
-			Tweet,
-			TweetList
-		},
-		data: () => ({
+export default {
+  props: ['isAuth', 'lodding'],
+  name: 'Index',
+  components: {
+    Header,
+    Footer,
+    Sidebar,
+    Tweet,
+    TweetList
+  },
+  data: () => ({
 
-		})
-	}
+  })
+}
 </script>

@@ -24,46 +24,46 @@
 
 <script>
 export default {
-	name: 'Sidebar',
-	data: () => ({
-		sidebarItem: 7,
-		items: [
-			{
-				icon: 'mdi-home',
-				title: 'Home',
-				url: '/'
-			},
-			{
-				icon: 'mdi-file-document-edit',
-				title: 'BBS',
-				url: '/'
-			},
-			{
-				icon: 'mdi-forum',
-				title: 'Message',
-				url: '/'
-			},
-			{
-				icon: 'mdi-information',
-				title: 'info',
-				url: '/'
-			},
-			{
-				icon: 'mdi-account',
-				title: 'Profile',
-				url: '/'
-			},
-			{
-				icon: 'mdi-cogs',
-				title: 'Setting',
-				url: '/'
-			},
-			{
-				icon: 'mdi-logout-variant',
-				title: 'Signout',
-				url: '/'
-			}
-		]
-	})
+  name: 'Sidebar',
+  data: () => ({
+    sidebarItem: 7,
+    items: [
+      {
+        icon: 'mdi-home',
+        title: 'Home',
+        url: '/'
+      },
+      {
+        icon: 'mdi-file-document-edit',
+        title: 'BBS',
+        url: '/'
+      },
+      {
+        icon: 'mdi-forum',
+        title: 'Message',
+        url: '/'
+      },
+      {
+        icon: 'mdi-information',
+        title: 'info',
+        url: '/'
+      },
+      {
+        icon: 'mdi-account',
+        title: 'Profile',
+        url: '/'
+      },
+      {
+        icon: 'mdi-cogs',
+        title: 'Setting',
+        url: '/'
+      },
+      {
+        icon: 'mdi-logout-variant',
+        title: 'Signout',
+        url: '/'
+      }
+    ]
+  })
 }
 </script>
