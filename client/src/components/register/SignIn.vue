@@ -21,13 +21,16 @@
 
 			<v-text-field
 				v-model='credentials.password'
+				:append-icon='showPassword ? "mdi-eye" : "mdi-eye-off"'
 				:rules='rules.password'
 				:counter='70'
+				:type='showPassword ? "text" : "password"'
 				maxlength='70'
 				label='Password'
 				required
 				clearable
 				tabindex='2'
+				@click:append='showPassword = !showPassword'
 			></v-text-field>
 
 			<v-col class='text-center' cols='12'>
@@ -69,6 +72,7 @@
 		data: () => ({
 			valid: true,
 			loading: false,
+			showPassword: false,
 			credentials: {},
 			rules: {
 				username: [
@@ -84,13 +88,11 @@
 		}),
 		methods: {
 			login () {
+				console.log(this.credentials)
 				axios.post('http://192.168.33.12:8000/auth/', this.credentials)
 				.then(res => {
 					this.$session.start()
 					this.$session.set('token', res.data.token)
-					// this.$router.go({
-					// 	path: this.$router.currentRoute.path, force: true
-					// })
 					this.$router.push('/')
 					Com.reload(this.$router)
 					console.log(res)

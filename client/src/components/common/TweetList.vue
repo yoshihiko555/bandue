@@ -16,9 +16,9 @@
 
 						<v-card-actions>
 							<v-list-item>
-								<v-list-content v-for='tag in tweet.hashTag' :key='tag.title'>
+								<v-list-item-content v-for='tag in tweet.hashTag' :key='tag.title'>
 									<v-list-item-title>{{ tag.title }}</v-list-item-title>
-								</v-list-content>
+								</v-list-item-content>
 
 								<v-row
 									align='center'
@@ -50,7 +50,6 @@ export default {
 			console.log(res)
 			for (var i in res.data) {
 				var updatedAt = res.data[i].updated_at.substr(0, 10)
-				console.log(updatedAt)
 				res.data[i].updated_at = updatedAt
 			}
 			this.tweetList = res.data

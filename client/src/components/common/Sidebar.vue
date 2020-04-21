@@ -12,58 +12,90 @@
 								<v-icon v-text='item.icon'></v-icon>
 							</v-list-item-icon>
 							<v-list-item-content>
-								<v-list-item-title v-text='item.title'></v-list-item-title>
+								<v-list-item-action
+									@click=changeView(item.no)
+								>
+									<v-list-item-title v-text='item.title'></v-list-item-title>
+								</v-list-item-action>
 							</v-list-item-content>
 						</v-list-item>
 					</v-list-item-group>
 				</v-list>
 			</v-col>
 		</v-row>
+
+		<SignOut
+			:dialog='dialog'
+		>
+		</SignOut>
 	</v-container>
 </template>
 
 <script>
+import SignOut from '@/components/register/SignOut'
 export default {
 	name: 'Sidebar',
+	components: {
+		SignOut
+	},
 	data: () => ({
 		sidebarItem: 7,
 		items: [
 			{
 				icon: 'mdi-home',
 				title: 'Home',
-				url: '/'
+				url: '/',
+				no: 1
 			},
 			{
 				icon: 'mdi-file-document-edit',
 				title: 'BBS',
-				url: '/'
+				url: '/',
+				no: 2
 			},
 			{
 				icon: 'mdi-forum',
 				title: 'Message',
-				url: '/'
+				url: '/',
+				no: 3
 			},
 			{
 				icon: 'mdi-information',
 				title: 'info',
-				url: '/'
+				url: '/',
+				no: 4
 			},
 			{
 				icon: 'mdi-account',
 				title: 'Profile',
-				url: '/'
+				url: '/',
+				no: 5
 			},
 			{
 				icon: 'mdi-cogs',
 				title: 'Setting',
-				url: '/'
+				url: '/',
+				no: 6
 			},
 			{
 				icon: 'mdi-logout-variant',
 				title: 'Signout',
-				url: '/'
+				url: '/',
+				no: 7
 			}
-		]
-	})
+		],
+
+		dialog: false
+	}),
+
+	methods: {
+		changeView (no) {
+			if (no === 7) {
+				this.dialog = true
+			} else {
+
+			}
+		}
+	}
 }
 </script>

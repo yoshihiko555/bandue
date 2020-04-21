@@ -38,6 +38,8 @@
 
 			<v-text-field
 				v-model='credentials.password'
+				:append-icon='showPassword ? "mdi-eye" : "mdi-eye-off"'
+				:type='showPassword ? "text" : "password"'
 				:rules='rules.password'
 				:counter='70'
 				maxlength='70'
@@ -45,6 +47,7 @@
 				required
 				clearable
 				tabindex='3'
+				@click:append='showPassword = !showPassword'
 			></v-text-field>
 
 			<v-col class='text-center' cols='12'>
@@ -72,6 +75,7 @@
 			valid: true,
 			loading: false,
 			credentials: {},
+			showPassword: false,
 			msg: 'メッセージ',
 			rules: {
 				username: [

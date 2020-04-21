@@ -10,4 +10,5 @@ urlpatterns = [
     path('bbs/', views.BbsListView.as_view(), name='bbs-list'),
     path('bbs/<int:pk>/', views.BbsDetailView.as_view(), name='bbs-detail'),
     path('signup/', views.SignUpView.as_view(), name='signup'),
+    # path('signout/', views.SignOutView.as_view(), name='signout'),
 ]

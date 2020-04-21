@@ -12,6 +12,7 @@ module.exports = {
 
     // ビルド先のディレクトリの設定
     outputDir: './bundles/',
+    assetsDir: 'static',
 
     pages: {
 

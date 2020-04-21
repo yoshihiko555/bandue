@@ -10,6 +10,9 @@ Vue.config.productionTip = false
 
 Vue.use(VueSession)
 
+// TODO:あとで以下のstoreを使って認証管理を行う
+// window.state = store.state
+
 Vue.component('index', Index)
 
 new Vue({

@@ -99,3 +99,20 @@ class SignUpView(generics.CreateAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# ユーザー削除のView
+# サインアウトを実装してるときに間違って作った
+# 後で使うだろうから残しておく
+class DeleteUserView(generics.DestroyAPIView):
+    permission_classes = (permissions.IsAuthenticated,)
+    serializer_class = MUserSerializer
+    lookup_field = 'username'
+    queryset = mUser.objects.all()
+
+    def get_object(self):
+        try:
+            logger.info(self.request.user)
+            instance = self.queryset.get(username=self.request.user)
+            return instance
+        except mUser.DoesNotExist:
+            return Http404

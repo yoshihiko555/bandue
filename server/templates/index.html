@@ -5,10 +5,6 @@
 {% block title %}TOP{% endblock %}
 
 {% block content %}
-<h1>TOP PAGE</h1>
-<a href="{% url 'front_view:index' %}">TOP</a>
-<a href="{% url 'front_view:signup' %}">SIGNUP</a>
-<a href="{% url 'front_view:signin' %}">SIGNIN</a>
 <div id="app">
 	<index
 		:is-auth='isAuth'
