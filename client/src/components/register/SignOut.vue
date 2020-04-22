@@ -5,6 +5,7 @@
 		<v-dialog
 			v-model='dialog'
 			max-width='300'
+			persistent
 		>
 			<v-card>
 				<v-card-title class='headline'>Signout</v-card-title>
