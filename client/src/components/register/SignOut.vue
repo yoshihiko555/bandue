@@ -47,7 +47,7 @@
 
 		methods: {
 			closeModal () {
-				this.dialog = false
+				this.$emit('togle-signout-modal', false)
 			},
 
 			signout () {

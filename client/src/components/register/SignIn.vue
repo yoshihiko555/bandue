@@ -40,6 +40,7 @@
 					class='teal lighten-4'
 					:disabled='!valid'
 					@click='login'
+					tabindex='3'
 				>SignIn</v-btn>
 			</v-col>
 

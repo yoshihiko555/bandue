@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+
+{% block title %}{{ mUser.username}}{% endblock %}
+
+{% block content %}
+<div id="profile">
+	<profile
+
+	></profile>
+</div>
+{% render_bundle 'profile' %}
+{% endblock %}

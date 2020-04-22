@@ -60,7 +60,7 @@ from .permissions import IsMyselfOrReadOnly
 logger = logging.getLogger(__name__)
 
 class IndexView(generic.TemplateView):
-    template_name = 'index.html'
+    template_name = 'pages/index.html'
 
 class TweetListView(generics.ListCreateAPIView):
 
