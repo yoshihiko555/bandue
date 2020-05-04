@@ -1,8 +1,8 @@
 import Vue from 'vue'
-import RegisterWrap from './RegisterWrap'
+import RegisterWrap from '@/components/register/RegisterWrap'
 import router from '@/router'
 import store from '@/store'
-import vuetify from '../../plugins/vuetify'
+import vuetify from '@/plugins/vuetify'
 import 'vuetify/dist/vuetify.min.css'
 import VueSession from 'vue-session'
 require('@/static/scss/main.scss')

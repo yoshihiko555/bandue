@@ -35,6 +35,9 @@
 
 <script>
 	import SignOut from '@/components/register/SignOut'
+	import { Common } from '@/static/js/common'
+
+	const Com = new Common()
 
 	export default {
 		name: 'Sidebar',
@@ -52,16 +55,16 @@
 				{
 					icon: 'mdi-file-document-edit',
 					title: 'BBS',
-					url: '',
+					url: '/bbs',
 				},
 				{
 					icon: 'mdi-forum',
 					title: 'Message',
-					url: '',
+					url: '/message',
 				},
 				{
 					icon: 'mdi-information',
-					title: 'info',
+					title: 'Info',
 					url: '',
 				},
 				{
@@ -72,7 +75,7 @@
 				{
 					icon: 'mdi-cogs',
 					title: 'Setting',
-					url: '',
+					url: '/setting',
 				},
 				{
 					icon: 'mdi-logout-variant',
@@ -87,13 +90,13 @@
 		methods: {
 			SidebarMethods (i) {
 				const methodsList = [
-					'',
-					'',
-					'',
-					'',
-					'',
-					'',
-					this.togleSignoutModal
+					'',		// HOME
+					this.reload,		// BBS
+					this.reload,		// Message
+					'',		// Info
+					this.reload,		// Profile
+					this.reload,		// Setting
+					this.togleSignoutModal		// Signout
 				]
 				if (methodsList[i] !== '') {
 					// メソッドが定義されている
@@ -103,6 +106,11 @@
 
 			togleSignoutModal () {
 				this.dialog = !this.dialog
+			},
+
+			reload () {
+				console.log('リロード')
+				Com.reload(this.$router)
 			}
 		}
 	}

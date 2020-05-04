@@ -18,14 +18,34 @@ module.exports = {
         // MPAのための設定
         // それぞれのページ毎にエントリーポイントを設定している
         index: {
-            entry: 'src/main.js',
+            entry: 'src/entry/main.js',
             template: 'public/index.html',
             filename: 'index.html'
         },
         register: {
-            entry: 'src/components/register/register.js',
+            entry: 'src/entry/register.js',
             template: 'public/index.html',
             filename: 'register.html'
+        },
+        bbs: {
+            entry: 'src/entry/bbs.js',
+            template: 'public/index.html',
+            filename: 'bbs.html'
+        },
+        message: {
+            entry: 'src/entry/message.js',
+            template: 'public/index.html',
+            filename: 'message.html'
+        },
+        profile: {
+            entry: 'src/entry/profile.js',
+            template: 'public/index.html',
+            filename: 'profile.html'
+        },
+        setting: {
+            entry: 'src/entry/setting.js',
+            template: 'public/index.html',
+            filename: 'setting.html'
         }
     },
 

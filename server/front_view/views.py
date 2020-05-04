@@ -20,14 +20,14 @@ class SignInView(TemplateView):
 class ProfileView(TemplateView):
     template_name = 'pages/profile.html'
 
-    def get_context_data(self, *arg, **kwargs):
-        logger.info(self.request.user)
-        context = super().get_context_data(*arg, **kwargs)
-        context.update({
-            'mUser': mUser.objects.get(username=self.request.user)
-        })
-
-        return context
+    # def get_context_data(self, *arg, **kwargs):
+    #     logger.info(self.request.user)
+    #     context = super().get_context_data(*arg, **kwargs)
+    #     context.update({
+    #         'mUser': mUser.objects.get(username=self.request.user)
+    #     })
+    #
+    #     return context
 
 class MessageView(TemplateView):
     template_name = 'pages/message.html'
@@ -35,5 +35,5 @@ class MessageView(TemplateView):
 class SettingView(TemplateView):
     template_name = 'pages/setting.html'
 
-class BssView(TemplateView):
-    template_name = 'pages/bss.html'
+class BbsView(TemplateView):
+    template_name = 'pages/bbs.html'
