@@ -4,11 +4,13 @@ import router from './router'
 import store from './store'
 import vuetify from './plugins/vuetify'
 import VueSession from 'vue-session'
+import eventHub from './plugins/eventHub'
 require('@/static/scss/main.scss')
 
 Vue.config.productionTip = false
 
 Vue.use(VueSession)
+Vue.use(eventHub)
 
 // TODO:あとで以下のstoreを使って認証管理を行う
 // window.state = store.state

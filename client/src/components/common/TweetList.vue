@@ -42,12 +42,20 @@
 	export default {
 		name: 'TweetList',
 		data: () => ({
-			tweetList: {}
+			tweetList: {'a':'a'}
 		}),
+		created () {
+			this.$eventHub.$on('tweetData', this.tweetUpdate)
+		},
+		methods: {
+			tweetUpdate (res) {
+				console.log('tweet更新')
+				this.tweetList = res.data
+			}
+		},
 		mounted: function () {
 			axios.get('http://192.168.33.12:8000/api/tweet/')
 			.then(res => {
-				console.log(res)
 				for (var i in res.data) {
 					var updatedAt = res.data[i].updated_at.substr(0, 10)
 					res.data[i].updated_at = updatedAt
