@@ -95,7 +95,6 @@ export default {
     signupView (currentNo, credentials) {
       this.signupCnt = currentNo
       this.credentials = credentials
-      console.log(this.credentials)
     }
   }
 }

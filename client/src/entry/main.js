@@ -1,8 +1,8 @@
 import Vue from 'vue'
-import Index from './Index.vue'
-import router from './router'
-import store from './store'
-import vuetify from './plugins/vuetify'
+import Index from '@/components/pages/Index.vue'
+import router from '@/router'
+import store from '@/store'
+import vuetify from '@/plugins/vuetify'
 import VueSession from 'vue-session'
 import eventHub from './plugins/eventHub'
 require('@/static/scss/main.scss')
