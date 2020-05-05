@@ -42,7 +42,7 @@
 	export default {
 		name: 'TweetList',
 		data: () => ({
-			tweetList: {'a':'a'}
+			tweetList: {}
 		}),
 		created () {
 			this.$eventHub.$on('tweetData', this.tweetUpdate)
