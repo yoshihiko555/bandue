@@ -45,7 +45,6 @@
 				maxlength='70'
 				label='Password'
 				required
-				clearable
 				tabindex='3'
 				@click:append='showPassword = !showPassword'
 			></v-text-field>

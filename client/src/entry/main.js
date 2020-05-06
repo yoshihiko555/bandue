@@ -4,7 +4,7 @@ import router from '@/router'
 import store from '@/store'
 import vuetify from '@/plugins/vuetify'
 import VueSession from 'vue-session'
-import eventHub from './plugins/eventHub'
+import eventHub from '@/plugins/eventHub'
 require('@/static/scss/main.scss')
 
 Vue.config.productionTip = false

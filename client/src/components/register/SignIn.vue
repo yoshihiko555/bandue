@@ -28,7 +28,6 @@
 				maxlength='70'
 				label='Password'
 				required
-				clearable
 				tabindex='2'
 				@click:append='showPassword = !showPassword'
 			></v-text-field>
@@ -94,9 +93,9 @@
 				.then(res => {
 					this.$session.start()
 					this.$session.set('token', res.data.token)
+					this.$session.set('username', JSON.parse(res.config.data).username)
 					this.$router.push('/')
 					Com.reload(this.$router)
-					console.log(res)
 				})
 				.catch(e => {
 					console.log(e)

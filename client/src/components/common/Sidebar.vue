@@ -84,18 +84,24 @@
 				}
 			],
 
-			dialog: false
+			dialog: false,
+			username: ''
 		}),
+
+		mounted: function () {
+			this.username = this.$session.get('username')
+			console.log(this.username)
+		},
 
 		methods: {
 			SidebarMethods (i) {
 				const methodsList = [
-					'',		// HOME
-					this.reload,		// BBS
-					this.reload,		// Message
-					'',		// Info
-					this.reload,		// Profile
-					this.reload,		// Setting
+					'',							// HOME
+					this.reload,				// BBS
+					this.reload,				// Message
+					'',							// Info
+					this.reload,				// Profile
+					this.reload,				// Setting
 					this.togleSignoutModal		// Signout
 				]
 				if (methodsList[i] !== '') {

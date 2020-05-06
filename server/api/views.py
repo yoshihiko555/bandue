@@ -89,6 +89,7 @@ class TweetDetailView(generics.RetrieveUpdateDestroyAPIView):
 class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = mUser.objects.all()
     serializer_class = ProfileSerializer
+    lookup_field = 'username'
 
 class mUserViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = (permissions.AllowAny,)

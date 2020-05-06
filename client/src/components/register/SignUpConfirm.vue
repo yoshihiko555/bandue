@@ -72,6 +72,7 @@ export default {
               console.log(res)
               this.$session.start()
               this.$session.set('token', res.data.token)
+			  this.$session.set('username', JSON.parse(res.config.data).username)
               this.$emit('signup-change-view', Con.SIGNUP_DONE_VIEW)
             })
             .catch(e => {
