@@ -63,7 +63,8 @@
 					}
 				})
 				.then(res => {
-					console.log(res)
+					console.log(res.data)
+					this.$eventHub.$emit('tweetData', res)
 				})
 				.catch(e => {
 					console.log(e)

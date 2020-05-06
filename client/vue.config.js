@@ -6,6 +6,23 @@ module.exports = {
         'vuetify'
     ],
 
+<<<<<<< HEAD
+  // publicPathはdjango-webpack-loaderがパスをbundleにリダイレクトしたときに
+  // http://192.168.33.12:8080/http://192.168.33.12:8080みたいに意味不明なURLを生み出さないための回避策
+  publicPath: 'http://192.168.33.12:8080',
+    // ビルド先のディレクトリの設定
+    outputDir: './bundles/',
+    assetsDir: 'static',
+    
+  pages: {
+
+    // MPAのための設定
+    // それぞれのページ毎にエントリーポイントを設定している
+    index: {
+      entry: 'src/main.js',
+      template: 'public/index.html',
+      filename: 'index.html'
+=======
     // publicPathはdjango-webpack-loaderがパスをbundleにリダイレクトしたときに
     // http://192.168.33.12:8080/http://192.168.33.12:8080みたいに意味不明なURLを生み出さないための回避策
     publicPath: 'http://192.168.33.12:8080',
@@ -47,6 +64,7 @@ module.exports = {
             template: 'public/index.html',
             filename: 'setting.html'
         }
+>>>>>>> origin/develop
     },
 
     css: {
