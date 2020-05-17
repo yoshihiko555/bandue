@@ -1,14 +1,14 @@
 <template>
-	<div>
-		<div v-for='tweet in tweetList' :key='tweet.author'>
-			<v-card
-				flat
-				class='tweet_wrap'
-			>
-				<v-card-title>
-					{{ tweet.author }}
-					<span class='ml-8' style="font-size:50%;">{{ tweet.updated_at }}</span>
-				</v-card-title>
+	<v-container fluid>
+		<v-row>
+			<v-col cols='12'>
+				<div v-for='tweet in tweetList' :key='tweet.author'>
+					<v-card
+					>
+						<v-card-title>
+							<router-link @click.native="reload()" :to="{ name : 'Profile', params : { username: tweet.author}}">{{ tweet.author }}</router-link>
+							<span class='ml-8' style="font-size:50%;">{{ tweet.updated_at }}</span>
+						</v-card-title>
 
 				<v-card-text>
 					{{ tweet.content }}
@@ -36,25 +36,34 @@
 
 <script>
 	import axios from 'axios'
-
+	import { Common } from '@/static/js/common'
+	const Com = new Common()
 	export default {
 		name: 'TweetList',
 		data: () => ({
 			tweetList: {}
 		}),
 		created () {
-			this.$eventHub.$on('tweetData', this.tweetUpdate)
+			this.$eventHub.$on('create-tweet', this.tweetUpdate)
 		},
 		methods: {
 			tweetUpdate (res) {
 				console.log('tweet更新')
 				this.tweetList = res.data
+			},
+			showProfile (username) {
+				this.reload()
+			},
+			reload() {
+				Com.reload(this.$router)
 			}
 		},
 		mounted: function () {
 			axios.get('http://192.168.33.12:8000/api/tweet/', {
 				params: {}
 			})
+			console.log(this.$el)
+
 			.then(res => {
 				for (var i in res.data) {
 					var updatedAt = res.data[i].updated_at.substr(0, 10)
@@ -69,3 +78,9 @@
 		}
 	}
 </script>
+
+<style>
+.tweet_author {
+	cursor: pointer;
+}
+</style>
