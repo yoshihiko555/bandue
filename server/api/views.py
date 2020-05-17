@@ -59,7 +59,9 @@ from .permissions import IsMyselfOrReadOnly
 
 logger = logging.getLogger(__name__)
 
+
 class IndexView(generic.TemplateView):
+
     template_name = 'pages/index.html'
 
 class TweetListView(generics.ListCreateAPIView):
@@ -83,33 +85,74 @@ class TweetListView(generics.ListCreateAPIView):
 
 
 class TweetDetailView(generics.RetrieveUpdateDestroyAPIView):
+
     queryset = Tweet.objects.all()
     serializer_class = TweetSerializer
 
+
 class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
+
     queryset = mUser.objects.all()
     serializer_class = ProfileSerializer
     lookup_field = 'username'
 
+
 class mUserViewSet(viewsets.ReadOnlyModelViewSet):
+
     permission_classes = (permissions.AllowAny,)
     queryset = mUser.objects.all()
     serializer_class = MUserSerializer
 
     @action(methods=['post'], detail=False)
+    def isFollow(self, request):
+        login_user = request.user
+        target_user = request.data['target_user']
+        isFollow = 0
+        for followed_user in login_user.followees.all():
+            if followed_user.username == target_user:
+                isFollow = 1
+                break
+        return Response({'status': 'success', 'isFollow': isFollow}, status=status.HTTP_200_OK)
+
+    @action(methods=['post'], detail=False)
     def follow(self, request):
-        logger.debug('followきたーーーーーーーーーーーーー')
-        return Response({'data': ['SUCCESS']}, status=status.HTTP_201_CREATED)
+        logger.debug(str(request.user) + 'が' + request.data['target_user'] + 'をフォロー')
+
+        login_user = request.user
+        followed_username = request.data['target_user']
+        followed_user = mUser.objects.get(username=followed_username)
+        login_user.followees.add(followed_user)
+        logger.debug('成功')
+        logger.debug(login_user.followees.all())
+        return Response({'status': 'success', 'isFollow': 1}, status=status.HTTP_200_OK)
+
+    @action(methods=['post'], detail=False)
+    def unfollow(self, request):
+        logger.debug(str(request.user) + 'が' + request.data['target_user'] + 'をアンフォロー')
+
+        login_user = request.user
+        unfollowed_username = request.data['target_user']
+        unfollowed_user = mUser.objects.get(username=unfollowed_username)
+        login_user.followees.remove(unfollowed_user)
+        logger.debug('成功')
+        logger.debug(login_user.followees.all())
+        return Response({'status': 'success', 'isFollow': 0}, status=status.HTTP_200_OK)
+
 
 class BbsListView(generics.ListCreateAPIView):
+
     queryset = Entry.objects.all()
     serializer_class = EntrySerializer
+
 
 class BbsDetailView(generics.RetrieveUpdateDestroyAPIView):
+
     queryset = Entry.objects.all()
     serializer_class = EntrySerializer
 
+
 class SignUpView(generics.CreateAPIView):
+
     permission_classes = (permissions.AllowAny,)
     queryset = mUser.objects.all()
     serializer_class = MUserSerializer
@@ -124,10 +167,12 @@ class SignUpView(generics.CreateAPIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 # ユーザー削除のView
 # サインアウトを実装してるときに間違って作った
 # 後で使うだろうから残しておく
 class DeleteUserView(generics.DestroyAPIView):
+
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = MUserSerializer
     lookup_field = 'username'

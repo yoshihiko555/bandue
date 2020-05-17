@@ -14,6 +14,9 @@
 						>
 							<v-card-text>
 								{{ profileData.username }}
+								<span v-if='!isMe'>
+									<follow :username="username"></follow>
+								</span>
 							</v-card-text>
 							<v-card-text>
 								{{ profileData.introduction }}
@@ -53,6 +56,7 @@
 	import Footer from '@/components/common/Footer'
 	import Sidebar from '@/components/common/Sidebar'
 	import Search from '@/components/common/Search'
+	import Follow from '@/components/common/Follow'
 
 	export default {
 		name: 'Profile',
@@ -60,23 +64,29 @@
 			Header,
 			Footer,
 			Sidebar,
-			Search
+			Search,
+			Follow
 		},
 		data: () => ({
-			profileData: {}
+			profileData: {},
+			username: '',
+			isMe: false
 		}),
+		created () {
+			const currentPath = this.$route.path
+			const pattern = /\/profile\/(.+?)\/.*/
+			const result = currentPath.match(pattern)
+			this.username = result[1]
+			const loginUser = this.$session.get('username')
+			if (loginUser === this.username) {
+				this.isMe = true
+			}
+		},
 		mounted: function () {
 			const token = this.$session.get('token')
-			const username = this.$session.get('username')
-			axios.get('http://192.168.33.12:8000/api/profile/' + username , {
-				headers: {
-					'Content-Type': 'application/json',
-					Authorization: `Bearer ${token}`
-				}
-			})
+			axios.get('http://192.168.33.12:8000/api/profile/' + this.username)
 			.then(res => {
 				res.data.created_at = res.data.created_at.substr(0, 10)
-
 				this.profileData = res.data
 				console.log(res)
 			})

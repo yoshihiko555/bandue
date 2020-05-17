@@ -6,7 +6,7 @@
 					<v-card
 					>
 						<v-card-title>
-							{{ tweet.author }}
+							<router-link @click.native="reload()" :to="{ name : 'Profile', params : { username: tweet.author}}">{{ tweet.author }}</router-link>
 							<span class='ml-8' style="font-size:50%;">{{ tweet.updated_at }}</span>
 						</v-card-title>
 
@@ -38,22 +38,31 @@
 
 <script>
 	import axios from 'axios'
-
+	import { Common } from '@/static/js/common'
+	const Com = new Common()
 	export default {
 		name: 'TweetList',
 		data: () => ({
 			tweetList: {}
 		}),
 		created () {
-			this.$eventHub.$on('tweetData', this.tweetUpdate)
+			this.$eventHub.$on('create-tweet', this.tweetUpdate)
 		},
 		methods: {
 			tweetUpdate (res) {
 				console.log('tweet更新')
 				this.tweetList = res.data
+			},
+			showProfile (username) {
+				this.reload()
+			},
+			reload() {
+				Com.reload(this.$router)
 			}
 		},
 		mounted: function () {
+			console.log(this.$el)
+
 			axios.get('http://192.168.33.12:8000/api/tweet/')
 			.then(res => {
 				for (var i in res.data) {
@@ -69,3 +78,9 @@
 		}
 	}
 </script>
+
+<style>
+.tweet_author {
+	cursor: pointer;
+}
+</style>
