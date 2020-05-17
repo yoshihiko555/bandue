@@ -21,22 +21,86 @@
 							<v-card-text>
 								{{ profileData.created_at }}
 							</v-card-text>
-							<v-card-text>
-								{{ profileData.followees_count }} Following
-								{{ profileData.followers_count }} Followers
-							</v-card-text>
 
-							<v-tabs
-								grow
-								class='tab_wrap'
-							>
-								<v-tab href='#tab-1'>Tweets</v-tab>
-								<v-tab href='#tab-2'>Tweets & replies</v-tab>
-								<v-tab href='#tab-3'>Media</v-tab>
-								<v-tab href='#tab-4'>Likes</v-tab>
-							</v-tabs>
+							<div v-if='view == 0'>
+								<v-card-text>
+									<v-btn
+										text
+										@click='changeView(1)'
+									>
+										{{ profileData.followees_count }} Following
+									</v-btn>
 
-							<TweetList/>
+									<v-btn
+										text
+										@click='changeView(2)'
+									>
+										{{ profileData.followers_count }} Followers
+									</v-btn>
+								</v-card-text>
+
+								<v-tabs
+									grow
+									class='tweetlist_tab_wrap'
+								>
+									<v-tab>Tweets</v-tab>
+									<v-tab>Tweets & replies</v-tab>
+									<v-tab>Media</v-tab>
+									<v-tab>Likes</v-tab>
+								</v-tabs>
+
+								<TweetList/>
+							</div>
+
+							<div v-else>
+								<!-- 戻るボタン -->
+								<v-btn icon color='indigo' @click='changeView(0)'>
+									<v-icon>mdi-arrow-left-thick</v-icon>
+								</v-btn>
+
+								<!-- タブSTART -->
+								<v-tabs
+									v-model='followeesTabModel'
+									grow
+									class='followeeslist_tab_wrap'
+								>
+									<v-tab href='#1'>Following {{ profileData.followees_count }}</v-tab>
+									<v-tab href='#2'>Follower {{ profileData.followers_count }}</v-tab>
+								</v-tabs>
+
+								<v-tabs-items v-model='followeesTabModel'>
+									<v-tab-item value="1">
+										<!-- フォロー一覧 -->
+										<div v-if='profileData.followees_count == 0'>
+											フォローがいない
+										</div>
+
+										<div v-else v-for='follow in profileData.followees' :key=follow.username>
+											<v-card
+												flat
+												class='followees_wrap'
+											>
+											<v-card-title>{{ follow.username }}</v-card-title>
+											</v-card>
+										</div>
+									</v-tab-item>
+
+									<v-tab-item value="2">
+										<!-- フォロワー一覧 -->
+										<div v-if='profileData.followers_count == 0'>
+											フォロワーがいない
+										</div>
+										<div v-else v-for='follower in profileData.followers' :key=follower.username>
+											<v-card
+												flat
+												class='followees_wrap'
+											>
+												<v-card-title>{{ follower.username }}</v-card-title>
+											</v-card>
+										</div>
+									</v-tab-item>
+								</v-tabs-items>
+							</div>
 
 						</v-card>
 					</v-col>
@@ -69,7 +133,9 @@
 			TweetList
 		},
 		data: () => ({
-			profileData: {}
+			view: 0,
+			profileData: {},
+			followeesTabModel: 1
 		}),
 		mounted: function () {
 			const token = this.$session.get('token')
@@ -89,16 +155,33 @@
 			.catch(e => {
 				console.log(e)
 			})
+		},
+
+		methods: {
+			changeView (cnt) {
+				console.log(cnt)
+				this.followeesTabModel = cnt
+				this.view = cnt
+			}
 		}
 	}
 </script>
 
 <style lang='scss'>
-	.tab_wrap {
+	.tweetlist_tab_wrap {
 		border-bottom: solid 1px #ccc !important;
 	}
 
 	.tweet_wrap {
+		border-radius: 0 !important;
+		border-bottom: solid 1px #ccc !important;
+	}
+
+	.followeeslist_tab_wrap {
+		border-bottom: solid 1px #ccc !important;
+	}
+
+	.followees_wrap {
 		border-radius: 0 !important;
 		border-bottom: solid 1px #ccc !important;
 	}

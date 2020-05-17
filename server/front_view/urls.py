@@ -11,5 +11,5 @@ urlpatterns = [
     path('message/', views.MessageView.as_view(), name='message'),
     path('setting/', views.SettingView.as_view(), name='setting'),
     path('bbs/', views.BbsView.as_view(), name='bbs'),
-    path('/<str:username>/', views.ProfileView.as_view(), name='profile'),
+    path('<slug:username>/', views.ProfileView.as_view(), name='profile'),
 ]

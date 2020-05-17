@@ -25,6 +25,7 @@ class SignInView(TemplateView):
 
 class ProfileView(TemplateView):
     template_name = 'pages/profile.html'
+    lookup_field = 'username'
 
     # def get_context_data(self, *arg, **kwargs):
     #     logger.info(self.request.user)
