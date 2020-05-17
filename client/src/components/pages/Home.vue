@@ -1,7 +1,7 @@
 <template>
-	<v-app id="main" v-if='!lodding'>
+	<v-app v-if='!lodding'>
 		<Header/>
-		<div v-if='!lodding'>
+		<div id="home" class='main' v-if='!lodding'>
 			<div v-if='isAuth'>
 				<v-container fluid>
 					<v-row>

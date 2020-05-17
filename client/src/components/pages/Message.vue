@@ -1,7 +1,9 @@
 <template>
 	<v-app>
 		<Header/>
-		Message
+		<div id="message" class="main">
+			Message
+		</div>
 		<Footer/>
 	</v-app>
 </template>

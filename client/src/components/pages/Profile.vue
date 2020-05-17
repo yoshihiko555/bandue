@@ -1,5 +1,5 @@
 <template>
-	<v-app id='profile'>
+	<v-app id='profile' class="main">
 		<Header/>
 		<div>
 			<v-container fluid>
@@ -143,7 +143,6 @@
 			followeesTabModel: 1,
 			username: '',
 			isMe: false
-		},
 		}),
 		created () {
 			const currentPath = this.$route.path

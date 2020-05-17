@@ -1,7 +1,9 @@
 <template>
 	<v-app>
 		<Header/>
-		Bbs
+		<div id='bbs' class="main">
+			BBS
+		</div>
 		<Footer/>
 	</v-app>
 </template>
@@ -12,6 +14,10 @@
 
 	export default {
 		name: 'Bbs',
+		components: {
+			Header,
+			Footer
+		},
 		data: () => ({
 		}),
 		mounted: function () {

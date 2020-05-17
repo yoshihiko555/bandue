@@ -73,7 +73,7 @@
 				{
 					icon: 'mdi-account',
 					title: 'Profile',
-					url: '/',
+					url: '/profile/',
 				},
 				{
 					icon: 'mdi-cogs',

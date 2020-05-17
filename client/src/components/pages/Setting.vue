@@ -1,7 +1,9 @@
 <template>
 	<v-app>
 		<Header/>
-		Setting
+		<div id="setting" class="main">
+			Setting
+		</div>
 		<Footer/>
 	</v-app>
 </template>
