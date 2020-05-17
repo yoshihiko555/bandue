@@ -28,12 +28,16 @@
 
 							<v-tabs
 								grow
+								class='tab_wrap'
 							>
-								<v-tab>Tweets</v-tab>
-								<v-tab>Tweets & replies</v-tab>
-								<v-tab>Media</v-tab>
-								<v-tab>Likes</v-tab>
+								<v-tab href='#tab-1'>Tweets</v-tab>
+								<v-tab href='#tab-2'>Tweets & replies</v-tab>
+								<v-tab href='#tab-3'>Media</v-tab>
+								<v-tab href='#tab-4'>Likes</v-tab>
 							</v-tabs>
+
+							<TweetList/>
+
 						</v-card>
 					</v-col>
 
@@ -53,6 +57,7 @@
 	import Footer from '@/components/common/Footer'
 	import Sidebar from '@/components/common/Sidebar'
 	import Search from '@/components/common/Search'
+	import TweetList from '@/components/common/TweetList'
 
 	export default {
 		name: 'Profile',
@@ -60,7 +65,8 @@
 			Header,
 			Footer,
 			Sidebar,
-			Search
+			Search,
+			TweetList
 		},
 		data: () => ({
 			profileData: {}
@@ -86,3 +92,14 @@
 		}
 	}
 </script>
+
+<style lang='scss'>
+	.tab_wrap {
+		border-bottom: solid 1px #ccc !important;
+	}
+
+	.tweet_wrap {
+		border-radius: 0 !important;
+		border-bottom: solid 1px #ccc !important;
+	}
+</style>

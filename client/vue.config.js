@@ -17,10 +17,20 @@ module.exports = {
     pages: {
         // MPAのための設定
         // それぞれのページ毎にエントリーポイントを設定している
-        index: {
+        isAuth: {
+            entry: 'src/entry/isAuth.js',
+            template: 'public/index.html',
+            filename: 'isAuth.html'
+        },
+        home: {
             entry: 'src/entry/main.js',
             template: 'public/index.html',
-            filename: 'index.html'
+            filename: 'home.html'
+        },
+        explore: {
+            entry: 'src/entry/explore.js',
+            template: 'public/index.html',
+            filename: 'explore.html'
         },
         register: {
             entry: 'src/entry/register.js',

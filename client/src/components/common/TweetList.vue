@@ -1,39 +1,37 @@
 <template>
-	<v-container fluid>
-		<v-row>
-			<v-col cols='12'>
-				<div v-for='tweet in tweetList' :key='tweet.author'>
-					<v-card
-					>
-						<v-card-title>
-							{{ tweet.author }}
-							<span class='ml-8' style="font-size:50%;">{{ tweet.updated_at }}</span>
-						</v-card-title>
+	<div>
+		<div v-for='tweet in tweetList' :key='tweet.author'>
+			<v-card
+				flat
+				class='tweet_wrap'
+			>
+				<v-card-title>
+					{{ tweet.author }}
+					<span class='ml-8' style="font-size:50%;">{{ tweet.updated_at }}</span>
+				</v-card-title>
 
-						<v-card-text>
-							{{ tweet.content }}
-						</v-card-text>
+				<v-card-text>
+					{{ tweet.content }}
+				</v-card-text>
 
-						<v-card-actions>
-							<v-list-item>
-								<v-list-item-content v-for='tag in tweet.hashTag' :key='tag.title'>
-									<v-list-item-title>{{ tag.title }}</v-list-item-title>
-								</v-list-item-content>
+				<v-card-actions>
+					<v-list-item>
+						<v-list-item-content v-for='tag in tweet.hashTag' :key='tag.title'>
+							<v-list-item-title>{{ tag.title }}</v-list-item-title>
+						</v-list-item-content>
 
-								<v-row
-									align='center'
-									justify='end'
-								>
-									<v-icon class='mr-1' color='red lighten-1'>mdi-heart</v-icon>
-									<span class='mr-2'>{{ tweet.liked }}</span>
-								</v-row>
-							</v-list-item>
-						</v-card-actions>
-					</v-card>
-				</div>
-			</v-col>
-		</v-row>
-	</v-container>
+						<v-row
+							align='center'
+							justify='end'
+						>
+							<v-icon class='mr-1' color='red lighten-1'>mdi-heart</v-icon>
+							<span class='mr-2'>{{ tweet.liked }}</span>
+						</v-row>
+					</v-list-item>
+				</v-card-actions>
+			</v-card>
+		</div>
+	</div>
 </template>
 
 <script>
@@ -54,7 +52,9 @@
 			}
 		},
 		mounted: function () {
-			axios.get('http://192.168.33.12:8000/api/tweet/')
+			axios.get('http://192.168.33.12:8000/api/tweet/', {
+				params: {}
+			})
 			.then(res => {
 				for (var i in res.data) {
 					var updatedAt = res.data[i].updated_at.substr(0, 10)

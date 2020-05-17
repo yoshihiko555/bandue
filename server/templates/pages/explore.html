@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+
+{% block title %}Bandue{% endblock %}
+
+{% block content %}
+<div id="explore">
+	<explore>
+	</explore>
+</div>
+{% render_bundle 'explore' %}
+{% endblock %}

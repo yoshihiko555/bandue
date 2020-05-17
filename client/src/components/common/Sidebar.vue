@@ -36,6 +36,7 @@
 <script>
 	import SignOut from '@/components/register/SignOut'
 	import { Common } from '@/static/js/common'
+	import router from '@/router'
 
 	const Com = new Common()
 
@@ -46,11 +47,13 @@
 		},
 		data: () => ({
 			sidebarItem: 7,
+			dialog: false,
+			username: '',
 			items: [
 				{
 					icon: 'mdi-home',
 					title: 'Home',
-					url: '',
+					url: '/home',
 				},
 				{
 					icon: 'mdi-file-document-edit',
@@ -70,7 +73,7 @@
 				{
 					icon: 'mdi-account',
 					title: 'Profile',
-					url: '/profile',
+					url: '/',
 				},
 				{
 					icon: 'mdi-cogs',
@@ -82,25 +85,21 @@
 					title: 'Signout',
 					url: '',
 				}
-			],
-
-			dialog: false,
-			username: ''
+			]
 		}),
 
 		mounted: function () {
 			this.username = this.$session.get('username')
-			console.log(this.username)
 		},
 
 		methods: {
 			SidebarMethods (i) {
 				const methodsList = [
-					'',							// HOME
+					this.reload,				// HOME
 					this.reload,				// BBS
 					this.reload,				// Message
 					'',							// Info
-					this.reload,				// Profile
+					this.toProfile,				// Profile
 					this.reload,				// Setting
 					this.togleSignoutModal		// Signout
 				]
@@ -114,8 +113,12 @@
 				this.dialog = !this.dialog
 			},
 
+			toProfile () {
+				router.push(this.username)
+				Com.reload(this.$router)
+			},
+
 			reload () {
-				console.log('リロード')
 				Com.reload(this.$router)
 			}
 		}

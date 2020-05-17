@@ -20,18 +20,6 @@
 					</v-row>
 				</v-container>
 			</div>
-
-			<div v-if='!isAuth'>
-				<p>ログインして</p>
-				<v-btn
-					to='/signup'
-					@click='reload'
-				>SignUp</v-btn>
-				<v-btn
-					to='/signin'
-					@click='reload'
-				>SignIn</v-btn>
-			</div>
 		</div>
 
 		<div v-if='lodding'>

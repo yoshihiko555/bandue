@@ -8,8 +8,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class IndexView(TemplateView):
-    template_name = 'pages/index.html'
+class IsAuthView(TemplateView):
+    template_name = 'pages/isAuth.html'
+
+class HomeView(TemplateView):
+    template_name = 'pages/home.html'
+
+class ExploreView(TemplateView):
+    template_name = 'pages/explore.html'
 
 class SignUpView(TemplateView):
     template_name = 'register/signup.html'

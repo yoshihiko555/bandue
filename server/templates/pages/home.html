@@ -2,14 +2,14 @@
 {% load static %}
 {% load render_bundle from webpack_loader %}
 
-{% block title %}TOP{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block content %}
-<div id="app">
-	<index
+<div id="home">
+	<home
 		:is-auth='isAuth'
 		:lodding='lodding'
-	></index>
+	></home>
 </div>
-{% render_bundle 'index' %}
+{% render_bundle 'home' %}
 {% endblock %}
