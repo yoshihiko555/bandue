@@ -1,7 +1,7 @@
 <template>
-	<v-app v-if='!lodding'>
+	<v-app>
 		<Header/>
-		<div id="home" class='main' v-if='!lodding'>
+		<div id="home" class='main' v-show='!lodding'>
 			<div v-if='isAuth'>
 				<v-container fluid>
 					<v-row>
@@ -11,7 +11,9 @@
 
 						<v-col cols='6'>
 							<Tweet/>
-							<TweetList/>
+							<TweetList
+								:tweet-list-flg=5
+							></TweetList>
 						</v-col>
 
 						<v-col cols='3'>
@@ -22,7 +24,7 @@
 			</div>
 		</div>
 
-		<div v-if='lodding'>
+		<div v-show='lodding'>
 			<img src="@/static/img/lodding.gif" alt="">
 		</div>
 		<Footer/>

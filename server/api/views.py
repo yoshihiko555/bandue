@@ -70,6 +70,13 @@ class TweetListView(generics.ListCreateAPIView):
     queryset = Tweet.objects.all()
     serializer_class = TweetSerializer
 
+    # def get(self, request, *args, **kwargs):
+    #     queryset = self.get_queryset()
+    #     logger.info(request.GET.get('tweetListFlg'))
+    #
+    #     return Response(queryset, status=status.HTTP_200_OK)
+
+
     def post(self, request, *args, **kwargs):
         request.data.update({
             'author_pk': str(request.user.pk)

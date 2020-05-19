@@ -40,28 +40,23 @@
 	const Com = new Common()
 	export default {
 		name: 'TweetList',
+		props: {
+			tweetListFlg: {
+				type: Number,
+				required: true
+			}
+		},
 		data: () => ({
-			tweetList: {}
+			tweetList: {},
 		}),
 		created () {
 			this.$eventHub.$on('create-tweet', this.tweetUpdate)
 		},
-		methods: {
-			tweetUpdate (res) {
-				console.log('tweet更新')
-				this.tweetList = res.data
-			},
-			showProfile (username) {
-				this.reload()
-			},
-			reload() {
-				Com.reload(this.$router)
-			}
-		},
 		mounted: function () {
 			console.log(this.$el)
+			console.log('ツイートリストフラグ:', this.tweetListFlg)
 			axios.get('http://192.168.33.12:8000/api/tweet/', {
-				params: {}
+				params: {tweetListFlg: this.tweetListFlg}
 			})
 			.then(res => {
 				for (var i in res.data) {
@@ -74,6 +69,18 @@
 			.catch(e => {
 				console.log(e)
 			})
+		},
+		methods: {
+			tweetUpdate (res) {
+				console.log('tweet更新')
+				this.tweetList = res.data
+			},
+			showProfile (username) {
+				this.reload()
+			},
+			reload() {
+				Com.reload(this.$router)
+			}
 		}
 	}
 </script>

@@ -1,7 +1,7 @@
 <template>
-	<v-app id='profile' class="main">
+	<v-app>
 		<Header/>
-		<div>
+		<div  id='profile' class="main">
 			<v-container fluid>
 				<v-row>
 					<v-col cols='3'>
@@ -43,16 +43,31 @@
 								</v-card-text>
 
 								<v-tabs
+									v-model='tweetTabModel'
 									grow
 									class='tweetlist_tab_wrap'
 								>
-									<v-tab>Tweets</v-tab>
-									<v-tab>Tweets & replies</v-tab>
-									<v-tab>Media</v-tab>
-									<v-tab>Likes</v-tab>
+									<v-tab
+										v-for='(tab, i) in TweetTablist'
+										:key='i'
+										:href='`#tab-${i}`'
+									>
+										{{ tab }}
+									</v-tab>
 								</v-tabs>
 
-								<TweetList/>
+								<v-tabs-items v-model='tweetTabModel'>
+									<v-tab-item
+										v-for='(tab, i) in TweetTablist'
+										:key='i'
+										:value="'tab-' + i"
+									>
+										<TweetList
+											:tweet-list-flg=i
+										></TweetList>
+									</v-tab-item>
+								</v-tabs-items>
+
 							</div>
 
 							<div v-else>
@@ -142,7 +157,14 @@
 			view: 0,
 			followeesTabModel: 1,
 			username: '',
-			isMe: false
+			isMe: false,
+			tweetTabModel: null,
+			TweetTablist: [
+				'Tweets',
+				'Tweets & replies',
+				'Media',
+				'Likes'
+			]
 		}),
 		created () {
 			const currentPath = this.$route.path
