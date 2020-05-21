@@ -24,7 +24,7 @@
             // フォローしてるか確認して返り値でisNotFollowを切り替え
             // isNotFollow = true ... フォローしてない。「フォロー」
             // isNotFollow = false ... 既にフォローしてる。「フォローを外す」
-            
+
             console.log('Profileから渡されてる?')
             console.log(this.username)
             var JWTToken = this.$session.get('token')

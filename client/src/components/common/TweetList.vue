@@ -44,6 +44,10 @@
 			tweetListFlg: {
 				type: Number,
 				required: true
+			},
+			username: {
+				type: String,
+				required: true
 			}
 		},
 		data: () => ({
@@ -55,8 +59,12 @@
 		mounted: function () {
 			console.log(this.$el)
 			console.log('ツイートリストフラグ:', this.tweetListFlg)
+			console.log('ユーザーネーム:', this.username)
 			axios.get('http://192.168.33.12:8000/api/tweet/', {
-				params: {tweetListFlg: this.tweetListFlg}
+				params: {
+					tweetListFlg: this.tweetListFlg,
+					username: this.username
+				}
 			})
 			.then(res => {
 				for (var i in res.data) {

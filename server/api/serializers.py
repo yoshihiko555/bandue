@@ -172,6 +172,7 @@ class MUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = mUser
         fields = [
+            'pk',
             'username',
             'email',
             'password',

@@ -56,6 +56,7 @@ from .models import (
     Entry
 )
 from .permissions import IsMyselfOrReadOnly
+from django_filters import rest_framework as django_filter
 
 logger = logging.getLogger(__name__)
 
@@ -64,20 +65,100 @@ class IndexView(generic.TemplateView):
 
     template_name = 'pages/index.html'
 
+
+class TweetFilter(django_filter.FilterSet):
+
+    def __init__(self, *args, **kwargs):
+        logger.debug('tweetfilterのinit')
+        logger.debug(kwargs)
+        self.username = kwargs['data']['username'] if 'username' in kwargs['data'] else None
+        super().__init__(*args, **kwargs)
+
+    tweetListFlg = django_filter.NumberFilter(method='tweet_filter')
+    content = django_filter.CharFilter(lookup_expr='contains')
+    deleted = django_filter.BooleanFilter(field_name='deleted', method='deleted_filter')
+
+    class Meta:
+        model = Tweet
+        fields = ['deleted']
+
+    def tweet_filter(self, queryset, name, value):
+        logger.debug('====TWEET_FILTER====')
+        res = queryset
+        if self.username != None:
+            login_user = mUser.objects.get(username=self.username)
+            logger.debug(login_user)
+            if value == 0:
+                # TODO リプライツイートは除く
+                logger.debug('リプライツイート除いた一覧')
+                res = Tweet.objects.filter(author=login_user)
+            elif value == 1:
+                # TODO リプライツイートも含める
+                logger.debug('リプライツイート含めた一覧')
+                res = Tweet.objects.filter(author=login_user)
+            elif value == 2:
+                # TODO 画像含める?
+                logger.debug('画像含めた一覧')
+                res = Tweet.objects.filter(author=login_user)
+            elif value == 3:
+                # TODO いいねしたツイート一覧 model定義変える
+                logger.debug('いいねしたツイート一覧')
+                res = Tweet.objects.filter(author=login_user)
+            elif value == 4:
+                # TODO ユーザー&フォローユーザー
+                logger.debug('ユーザー&フォローユーザーツイート一覧')
+                res = Tweet.objects.filter(author=login_user)
+
+        else:
+            logger.debug('usernameがないから一覧返す')
+
+        logger.debug('--result--')
+        logger.debug(res)
+        return res
+
+    def deleted_filter(self, queryset, name, value):
+        logger.debug('====DELETED_FILTER====')
+        logger.debug(name)
+        logger.debug(value)
+        lookup = '__'.join([name, 'isnull'])
+        res = queryset.filter(**{lookup: value})
+        logger.debug('--result--')
+        logger.debug(res)
+        return res
+
+
+class TweetViewSet(viewsets.ModelViewSet):
+
+    permission_classes = (permissions.AllowAny,)
+    queryset = Tweet.objects.all()
+    serializer_class = TweetSerializer
+    filter_class = TweetFilter
+
+    def create(self, request, *args, **kwargs):
+        logger.debug('viewsetのcreate')
+        logger.debug(request.user)
+        request.data.update({
+            'author_pk': str(request.user.pk)
+        })
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(self.get_serializer(queryset, many=True).data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class TweetListView(generics.ListCreateAPIView):
 
     permission_classes = (permissions.AllowAny,)
     queryset = Tweet.objects.all()
     serializer_class = TweetSerializer
 
-    # def get(self, request, *args, **kwargs):
-    #     queryset = self.get_queryset()
-    #     logger.info(request.GET.get('tweetListFlg'))
-    #
-    #     return Response(queryset, status=status.HTTP_200_OK)
-
-
     def post(self, request, *args, **kwargs):
+        logger.debug('apiのpost')
+        logger.debug(request.user)
         request.data.update({
             'author_pk': str(request.user.pk)
         })

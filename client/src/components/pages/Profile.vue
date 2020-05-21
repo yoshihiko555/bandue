@@ -64,6 +64,7 @@
 									>
 										<TweetList
 											:tweet-list-flg=i
+											:username='username'
 										></TweetList>
 									</v-tab-item>
 								</v-tabs-items>
