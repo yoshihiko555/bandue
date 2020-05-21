@@ -1,6 +1,6 @@
 <template>
 	<v-card
-		class='pa-3'
+		class='pa-3 signin_wrap'
 		outlined
 	>
 		<v-card-title class="text-center">
@@ -30,6 +30,9 @@
 				required
 				tabindex='2'
 				@click:append='showPassword = !showPassword'
+				:class='{icon_hide:isIcon}'
+				@keyup='passAction'
+				ref='pass'
 			></v-text-field>
 
 			<v-col class='text-center' cols='12'>
@@ -71,9 +74,9 @@
 		name: 'signin',
 		data: () => ({
 			valid: true,
-			loading: false,
 			showPassword: false,
 			credentials: {},
+			isIcon: true,
 			rules: {
 				username: [
 					v => !!v || '必須項目です',
@@ -104,6 +107,23 @@
 
 			reload () {
 				Com.reload(this.$router)
+			},
+
+			passAction (e) {
+				var keycode = e.keyCode
+				var len = this.$refs.pass.computedCounterValue
+
+				// Enter
+				if (keycode === 13 && this.valid) {
+					console.log('Enterで送信')
+					this.login()
+				} else {
+					if (len !== 0) {
+						this.isIcon = false
+					} else {
+						this.isIcon = true
+					}
+				}
 			}
 		}
 	}
@@ -116,6 +136,14 @@
 	}
 	.register_card_wrap {
 		height: calc(100vh - #{($header + $footer)});
+
+		.signin_wrap {
+			.icon_hide {
+				.v-icon::before {
+					display: none;
+				}
+			}
+		}
 	}
 	.register_title {
 		font-size: 28px;

@@ -1,7 +1,7 @@
 <template>
 	<v-app>
 		<Header/>
-		<div id="setting" class="main">
+		<div id="setting_wrap" class="main">
 			Setting
 		</div>
 		<Footer/>

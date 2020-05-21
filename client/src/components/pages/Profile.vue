@@ -1,7 +1,7 @@
 <template>
 	<v-app>
 		<Header/>
-		<div  id='profile' class="main">
+		<div  id='profile_wrap' class="main">
 			<v-container fluid>
 				<v-row>
 					<v-col cols='3'>

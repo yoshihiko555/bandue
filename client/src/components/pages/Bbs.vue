@@ -1,7 +1,7 @@
 <template>
 	<v-app>
 		<Header/>
-		<div id='bbs' class="main">
+		<div id='bbs_wrap' class="main">
 			BBS
 		</div>
 		<Footer/>

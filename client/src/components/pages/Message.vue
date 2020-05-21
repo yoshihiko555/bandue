@@ -1,7 +1,7 @@
 <template>
 	<v-app>
 		<Header/>
-		<div id="message" class="main">
+		<div id="message_wrap" class="main">
 			Message
 		</div>
 		<Footer/>

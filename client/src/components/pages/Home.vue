@@ -1,7 +1,7 @@
 <template>
 	<v-app>
 		<Header/>
-		<div id="home" class='main' v-show='!lodding'>
+		<div id="home_wrap" class='main' v-show='!lodding'>
 			<div v-if='isAuth'>
 				<v-container fluid>
 					<v-row>
@@ -12,7 +12,7 @@
 						<v-col cols='6'>
 							<Tweet/>
 							<TweetList
-								:tweet-list-flg=5
+								:tweet-list-flg=4
 							></TweetList>
 						</v-col>
 

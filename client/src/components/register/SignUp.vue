@@ -1,6 +1,6 @@
 <template>
 	<v-card
-		class='pa-3'
+		class='pa-3 signup_wrap'
 		outlined
 	>
 		<v-card-title>
@@ -47,6 +47,9 @@
 				required
 				tabindex='3'
 				@click:append='showPassword = !showPassword'
+				:class='{icon_hide:isIcon}'
+				@keyup='passAction'
+				ref='pass'
 			></v-text-field>
 
 			<v-col class='text-center' cols='12'>
@@ -75,6 +78,7 @@
 			loading: false,
 			credentials: {},
 			showPassword: false,
+			isIcon: true,
 			msg: 'メッセージ',
 			rules: {
 				username: [
@@ -94,11 +98,34 @@
 		methods: {
 			confirm () {
 				this.$emit('signup-change-view', Con.SIGNUP_CONFRIM_VIEW, this.credentials)
+			},
+
+			passAction (e) {
+				var keycode = e.keyCode
+				var len = this.$refs.pass.computedCounterValue
+
+				// Enter
+				if (keycode === 13 && this.valid) {
+					console.log('Enterで送信')
+					this.confirm()
+				} else {
+					if (len !== 0) {
+						this.isIcon = false
+					} else {
+						this.isIcon = true
+					}
+				}
 			}
 		}
 	}
 </script>
 
 <style lang='scss'>
-
+.signup_wrap{
+	.icon_hide {
+		.v-icon::before {
+			display: none;
+		}
+	}
+}
 </style>
