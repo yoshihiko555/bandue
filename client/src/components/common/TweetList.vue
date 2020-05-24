@@ -1,13 +1,13 @@
 <template>
 	<div>
-		<div v-for='tweet in tweetList' :key='tweet.author'>
+		<div v-for='(tweet, index) in tweetList' :key='tweet.author'>
 			<v-card
 				flat
 				class='tweet_wrap'
 			>
 				<v-card-title>
-					<router-link @click.native="reload()" :to="{ name : 'Profile', params : { username: tweet.author}}" class="tweet_author">{{ tweet.author }}</router-link>
-					<span class='ml-8' style="font-size:50%;">{{ tweet.updated_at }}</span>
+					<router-link @click.native='reload()' :to='{ name : "Profile", params : { username: tweet.author}}' class='tweet_author'>{{ tweet.author }}</router-link>
+					<span class='ml-8' style='font-size:50%;'>{{ tweet.updated_at }}</span>
 				</v-card-title>
 
 				<v-card-text>
@@ -24,8 +24,19 @@
 							align='center'
 							justify='end'
 						>
-							<v-icon class='mr-1' color='red lighten-1'>mdi-heart</v-icon>
-							<span class='mr-2'>{{ tweet.liked }}</span>
+							<v-icon v-if='tweet.isLiked === 0'
+							 	class='mr-1 liked'
+								color='red lighten-3'
+								@click='liked(tweet.id, tweet.isLiked, index)'
+								ref='tweet_isLiked'
+							>mdi-heart</v-icon>
+							<v-icon v-else
+							 	class='mr-1 liked'
+								color='red lighten-1'
+								@click='liked(tweet.id, tweet.isLiked, index)'
+								ref='tweet_isLiked'
+							>mdi-heart</v-icon>
+							<span class='mr-2' ref='tweet_isLikedCount'>{{ tweet.liked_count }}</span>
 						</v-row>
 					</v-list-item>
 				</v-card-actions>
@@ -38,32 +49,29 @@
 	import axios from 'axios'
 	import { Common } from '@/static/js/common'
 	const Com = new Common()
+
 	export default {
 		name: 'TweetList',
 		props: {
 			tweetListFlg: {
 				type: Number,
 				required: true
-			},
-			username: {
-				type: String,
-				required: true
 			}
 		},
 		data: () => ({
-			tweetList: {},
+			tweetList: {}
 		}),
 		created () {
 			this.$eventHub.$on('create-tweet', this.tweetUpdate)
 		},
 		mounted: function () {
-			console.log(this.$el)
+			const username = this.$session.get('username')
 			console.log('ツイートリストフラグ:', this.tweetListFlg)
-			console.log('ユーザーネーム:', this.username)
+			console.log('ユーザーネーム:', username)
 			axios.get('http://192.168.33.12:8000/api/tweet/', {
 				params: {
 					tweetListFlg: this.tweetListFlg,
-					username: this.username
+					username: username
 				}
 			})
 			.then(res => {
@@ -86,8 +94,51 @@
 			showProfile (username) {
 				this.reload()
 			},
-			reload() {
+			reload () {
 				Com.reload(this.$router)
+			},
+			liked (tweetId, isLiked, index) {
+				let targetValue = parseInt(this.$refs.tweet_isLikedCount[index].textContent)
+
+				for (let i in this.$refs.tweet_isLiked[index].$el.classList) {
+					// console.log(this.$refs.tweet_isLiked[index].$el.classList[i])
+					let className = this.$refs.tweet_isLiked[index].$el.classList[i]
+					if (className === 'text--lighten-1') {
+						this.$refs.tweet_isLiked[index].$el.classList.remove(className)
+						this.$refs.tweet_isLiked[index].$el.classList.add('text--lighten-3')
+						targetValue = targetValue - 1
+					} else if (className === 'text--lighten-3') {
+						this.$refs.tweet_isLiked[index].$el.classList.remove(className)
+						this.$refs.tweet_isLiked[index].$el.classList.add('text--lighten-1')
+						targetValue = targetValue + 1
+					}
+				}
+
+				this.$refs.tweet_isLikedCount[index].textContent = targetValue
+
+				var JWTToken = this.$session.get('token')
+				axios.defaults.xsrfCookieName = 'csrftoken'
+				axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
+				const targetUrl = (isLiked === 0) ? 'liked/' : 'unliked/'
+				axios({
+					method: 'POST',
+					url: 'http://192.168.33.12:8000/api/tweet/' + targetUrl,
+					data: {
+						target_tweet_id : tweetId,
+						username : this.$session.get('username')
+					},
+					headers: {
+						Authorization: `JWT ${JWTToken}`,
+						'Content-Type': 'application/json'
+					}
+				})
+				.then(res => {
+					console.log(res.data)
+					const status = res.data.status
+				})
+				.catch(e => {
+					console.log(e)
+				})
 			}
 		}
 	}
@@ -98,5 +149,8 @@
 		cursor: pointer;
 		color: #333 !important;
 		text-decoration: none;
+	}
+	.liked {
+		cursor: pointer;
 	}
 </style>

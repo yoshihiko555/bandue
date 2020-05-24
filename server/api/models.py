@@ -32,7 +32,7 @@ class UserManager(BaseUserManager):
 
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_superuser', False)
-        
+
         return self._create_user(username, email, password, **extra_fields)
 
     def create_superuser(self, username, email=None, password=None, **extra_fields):
@@ -151,9 +151,9 @@ class HashTag(models.Model):
 
 class Tweet(models.Model):
 
-    author = models.ForeignKey(mUser, on_delete=models.CASCADE)
+    author = models.ForeignKey(mUser, on_delete=models.CASCADE, related_name='author')
     content = models.TextField(_('Content'))
-    liked = models.PositiveIntegerField(_('Liked'), default=0)
+    liked = models.ManyToManyField(mUser, blank=True, related_name='liked')
     hashTag = models.ManyToManyField(HashTag, blank=True)
     images = models.ImageField(_('Images'), upload_to=content_file_name, blank=True, null=True)
     created_at = models.DateTimeField(_('Created At'), auto_now_add=True)

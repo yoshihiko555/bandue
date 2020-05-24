@@ -77,7 +77,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def get_tweet(self, obj):
         try:
-            tweet_contents = TweetSerializer(mUser.objects.get(id=obj.id).tweet_set.all(), many=True).data
+            tweet_contents = TweetSerializer(mUser.objects.get(id=obj.id).author.all(), many=True).data
             return tweet_contents
         except:
             tweet_contents = None
@@ -90,6 +90,12 @@ class ProfileSubSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'username',
+            'email',
+            'address',
+            'created_at',
+            'thumbnail',
+            'introduction',
+            'icon',
         ]
 
 class TweetSerializer(serializers.ModelSerializer):
@@ -97,6 +103,13 @@ class TweetSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
     author_pk = serializers.CharField(required=False)
     hashTag = serializers.SerializerMethodField()
+    liked = serializers.SerializerMethodField()
+    liked_count = serializers.SerializerMethodField()
+    isLiked = serializers.SerializerMethodField()
+
+    def __init__(self, *args, **kwargs):
+        self.target_user = kwargs['context']['view'].get_target_user()
+        super().__init__(*args, **kwargs)
 
     class Meta:
         model = Tweet
@@ -106,10 +119,12 @@ class TweetSerializer(serializers.ModelSerializer):
             'author_pk',
             'content',
             'liked',
+            'liked_count',
             'hashTag',
             'images',
             'created_at',
             'updated_at',
+            'isLiked',
         ]
 
     def get_author(self, obj):
@@ -120,17 +135,46 @@ class TweetSerializer(serializers.ModelSerializer):
         hashTag_contents = HashTagSerializer(obj.hashTag.all(), many=True).data
         return hashTag_contents
 
+    def get_liked(self, obj):
+        try:
+            liked_content = ProfileSubSerializer(Tweet.objects.get(id=obj.id).liked.all(), many=True).data
+            return liked_content
+        except:
+            liked_content = None
+            return liked_content
+
+    def get_liked_count(self, obj):
+        return obj.liked.count()
+
+    def get_isLiked(self, obj):
+        # self.target_user(username)が個々のツイートをいいねしているか判定しフラグを立てる
+        # とりあえずの実装。ORMの理解が深まり次第リファクタリング予定
+        isLiked = 0
+        if self.target_user != None:
+            tweet = Tweet.objects.get(id=obj.id)
+            for u in tweet.liked.all():
+                logger.debug(u)
+                if u.username == self.target_user:
+                    isLiked = 1
+                    break
+
+        return isLiked
+
     def create(self, validated_data):
         user = mUser.objects.get(pk=validated_data['author_pk'])
         content = validated_data['content']
         return Tweet.objects.create(author=user, content=content)
+
 
 class HashTagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = HashTag
         fields = [
+            'id',
             'title',
+            'created_at',
+            'slug',
         ]
 
 

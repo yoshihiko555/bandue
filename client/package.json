@@ -68,7 +68,8 @@
       "space-before-blocks": "off",
       "no-trailing-spaces": "off",
       "comma-spacing": "off",
-      "padded-blocks": "off"
+      "padded-blocks": "off",
+      "prefer-const": "off"
     }
   },
   "browserslist": [
