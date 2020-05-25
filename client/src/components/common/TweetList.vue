@@ -8,6 +8,32 @@
 				<v-card-title>
 					<router-link @click.native='reload()' :to='{ name : "Profile", params : { username: tweet.author}}' class='tweet_author'>{{ tweet.author }}</router-link>
 					<span class='ml-8' style='font-size:50%;'>{{ tweet.updated_at }}</span>
+
+					<v-spacer></v-spacer>
+
+					<v-menu bottom left>
+						<template v-slot:activator='{ on }'>
+							<v-btn
+								dark
+								icon
+								v-on='on'
+								color='grey'
+							>
+								<v-icon>mdi-dots-vertical</v-icon>
+							</v-btn>
+						</template>
+
+						<v-list>
+							<v-list-item
+								v-for='(item, i) in kebabMenu'
+								:key='i'
+								@click='test'
+							>
+								<v-list-item-title :class='item.color'>{{ item.title }}</v-list-item-title>
+							</v-list-item>
+						</v-list>
+					</v-menu>
+
 				</v-card-title>
 
 				<v-card-text>
@@ -59,7 +85,17 @@
 			}
 		},
 		data: () => ({
-			tweetList: {}
+			tweetList: {},
+			kebabMenu: [
+				{
+					title: 'Edit',
+					color: ''
+				},
+				{
+					title: 'Delete',
+					color: 'red--text'
+				}
+			]
 		}),
 		created () {
 			this.$eventHub.$on('create-tweet', this.tweetUpdate)
@@ -139,6 +175,9 @@
 				.catch(e => {
 					console.log(e)
 				})
+			},
+			test () {
+
 			}
 		}
 	}

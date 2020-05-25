@@ -43,12 +43,12 @@
 								</v-card-text>
 
 								<v-tabs
-									v-model='tweetTabModel'
+									v-model='profileTabModel'
 									grow
 									class='tweetlist_tab_wrap'
 								>
 									<v-tab
-										v-for='(tab, i) in TweetTablist'
+										v-for='(tab, i) in ProfileTablist'
 										:key='i'
 										:href='`#tab-${i}`'
 									>
@@ -56,16 +56,22 @@
 									</v-tab>
 								</v-tabs>
 
-								<v-tabs-items v-model='tweetTabModel'>
+								<v-tabs-items v-model='profileTabModel'>
 									<v-tab-item
-										v-for='(tab, i) in TweetTablist'
+										v-for='(tab, i) in ProfileTablist'
 										:key='i'
 										:value="'tab-' + i"
 									>
+
 										<TweetList
+											v-if='i != 4'
 											:tweet-list-flg=i
 											:username='username'
 										></TweetList>
+
+										<div v-else>
+											BBS
+										</div>
 									</v-tab-item>
 								</v-tabs-items>
 
@@ -159,12 +165,13 @@
 			followeesTabModel: 1,
 			username: '',
 			isMe: false,
-			tweetTabModel: null,
-			TweetTablist: [
+			profileTabModel: null,
+			ProfileTablist: [
 				'Tweets',
 				'Tweets & replies',
 				'Media',
-				'Likes'
+				'Likes',
+				'BBS'
 			]
 		}),
 		created () {
