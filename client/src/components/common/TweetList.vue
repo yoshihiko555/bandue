@@ -82,6 +82,10 @@
 			tweetListFlg: {
 				type: Number,
 				required: true
+			},
+			username: {
+				type: String,
+				required: false
 			}
 		},
 		data: () => ({
@@ -101,13 +105,12 @@
 			this.$eventHub.$on('create-tweet', this.tweetUpdate)
 		},
 		mounted: function () {
-			const username = this.$session.get('username')
 			console.log('ツイートリストフラグ:', this.tweetListFlg)
-			console.log('ユーザーネーム:', username)
+			console.log('ユーザーネーム:', this.username)
 			axios.get('http://192.168.33.12:8000/api/tweet/', {
 				params: {
 					tweetListFlg: this.tweetListFlg,
-					username: username
+					username: this.username
 				}
 			})
 			.then(res => {
