@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<div v-for='(tweet, index) in tweetList' :key='tweet.author'>
+		<div v-for='(tweet, index) in tweetList' :key='`tweet.author-${index}`'>
 			<v-card
 				flat
 				class='tweet_wrap'
@@ -107,10 +107,14 @@
 		mounted: function () {
 			console.log('ツイートリストフラグ:', this.tweetListFlg)
 			console.log('ユーザーネーム:', this.username)
+			console.log('ログインユーザー:', this.$session.get('username'))
+			const loginUser = this.$session.get('username')
+			const targetUser = (this.username !== undefined) ? this.username : loginUser
 			axios.get('http://192.168.33.12:8000/api/tweet/', {
 				params: {
 					tweetListFlg: this.tweetListFlg,
-					username: this.username
+					targetUser: targetUser,
+					loginUser: loginUser
 				}
 			})
 			.then(res => {
@@ -128,7 +132,12 @@
 		methods: {
 			tweetUpdate (res) {
 				console.log('tweet更新')
+				for (var i in res.data) {
+					var updatedAt = res.data[i].updated_at.substr(0, 10)
+					res.data[i].updated_at = updatedAt
+				}
 				this.tweetList = res.data
+				console.log(this.tweetList)
 			},
 			showProfile (username) {
 				this.reload()
@@ -164,7 +173,7 @@
 					url: 'http://192.168.33.12:8000/api/tweet/' + targetUrl,
 					data: {
 						target_tweet_id : tweetId,
-						username : this.$session.get('username')
+						login_user : this.$session.get('username')
 					},
 					headers: {
 						Authorization: `JWT ${JWTToken}`,
@@ -172,8 +181,7 @@
 					}
 				})
 				.then(res => {
-					console.log(res.data)
-					const status = res.data.status
+					console.log(res)
 				})
 				.catch(e => {
 					console.log(e)

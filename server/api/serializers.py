@@ -108,7 +108,7 @@ class TweetSerializer(serializers.ModelSerializer):
     isLiked = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
-        self.target_user = kwargs['context']['view'].get_target_user()
+        self.login_user = kwargs['context']['view'].get_login_user()
         super().__init__(*args, **kwargs)
 
     class Meta:
@@ -150,11 +150,10 @@ class TweetSerializer(serializers.ModelSerializer):
         # self.target_user(username)が個々のツイートをいいねしているか判定しフラグを立てる
         # とりあえずの実装。ORMの理解が深まり次第リファクタリング予定
         isLiked = 0
-        if self.target_user != None:
+        if self.login_user != None:
             tweet = Tweet.objects.get(id=obj.id)
             for u in tweet.liked.all():
-                logger.debug(u)
-                if u.username == self.target_user:
+                if u.username == self.login_user:
                     isLiked = 1
                     break
 

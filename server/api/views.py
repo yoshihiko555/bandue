@@ -69,7 +69,7 @@ class IndexView(generic.TemplateView):
 class TweetFilter(django_filter.FilterSet):
 
     def __init__(self, *args, **kwargs):
-        self.username = kwargs['data']['username'] if 'username' in kwargs['data'] else None
+        self.target_user = kwargs['data']['targetUser'] if 'targetUser' in kwargs['data'] else None
         super().__init__(*args, **kwargs)
 
     tweetListFlg = django_filter.NumberFilter(method='tweet_filter')
@@ -82,33 +82,31 @@ class TweetFilter(django_filter.FilterSet):
 
     def tweet_filter(self, queryset, name, value):
         res = queryset
-        if self.username != None:
-            login_user = mUser.objects.get(username=self.username)
-            logger.debug(login_user)
+        if self.target_user != None:
+            target_user = mUser.objects.get(username=self.target_user)
             if value == 0:
                 # TODO リプライツイートは除く
                 logger.debug('リプライツイート除いた一覧')
-                res = Tweet.objects.filter(author=login_user)
+                res = Tweet.objects.filter(author=target_user)
             elif value == 1:
                 # TODO リプライツイートも含める
                 logger.debug('リプライツイート含めた一覧')
-                res = Tweet.objects.filter(author=login_user)
+                res = Tweet.objects.filter(author=target_user)
             elif value == 2:
                 # TODO 画像含める?
                 logger.debug('画像含めた一覧')
-                res = Tweet.objects.filter(author=login_user)
+                res = Tweet.objects.filter(author=target_user)
             elif value == 3:
                 # TODO いいねしたツイート一覧 model定義変える
                 logger.debug('いいねしたツイート一覧')
-                res = Tweet.objects.filter(author=login_user)
+                res = Tweet.objects.filter(author=target_user)
             elif value == 4:
                 # TODO ユーザー&フォローユーザー
                 logger.debug('ユーザー&フォローユーザーツイート一覧')
-                # res = Tweet.objects.filter(author=login_user)
-                res = Tweet.objects.all()
+                res = Tweet.objects.filter(author=target_user)
 
         else:
-            logger.debug('ログインしていないユーザー=>一覧返す')
+            logger.debug('target_userがない')
 
         logger.debug('--TWEET_FILTER_RESULT--')
         logger.debug(res)
@@ -125,7 +123,7 @@ class TweetFilter(django_filter.FilterSet):
         return res
 
     def get_username(self):
-        return self.username if self.username != None else None
+        return self.target_user if self.target_user != None else None
 
 
 class TweetViewSet(viewsets.ModelViewSet):
@@ -135,12 +133,12 @@ class TweetViewSet(viewsets.ModelViewSet):
     serializer_class = TweetSerializer
     filter_class = TweetFilter
 
-    def get_target_user(self):
-        return self.target_user if hasattr(self, 'target_user') else None
+    def get_login_user(self):
+        return self.login_user if hasattr(self, 'login_user') else None
 
     def list(self, request, *args, **kwargs):
         logger.debug(self.request.query_params)
-        self.target_user = request.query_params['username'] if 'username' in request.query_params else None
+        self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -155,29 +153,35 @@ class TweetViewSet(viewsets.ModelViewSet):
         request.data.update({
             'author_pk': str(request.user.pk)
         })
-        queryset = self.get_queryset()
+        queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(data=request.data)
 
         if serializer.is_valid():
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
+
+            # とりあえずの処置
+            queryset = Tweet.objects.filter(author=request.user)
+            logger.debug(queryset)
             return Response(self.get_serializer(queryset, many=True).data, status=status.HTTP_201_CREATED, headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(methods=['post'], detail=False)
     def liked(self, request):
         logger.debug('likedメソッド')
-        login_user = mUser.objects.get(username=request.data['username'])
+        login_user = mUser.objects.get(username=request.data['login_user'])
         target_tweet = Tweet.objects.get(pk=request.data['target_tweet_id'])
         target_tweet.liked.add(login_user)
+        logger.debug(target_tweet.liked.all())
         return Response({'status': 'success', 'isLiked': 1}, status=status.HTTP_200_OK)
 
     @action(methods=['post'], detail=False)
     def unliked(self, request):
         logger.debug('unlikedメソッド')
-        login_user = mUser.objects.get(username=request.data['username'])
+        login_user = mUser.objects.get(username=request.data['login_user'])
         target_tweet = Tweet.objects.get(pk=request.data['target_tweet_id'])
         target_tweet.liked.remove(login_user)
+        logger.debug(target_tweet.liked.all())
         return Response({'status': 'success', 'isLiked': 0}, status=status.HTTP_200_OK)
 
 
