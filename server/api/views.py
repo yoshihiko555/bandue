@@ -103,7 +103,14 @@ class TweetFilter(django_filter.FilterSet):
             elif value == 4:
                 # TODO ユーザー&フォローユーザー
                 logger.debug('ユーザー&フォローユーザーツイート一覧')
-                res = Tweet.objects.filter(author=target_user)
+
+                tweet_list = Tweet.objects.filter(author=target_user)
+                query_list = []
+                for i in target_user.followees.all():
+                    query_list.append("Tweet.objects.filter(author=mUser.objects.get(username='" + i.username + "'))")
+                for i in range(len(query_list)):
+                    tweet_list = tweet_list.union(eval(query_list[i]))
+                res = tweet_list.order_by('-created_at')
 
         else:
             logger.debug('target_userがない')
