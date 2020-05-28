@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+
+{% block title %}SignUp{% endblock %}
+
+{% block content %}
+<div id="register">
+	<register-wrap
+		view=0
+	></register-wrap>
+</div>
+{% render_bundle 'register' %}
+{% endblock %}
