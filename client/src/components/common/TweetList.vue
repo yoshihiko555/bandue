@@ -11,6 +11,7 @@
 
 					<v-spacer></v-spacer>
 
+					<!-- Tweet編集ボタン -->
 					<v-menu bottom left>
 						<template v-slot:activator='{ on }'>
 							<v-btn
@@ -18,6 +19,7 @@
 								icon
 								v-on='on'
 								color='grey'
+								v-show='tweetListFlg != 4'
 							>
 								<v-icon>mdi-dots-vertical</v-icon>
 							</v-btn>
@@ -27,15 +29,15 @@
 							<v-list-item
 								v-for='(item, i) in kebabMenu'
 								:key='i'
-								@click='test'
+								@click='tweetEditMethods(i, tweet)'
 							>
 								<v-list-item-title :class='item.color'>{{ item.title }}</v-list-item-title>
 							</v-list-item>
 						</v-list>
 					</v-menu>
-
 				</v-card-title>
 
+				<!-- 内容 -->
 				<v-card-text>
 					{{ tweet.content }}
 				</v-card-text>
@@ -68,12 +70,21 @@
 				</v-card-actions>
 			</v-card>
 		</div>
+
+		<!-- モーダル設定 -->
+		<TweetEdit
+			@closeModal='closeModal'
+			:tweetEditDialog='tweetEditDialog'
+			:tweet='selectTweet'
+		></TweetEdit>
+
 	</div>
 </template>
 
 <script>
 	import axios from 'axios'
 	import { Common } from '@/static/js/common'
+	import TweetEdit from '@/components/common/TweetEdit'
 	const Com = new Common()
 
 	export default {
@@ -88,18 +99,24 @@
 				required: false
 			}
 		},
+		components: {
+			TweetEdit
+		},
 		data: () => ({
 			tweetList: {},
 			kebabMenu: [
 				{
 					title: 'Edit',
-					color: ''
+					color: '',
 				},
 				{
 					title: 'Delete',
-					color: 'red--text'
+					color: 'red--text',
 				}
-			]
+			],
+			tweetEditDialog: false,
+			tweetDeleteDialog: false,
+			selectTweet: {},
 		}),
 		created () {
 			this.$eventHub.$on('create-tweet', this.tweetUpdate)
@@ -138,9 +155,6 @@
 				}
 				this.tweetList = res.data
 				console.log(this.tweetList)
-			},
-			showProfile (username) {
-				this.reload()
 			},
 			reload () {
 				Com.reload(this.$router)
@@ -187,9 +201,29 @@
 					console.log(e)
 				})
 			},
-			test () {
+			tweetEditMethods (i, tweet) {
+				const methodsList = [
+					this.showTweetEdit,
+					this.showDeleteConfirm,
+				]
 
-			}
+				if (methodsList[i] !== '') {
+					methodsList[i](tweet)
+				}
+			},
+
+			showTweetEdit (tweet) {
+				this.tweetEditDialog = true
+				this.selectTweet = tweet
+			},
+
+			closeModal () {
+				this.tweetEditDialog = false
+			},
+
+			showDeleteConfirm (tweet) {
+				this.selectTweet = tweet
+			},
 		}
 	}
 </script>

@@ -41,6 +41,10 @@
 									<v-card-text>
 										{{ article.content }}
 									</v-card-text>
+
+									<v-card-text>
+										{{ article.writer }}
+									</v-card-text>
 								</v-card>
 							</div>
 							</v-tab-item>

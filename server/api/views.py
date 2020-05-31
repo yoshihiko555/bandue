@@ -160,14 +160,12 @@ class TweetViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         logger.debug('viewsetのcreate')
-        logger.debug(request.user)
+        logger.debug(request.data)
         request.data.update({
             'author_pk': str(request.user.pk)
         })
-        logger.debug(request.data)
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(data=request.data)
-        logger.info(request.data)
 
         if serializer.is_valid():
             self.perform_create(serializer)
@@ -177,6 +175,22 @@ class TweetViewSet(viewsets.ModelViewSet):
             queryset = Tweet.objects.filter(author=request.user)
             logger.debug(queryset)
             return Response(self.get_serializer(queryset, many=True).data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def retrieve(self, request, pk=None):
+        logger.debug('★★★★★詳細取得★★★★★')
+        queryset = self.queryset.get(pk=pk)
+        serializer = self.get_serializer(queryset)
+        return Response(serializer.data)
+
+    def update(self, request, pk=None):
+        logger.debug('★★★★★Tweet更新★★★★★')
+        queryset = self.queryset.get(pk=pk)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data)
+        if serializer.is_valid():
+            self.perform_update(serializer)
+            return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(methods=['post'], detail=False)
@@ -196,7 +210,6 @@ class TweetViewSet(viewsets.ModelViewSet):
         target_tweet.liked.remove(login_user)
         logger.debug(target_tweet.liked.all())
         return Response({'status': 'success', 'isLiked': 0}, status=status.HTTP_200_OK)
-
 
 class TweetListView(generics.ListCreateAPIView):
 

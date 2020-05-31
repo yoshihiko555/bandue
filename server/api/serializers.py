@@ -173,10 +173,14 @@ class TweetSerializer(serializers.ModelSerializer):
         return isLiked
 
     def create(self, validated_data):
-        logger.info('ツイートは通る')
         user = mUser.objects.get(pk=validated_data['author_pk'])
         content = validated_data['content']
         return Tweet.objects.create(author=user, content=content)
+
+    def update(self, instance, validated_data):
+        instance.content = validated_data['content']
+        instance.save()
+        return instance
 
 
 class HashTagSerializer(serializers.ModelSerializer):

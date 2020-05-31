@@ -24,17 +24,17 @@
 				<v-row>
 					<v-col cols='12'>
 						<v-form>
-								<v-text-field
-									v-model='title'
-									outlined
-									placeholder='Title'
-								></v-text-field>
-								<v-textarea
-									v-model='content'
-									outlined
-									placeholder='Content'
-									rows='20'
-								></v-textarea>
+							<v-text-field
+								v-model='title'
+								outlined
+								placeholder='Title'
+							></v-text-field>
+							<v-textarea
+								v-model='content'
+								outlined
+								placeholder='Content'
+								rows='20'
+							></v-textarea>
 						</v-form>
 					</v-col>
 				</v-row>
