@@ -204,7 +204,7 @@
 			tweetEditMethods (i, tweet) {
 				const methodsList = [
 					this.showTweetEdit,
-					this.showDeleteConfirm,
+					this.showDeleteDialog,
 				]
 
 				if (methodsList[i] !== '') {
@@ -221,8 +221,28 @@
 				this.tweetEditDialog = false
 			},
 
-			showDeleteConfirm (tweet) {
-				this.selectTweet = tweet
+			// TODO 削除前に確認モーダル表示
+			showDeleteDialog (tweet) {
+				var JWTToken = this.$session.get('token')
+				axios.defaults.xsrfCookieName = 'csrftoken'
+				axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
+				axios({
+					method: 'DELETE',
+					url: 'http://192.168.33.12:8000/api/tweet/' + tweet.id + '/',
+					data: {
+						content : tweet.content
+					},
+					headers: {
+						Authorization: `JWT ${JWTToken}`,
+						'Content-Type': 'application/json'
+					}
+				})
+				.then(res => {
+					console.log(res)
+				})
+				.catch(e => {
+					console.log(e)
+				})
 			},
 		}
 	}
