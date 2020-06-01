@@ -58,6 +58,7 @@ from .models import (
     Bbs,
     Tag,
     Category,
+    ReTweet,
 )
 from .permissions import IsMyselfOrReadOnly
 from django_filters import rest_framework as django_filter
@@ -89,27 +90,24 @@ class TweetFilter(django_filter.FilterSet):
         if self.target_user != None:
             target_user = mUser.objects.get(username=self.target_user)
             if value == 0:
-                # TODO リプライツイートは除く
                 logger.debug('リプライツイート除いた一覧')
                 res = Tweet.objects.filter(author=target_user)
-                
+
             elif value == 1:
-                # TODO リプライツイートも含める
                 logger.debug('リプライツイート含めた一覧')
-                res = Tweet.objects.filter(author=target_user)
+                t_list = Tweet.objects.filter(author=target_user)
+                r_list = ReTweet.objects.filter(retweet_user=target_user)
+                res = t_list.union(r_list).order_by('-created_at')
 
             elif value == 2:
-                # TODO 画像含める?
                 logger.debug('画像含めた一覧')
-                res = Tweet.objects.filter(author=target_user)
+                res = Tweet.objects.filter(author=target_user).exclude(images__isnull=False)
 
             elif value == 3:
-                # TODO いいねしたツイート一覧 model定義変える
                 logger.debug('いいねしたツイート一覧')
                 res = Tweet.objects.filter(liked=target_user)
 
             elif value == 4:
-                # TODO ユーザー&フォローユーザー
                 logger.debug('ユーザー&フォローユーザーツイート一覧')
 
                 tweet_list = Tweet.objects.filter(author=target_user)

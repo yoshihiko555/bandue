@@ -65,6 +65,7 @@
 				.then(res => {
 					console.log(res.data)
 					this.$eventHub.$emit('create-tweet', res)
+					this.tweet_content = ''
 				})
 				.catch(e => {
 					console.log(e)

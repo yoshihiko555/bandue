@@ -159,10 +159,25 @@ class Tweet(models.Model):
     created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
     updated_at = models.DateTimeField(_('Upadate Date'), auto_now=True)
     deleted = models.BooleanField(_('Delete Flag'), default=False)
+    retweet_user = models.ForeignKey(mUser, on_delete=models.CASCADE, related_name='retweet_user', blank=True, null=True)
 
     def __str__(self):
         return self.content
 
+class ReTweet(models.Model):
+
+    author = models.ForeignKey(mUser, on_delete=models.CASCADE, related_name='retweet_author')
+    content = models.TextField(_('Content'))
+    liked = models.ManyToManyField(mUser, blank=True, related_name='retweet_liked')
+    hashTag = models.ManyToManyField(HashTag, blank=True)
+    images = models.ImageField(_('Images'), upload_to=content_file_name, blank=True, null=True)
+    created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('Upadate Date'), auto_now=True)
+    deleted = models.BooleanField(_('Delete Flag'), default=False)
+    retweet_user = models.ForeignKey(mUser, on_delete=models.CASCADE, related_name='retweet_retweet_user', blank=True, null=True)
+
+    def __str__(self):
+        return self.content
 
 class Reply(models.Model):
 
