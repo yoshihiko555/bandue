@@ -92,18 +92,22 @@ class TweetFilter(django_filter.FilterSet):
                 # TODO リプライツイートは除く
                 logger.debug('リプライツイート除いた一覧')
                 res = Tweet.objects.filter(author=target_user)
+                
             elif value == 1:
                 # TODO リプライツイートも含める
                 logger.debug('リプライツイート含めた一覧')
                 res = Tweet.objects.filter(author=target_user)
+
             elif value == 2:
                 # TODO 画像含める?
                 logger.debug('画像含めた一覧')
                 res = Tweet.objects.filter(author=target_user)
+
             elif value == 3:
                 # TODO いいねしたツイート一覧 model定義変える
                 logger.debug('いいねしたツイート一覧')
-                res = Tweet.objects.filter(author=target_user)
+                res = Tweet.objects.filter(liked=target_user)
+
             elif value == 4:
                 # TODO ユーザー&フォローユーザー
                 logger.debug('ユーザー&フォローユーザーツイート一覧')
