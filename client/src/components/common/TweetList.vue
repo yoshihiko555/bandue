@@ -181,7 +181,7 @@
 				var JWTToken = this.$session.get('token')
 				axios.defaults.xsrfCookieName = 'csrftoken'
 				axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
-				const targetUrl = (isLiked === 0) ? 'liked/' : 'unliked/'
+				const targetUrl = (isLiked === 0) ? 'liked/' : 'unLiked/'
 				axios({
 					method: 'POST',
 					url: 'http://192.168.33.12:8000/api/tweet/' + targetUrl,

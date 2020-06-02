@@ -209,13 +209,44 @@ class TweetViewSet(viewsets.ModelViewSet):
         return Response({'status': 'success', 'isLiked': 1}, status=status.HTTP_200_OK)
 
     @action(methods=['post'], detail=False)
-    def unliked(self, request):
+    def unLiked(self, request):
         logger.debug('unlikedメソッド')
         login_user = mUser.objects.get(username=request.data['login_user'])
         target_tweet = Tweet.objects.get(pk=request.data['target_tweet_id'])
         target_tweet.liked.remove(login_user)
         logger.debug(target_tweet.liked.all())
         return Response({'status': 'success', 'isLiked': 0}, status=status.HTTP_200_OK)
+
+    @action(methods=['postc'], detail=False)
+    def retweet(self, request):
+        logger.debug('retweetメソッド')
+        login_user = mUser.objects.get(username=request.data['login_user'])
+        tweet = Tweet.objects.get(pk=request.data['target_tweet_id'])
+        self.set_tweet_relation(login_user, tweet, true)
+        return Response({'status': 'success'}, status=status.HTTP_200_OK)
+
+    @action(methods=['post'], detail=False)
+    def unRetweet(self, request):
+        logger.debug('unRetweetメソッド')
+        login_user = mUser.objects.get(username=request.data['login_user'])
+        tweet = Tweet.objects.get(pk=request.data['target_tweet_id'])
+        self.set_tweet_relation(login_user, tweet, false)
+        return Response({'status': 'success'}, status=status.HTTP_200_OK)
+
+    def set_tweet_relation(self, login_user, tweet, set_flg):
+        if set_flg:
+            tweet.retweet_user.add(login_user)
+            retweet = ReTweet.objects.create(author=tweet.author, content=tweet.content, images=tweet.images)
+            retweet.liked.add(*list(tweet.liked.all()))
+            retweet.liked.add(*list(tweet.hashTag.all()))
+            retweet.retweet_user.add(login_user)
+            tweet.relation = retweet
+            retweet.relation = tweet
+        else:
+            tweet.retweet_user.remove(login_user)
+            tweet.relation.delete()
+            tweet.relation = None
+
 
 class TweetListView(generics.ListCreateAPIView):
 

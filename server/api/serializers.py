@@ -119,6 +119,8 @@ class TweetSerializer(serializers.ModelSerializer):
     liked = serializers.SerializerMethodField()
     liked_count = serializers.SerializerMethodField()
     isLiked = serializers.SerializerMethodField()
+    isReply = serializers.SerializerMethodField()
+    reply_count = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
         self.login_user = kwargs['context']['view'].get_login_user()
@@ -138,6 +140,8 @@ class TweetSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
             'isLiked',
+            'isReply',
+            'reply_count',
         ]
 
     def get_author(self, obj):
@@ -160,7 +164,6 @@ class TweetSerializer(serializers.ModelSerializer):
         return obj.liked.count()
 
     def get_isLiked(self, obj):
-        # self.target_user(username)が個々のツイートをいいねしているか判定しフラグを立てる
         # とりあえずの実装。ORMの理解が深まり次第リファクタリング予定
         isLiked = 0
         if self.login_user != None:
@@ -169,8 +172,21 @@ class TweetSerializer(serializers.ModelSerializer):
                 if u.username == self.login_user:
                     isLiked = 1
                     break
-
         return isLiked
+
+    def get_isReply(self, obj):
+        # とりあえずの実装。ORMの理解が深まり次第リファクタリング予定
+        isReply = 0
+        if self.login_user != None:
+            tweet = Tweet.objects.get(id=obj.id)
+            for u in tweet.retweet_user.all():
+                if u.username == self.login_user:
+                    isReply = 1
+                    break
+        return isReply
+
+    def get_reply_count(self, obj):
+        return obj.retweet_user.count()
 
     def create(self, validated_data):
         user = mUser.objects.get(pk=validated_data['author_pk'])
