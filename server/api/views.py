@@ -41,6 +41,7 @@ from .serializers import (
     EntrySerializer,
     MUserSerializer,
     BbsSerializer,
+    ReplySerializer,
 )
 from .models import (
     mUser,
@@ -246,6 +247,29 @@ class TweetViewSet(viewsets.ModelViewSet):
             tweet.retweet_user.remove(login_user)
             tweet.relation.delete()
             tweet.relation = None
+
+
+class ReplyViewSet(viewsets.ModelViewSet):
+
+    permission_classes = (permissions.AllowAny,)
+    queryset = Reply.objects.all()
+    serializer_class = ReplySerializer
+
+    def create(self, request, *args, **kwargs):
+        logger.debug('reply_create')
+        logger.debug(request.data)
+        request.data.update({
+            'author_pk': str(request.user.pk),
+            'target': str(request.data['target'])
+        })
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TweetListView(generics.ListCreateAPIView):

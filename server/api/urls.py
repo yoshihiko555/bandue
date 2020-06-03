@@ -6,6 +6,7 @@ router = DefaultRouter()
 router.register('users', views.mUserViewSet)
 router.register('tweet', views.TweetViewSet)
 router.register('bbs', views.BbsViewSet)
+router.register('reply', views.ReplyViewSet)
 
 app_name = 'api'
 urlpatterns = [

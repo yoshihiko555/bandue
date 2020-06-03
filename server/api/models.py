@@ -165,6 +165,7 @@ class Tweet(models.Model):
     def __str__(self):
         return self.content
 
+
 class ReTweet(models.Model):
 
     author = models.ForeignKey(mUser, on_delete=models.CASCADE, related_name='retweet_author')
@@ -181,11 +182,12 @@ class ReTweet(models.Model):
     def __str__(self):
         return self.content
 
+
 class Reply(models.Model):
 
-    content = models.TextField(_('Content'))
     author = models.ForeignKey(mUser, on_delete=models.CASCADE)
     target = models.ForeignKey(Tweet, on_delete=models.CASCADE)
+    content = models.TextField(_('Content'))
     created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
     deleted = models.BooleanField(_('Delete Flag'), default=False)
 
