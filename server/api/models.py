@@ -160,13 +160,13 @@ class Tweet(models.Model):
     updated_at = models.DateTimeField(_('Upadate Date'), auto_now=True)
     deleted = models.BooleanField(_('Delete Flag'), default=False)
     retweet_user = models.ManyToManyField(mUser, related_name='tweet_retweet_user', blank=True)
-    relation = models.ForeignKey('api.ReTweet', on_delete=models.SET_NULL, blank=True, null=True)
+    relation = models.OneToOneField('api.Retweet', on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
         return self.content
 
 
-class ReTweet(models.Model):
+class Retweet(models.Model):
 
     author = models.ForeignKey(mUser, on_delete=models.CASCADE, related_name='retweet_author')
     content = models.TextField(_('Content'))
@@ -177,7 +177,7 @@ class ReTweet(models.Model):
     updated_at = models.DateTimeField(_('Upadate Date'), auto_now=True)
     deleted = models.BooleanField(_('Delete Flag'), default=False)
     retweet_user = models.ManyToManyField(mUser, related_name='retweet_retweet_user', blank=True)
-    relation = models.ForeignKey(Tweet, on_delete=models.SET_NULL, blank=True, null=True)
+    relation = models.OneToOneField('api.Tweet', on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
         return self.content

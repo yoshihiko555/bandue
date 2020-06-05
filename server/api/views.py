@@ -59,7 +59,7 @@ from .models import (
     Bbs,
     Tag,
     Category,
-    ReTweet,
+    Retweet,
 )
 from .permissions import IsMyselfOrReadOnly
 from django_filters import rest_framework as django_filter
@@ -74,39 +74,48 @@ class IndexView(generic.TemplateView):
 
 class TweetFilter(django_filter.FilterSet):
 
+
     def __init__(self, *args, **kwargs):
         self.target_user = kwargs['data']['targetUser'] if 'targetUser' in kwargs['data'] else None
         super().__init__(*args, **kwargs)
+
 
     tweetListFlg = django_filter.NumberFilter(method='tweet_filter')
     content = django_filter.CharFilter(lookup_expr='contains')
     deleted = django_filter.BooleanFilter(field_name='deleted', method='deleted_filter')
 
+
     class Meta:
         model = Tweet
         fields = ['deleted']
 
+
     def tweet_filter(self, queryset, name, value):
+
         res = queryset
         if self.target_user != None:
             target_user = mUser.objects.get(username=self.target_user)
             if value == 0:
                 logger.debug('リプライツイート除いた一覧')
-                res = Tweet.objects.filter(author=target_user)
+
+                t_list = Tweet.objects.filter(author=target_user)
+                r_list = Retweet.objects.filter(retweet_user=target_user)
+                res = t_list.union(r_list).exclude(reply__isnull=False).order_by('-created_at')
 
             elif value == 1:
                 logger.debug('リプライツイート含めた一覧')
+
                 t_list = Tweet.objects.filter(author=target_user)
-                r_list = ReTweet.objects.filter(retweet_user=target_user)
+                r_list = Retweet.objects.filter(retweet_user=target_user)
                 res = t_list.union(r_list).order_by('-created_at')
 
             elif value == 2:
                 logger.debug('画像含めた一覧')
-                res = Tweet.objects.filter(author=target_user).exclude(images__isnull=False)
+                res = Tweet.objects.filter(author=target_user).exclude(images__isnull=False).order_by('-created_at')
 
             elif value == 3:
                 logger.debug('いいねしたツイート一覧')
-                res = Tweet.objects.filter(liked=target_user)
+                res = Tweet.objects.filter(liked=target_user).order_by('-created_at')
 
             elif value == 4:
                 logger.debug('ユーザー&フォローユーザーツイート一覧')
@@ -126,7 +135,9 @@ class TweetFilter(django_filter.FilterSet):
         logger.debug(res)
         return res
 
+
     def deleted_filter(self, queryset, name, value):
+
         logger.debug('====DELETED_FILTER====')
         logger.debug(name)
         logger.debug(value)
@@ -136,7 +147,9 @@ class TweetFilter(django_filter.FilterSet):
         logger.debug(res)
         return res
 
+
     def get_username(self):
+
         return self.target_user if self.target_user != None else None
 
 
@@ -148,9 +161,12 @@ class TweetViewSet(viewsets.ModelViewSet):
     filter_class = TweetFilter
 
     def get_login_user(self):
+
         return self.login_user if hasattr(self, 'login_user') else None
 
+
     def list(self, request, *args, **kwargs):
+
         logger.debug(self.request.query_params)
         self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
         queryset = self.filter_queryset(self.get_queryset())
@@ -161,7 +177,9 @@ class TweetViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+
     def create(self, request, *args, **kwargs):
+
         logger.debug('viewsetのcreate')
         logger.debug(request.data)
         request.data.update({
@@ -180,13 +198,17 @@ class TweetViewSet(viewsets.ModelViewSet):
             return Response(self.get_serializer(queryset, many=True).data, status=status.HTTP_201_CREATED, headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
     def retrieve(self, request, pk=None):
+
         logger.debug('★★★★★詳細取得★★★★★')
         queryset = self.queryset.get(pk=pk)
         serializer = self.get_serializer(queryset)
         return Response(serializer.data)
 
+
     def update(self, request, pk=None):
+
         logger.debug('★★★★★Tweet更新★★★★★')
         queryset = self.queryset.get(pk=pk)
         instance = self.get_object()
@@ -196,57 +218,89 @@ class TweetViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
     def destroy(self, request, pk=None):
+
         logger.info('Tweet削除')
         return Response(serializer.data)
 
+
     @action(methods=['post'], detail=False)
     def liked(self, request):
+
         logger.debug('likedメソッド')
-        login_user = mUser.objects.get(username=request.data['login_user'])
-        target_tweet = Tweet.objects.get(pk=request.data['target_tweet_id'])
-        target_tweet.liked.add(login_user)
-        logger.debug(target_tweet.liked.all())
-        return Response({'status': 'success', 'isLiked': 1}, status=status.HTTP_200_OK)
+        login_user = request.user
+        tweet = Tweet.objects.get(pk=request.data['target_tweet_id'])
+        return self.set_tweet_liked_info(tweet, login_user)
 
+    def set_tweet_liked_info(self, tweet, login_user):
+        try:
+            tweet.liked.all().get(username__exact=login_user.username)
+            tweet.liked.remove(login_user)
+            return Response({'status': 'success', 'isLiked': 0}, status=status.HTTP_200_OK)
+        except mUser.DoesNotExist:
+            tweet.liked.add(login_user)
+            return Response({'status': 'success', 'isLiked': 1}, status=status.HTTP_200_OK)
+
+
+    @transaction.atomic
     @action(methods=['post'], detail=False)
-    def unLiked(self, request):
-        logger.debug('unlikedメソッド')
-        login_user = mUser.objects.get(username=request.data['login_user'])
-        target_tweet = Tweet.objects.get(pk=request.data['target_tweet_id'])
-        target_tweet.liked.remove(login_user)
-        logger.debug(target_tweet.liked.all())
-        return Response({'status': 'success', 'isLiked': 0}, status=status.HTTP_200_OK)
-
-    @action(methods=['postc'], detail=False)
     def retweet(self, request):
+
         logger.debug('retweetメソッド')
-        login_user = mUser.objects.get(username=request.data['login_user'])
+        login_user = request.user
         tweet = Tweet.objects.get(pk=request.data['target_tweet_id'])
-        self.set_tweet_relation(login_user, tweet, true)
-        return Response({'status': 'success'}, status=status.HTTP_200_OK)
+        return self.set_tweet_relation(login_user, tweet)
 
-    @action(methods=['post'], detail=False)
-    def unRetweet(self, request):
-        logger.debug('unRetweetメソッド')
-        login_user = mUser.objects.get(username=request.data['login_user'])
-        tweet = Tweet.objects.get(pk=request.data['target_tweet_id'])
-        self.set_tweet_relation(login_user, tweet, false)
-        return Response({'status': 'success'}, status=status.HTTP_200_OK)
 
-    def set_tweet_relation(self, login_user, tweet, set_flg):
-        if set_flg:
-            tweet.retweet_user.add(login_user)
-            retweet = ReTweet.objects.create(author=tweet.author, content=tweet.content, images=tweet.images)
-            retweet.liked.add(*list(tweet.liked.all()))
-            retweet.liked.add(*list(tweet.hashTag.all()))
-            retweet.retweet_user.add(login_user)
-            tweet.relation = retweet
-            retweet.relation = tweet
-        else:
+    def set_tweet_relation(self, login_user, tweet):
+
+        try:
+            logger.debug('リツイート存在チェック')
+            retweet = Retweet.objects.get(relation=tweet)
+            logger.debug('リツイートが存在するため、ユーザーが紐づいているかチェック')
+            return self.remove_tweet_relation_info(tweet, retweet, login_user)
+
+        except Retweet.DoesNotExist:
+            logger.debug('リツイートが存在しないから新規作成')
+            retweet = Retweet.objects.create(author=tweet.author, content=tweet.content, images=tweet.images)
+            return self.set_tweet_relation_info(tweet, retweet, login_user)
+
+
+    def set_tweet_relation_info(self, tweet, retweet, login_user):
+
+        retweet.relation = tweet
+        tweet.relation = retweet
+        retweet.liked.add(*list(tweet.liked.all()))
+        retweet.liked.add(*list(tweet.hashTag.all()))
+
+        logger.debug('ユーザーをリツイートユーザーに追加')
+
+        tweet.retweet_user.add(login_user)
+        retweet.retweet_user.add(login_user)
+        tweet.save()
+        retweet.save()
+
+        return Response({'status': 'success', 'isRetweeted': 1}, status=status.HTTP_200_OK)
+
+
+    def remove_tweet_relation_info(self, tweet, retweet, login_user):
+
+        try:
+            retweet.retweet_user.all().get(username__exact=login_user.username)
+            logger.debug('ユーザーがリツイートに紐づいているため、紐付け解除')
             tweet.retweet_user.remove(login_user)
-            tweet.relation.delete()
-            tweet.relation = None
+            retweet.retweet_user.remove(login_user)
+            if len(retweet.retweet_user.all()) == 0:
+                logger.debug('リツイートユーザーが0人のため、リツイートモデル削除')
+                retweet.delete()
+                tweet.relation = None
+                tweet.save()
+
+        except mUser.DoesNotExist:
+            logger.debug('ユーザーはリツイートに紐づいていない。この分岐はありえる？')
+
+        return Response({'status': 'success', 'isRetweeted': 0}, status=status.HTTP_200_OK)
 
 
 class ReplyViewSet(viewsets.ModelViewSet):
@@ -256,6 +310,7 @@ class ReplyViewSet(viewsets.ModelViewSet):
     serializer_class = ReplySerializer
 
     def create(self, request, *args, **kwargs):
+
         logger.debug('reply_create')
         logger.debug(request.data)
         request.data.update({
@@ -279,6 +334,7 @@ class TweetListView(generics.ListCreateAPIView):
     serializer_class = TweetSerializer
 
     def post(self, request, *args, **kwargs):
+
         logger.debug('apiのpost')
         logger.debug(request.user)
         request.data.update({
@@ -314,6 +370,7 @@ class mUserViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = MUserSerializer
 
     @action(methods=['post'], detail=False)
+
     def isFollow(self, request):
         login_user = request.user
         target_user = request.data['target_user']
@@ -324,8 +381,10 @@ class mUserViewSet(viewsets.ReadOnlyModelViewSet):
                 break
         return Response({'status': 'success', 'isFollow': isFollow}, status=status.HTTP_200_OK)
 
+
     @action(methods=['post'], detail=False)
     def follow(self, request):
+
         logger.debug(str(request.user) + 'が' + request.data['target_user'] + 'をフォロー')
 
         login_user = request.user
@@ -336,8 +395,10 @@ class mUserViewSet(viewsets.ReadOnlyModelViewSet):
         logger.debug(login_user.followees.all())
         return Response({'status': 'success', 'isFollow': 1}, status=status.HTTP_200_OK)
 
+
     @action(methods=['post'], detail=False)
     def unfollow(self, request):
+
         logger.debug(str(request.user) + 'が' + request.data['target_user'] + 'をアンフォロー')
 
         login_user = request.user
@@ -348,6 +409,7 @@ class mUserViewSet(viewsets.ReadOnlyModelViewSet):
         logger.debug(login_user.followees.all())
         return Response({'status': 'success', 'isFollow': 0}, status=status.HTTP_200_OK)
 
+
 class BbsViewSet(viewsets.ModelViewSet):
 
     permission_classes = (permissions.AllowAny,)
@@ -355,9 +417,12 @@ class BbsViewSet(viewsets.ModelViewSet):
     serializer_class = BbsSerializer
 
     def get_login_user(self):
+
         return self.login_user if hasattr(self, 'login_user') else None
 
+
     def list(self, request, *args, **kwargs):
+
         logger.debug(self.request.query_params)
         self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
         queryset = self.filter_queryset(self.get_queryset())
@@ -368,7 +433,9 @@ class BbsViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+
     def create(self, request, *args, **kwargs):
+
         logger.debug('viewsetのcreate')
         logger.debug(request.user)
         request.data.update({
@@ -387,13 +454,16 @@ class BbsViewSet(viewsets.ModelViewSet):
             return Response(self.get_serializer(queryset, many=True).data, status=status.HTTP_201_CREATED, headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class BbsListView(generics.ListCreateAPIView):
+
     permission_classes = (permissions.AllowAny,)
     queryset = Entry.objects.all()
     serializer_class = EntrySerializer
 
     @transaction.atomic
     def post(self, request, format=None):
+
         logger.info('test')
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
@@ -403,7 +473,9 @@ class BbsListView(generics.ListCreateAPIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class BbsDetailView(generics.RetrieveUpdateDestroyAPIView):
+
     queryset = Entry.objects.all()
     serializer_class = BbsSerializer
 
@@ -416,6 +488,7 @@ class SignUpView(generics.CreateAPIView):
 
     @transaction.atomic
     def post(self, request, format=None):
+
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -436,6 +509,7 @@ class DeleteUserView(generics.DestroyAPIView):
     queryset = mUser.objects.all()
 
     def get_object(self):
+
         try:
             logger.info(self.request.user)
             instance = self.queryset.get(username=self.request.user)

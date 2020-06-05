@@ -52,6 +52,19 @@
 							align='center'
 							justify='end'
 						>
+							<v-icon v-if='tweet.isRetweeted === 0'
+								class='mr-1 retweet'
+								color='black lighten-3'
+								@click='retweet(tweet.id, tweet.isRetweeted, index)'
+								ref='retweet'
+							>mdi-heart</v-icon>
+							<v-icon v-else
+								class='mr-1 retweet'
+								color='black lighten-1'
+								@click='retweet(tweet.id, tweet.isRetweeted, index)'
+								ref='retweet'
+							>mdi-heart</v-icon>
+
 							<v-icon v-if='tweet.isLiked === 0'
 							 	class='mr-1 liked'
 								color='red lighten-3'
@@ -181,13 +194,12 @@
 				var JWTToken = this.$session.get('token')
 				axios.defaults.xsrfCookieName = 'csrftoken'
 				axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
-				const targetUrl = (isLiked === 0) ? 'liked/' : 'unLiked/'
+				const targetUrl = 'liked'
 				axios({
 					method: 'POST',
-					url: 'http://192.168.33.12:8000/api/tweet/' + targetUrl,
+					url: 'http://192.168.33.12:8000/api/tweet/' + targetUrl + '/',
 					data: {
-						target_tweet_id : tweetId,
-						login_user : this.$session.get('username')
+						target_tweet_id : tweetId
 					},
 					headers: {
 						Authorization: `JWT ${JWTToken}`,
@@ -196,6 +208,9 @@
 				})
 				.then(res => {
 					console.log(res)
+					console.log(res.data.isLiked)
+					// ここでツイートのisLikedを変えてあげる必要あり
+					// isLikedはres.data.isLikedで取れる
 				})
 				.catch(e => {
 					console.log(e)
@@ -244,6 +259,32 @@
 					console.log(e)
 				})
 			},
+			retweet (tweetId, isRetweeted, index) {
+                console.log('retweet')
+                console.log(this.tweetId)
+                var JWTToken = this.$session.get('token')
+                axios.defaults.xsrfCookieName = 'csrftoken'
+                axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
+                const targetUrl = 'retweet'
+                axios({
+                    method: 'POST',
+                    url: 'http://192.168.33.12:8000/api/tweet/' + targetUrl + '/',
+                    data: {
+                        target_tweet_id : tweetId
+                    },
+                    headers: {
+                        Authorization: `JWT ${JWTToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(res => {
+                    console.log(res.data)
+					console.log(res.data.isRetweeted)
+                })
+                .catch(e => {
+                    console.log(e)
+                })
+            }
 		}
 	}
 </script>
@@ -254,7 +295,8 @@
 		color: #333 !important;
 		text-decoration: none;
 	}
-	.liked {
+	.liked,
+	.retweet {
 		cursor: pointer;
 	}
 </style>

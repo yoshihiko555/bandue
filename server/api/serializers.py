@@ -120,7 +120,7 @@ class TweetSerializer(serializers.ModelSerializer):
     liked = serializers.SerializerMethodField()
     liked_count = serializers.SerializerMethodField()
     isLiked = serializers.SerializerMethodField()
-    isReTweeted = serializers.SerializerMethodField()
+    isRetweeted = serializers.SerializerMethodField()
     retweet_count = serializers.SerializerMethodField()
     reply = serializers.SerializerMethodField()
     isReplied = serializers.SerializerMethodField()
@@ -144,7 +144,7 @@ class TweetSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
             'isLiked',
-            'isReTweeted',
+            'isRetweeted',
             'retweet_count',
             'reply',
             'isReplied',
@@ -173,6 +173,8 @@ class TweetSerializer(serializers.ModelSerializer):
     def get_isLiked(self, obj):
         # とりあえずの実装。ORMの理解が深まり次第リファクタリング予定
         isLiked = 0
+        logger.debug(self.login_user)
+        logger.debug(obj.id)
         if self.login_user != None:
             tweet = Tweet.objects.get(id=obj.id)
             for u in tweet.liked.all():
@@ -181,16 +183,16 @@ class TweetSerializer(serializers.ModelSerializer):
                     break
         return isLiked
 
-    def get_isReTweeted(self, obj):
+    def get_isRetweeted(self, obj):
         # とりあえずの実装。ORMの理解が深まり次第リファクタリング予定
-        isReTweeted = 0
+        isRetweeted = 0
         if self.login_user != None:
             tweet = Tweet.objects.get(id=obj.id)
             for u in tweet.retweet_user.all():
                 if u.username == self.login_user:
-                    isReTweeted = 1
+                    isRetweeted = 1
                     break
-        return isReTweeted
+        return isRetweeted
 
     def get_retweet_count(self, obj):
         return obj.retweet_user.count()

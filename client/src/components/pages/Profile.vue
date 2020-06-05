@@ -15,7 +15,7 @@
 							<v-card-text>
 								{{ profileData.username }}
 								<span v-if='!isMe'>
-									<follow :username="username"></follow>
+									<follow :username='username'></follow>
 								</span>
 							</v-card-text>
 							<v-card-text>
