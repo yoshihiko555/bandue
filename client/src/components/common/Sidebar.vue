@@ -36,7 +36,6 @@
 <script>
 	import SignOut from '@/components/register/SignOut'
 	import { Common } from '@/static/js/common'
-	import router from '@/router'
 
 	const Com = new Common()
 
@@ -114,7 +113,7 @@
 			},
 
 			toProfile () {
-				router.push(this.username)
+				this.$router.push(this.username)
 				Com.reload(this.$router)
 			},
 

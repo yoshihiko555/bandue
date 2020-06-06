@@ -42,10 +42,11 @@ from .serializers import (
     MUserSerializer,
     BbsSerializer,
     ReplySerializer,
+    RoomSerializer,
+    MessageSerializer,
 )
 from .models import (
     mUser,
-    Message,
     HashTag,
     Tweet,
     Reply,
@@ -60,6 +61,9 @@ from .models import (
     Tag,
     Category,
     Retweet,
+    Room,
+    Message,
+    mUser_Room,
 )
 from .permissions import IsMyselfOrReadOnly
 from django_filters import rest_framework as django_filter
@@ -516,3 +520,54 @@ class DeleteUserView(generics.DestroyAPIView):
             return instance
         except mUser.DoesNotExist:
             return Http404
+
+class RoomViewSet(viewsets.ModelViewSet):
+    permission_classes = (permissions.AllowAny,)
+    queryset = Room.objects.all()
+    serializer_class = RoomSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def create(self, request, *args, **kwargs):
+        logger.debug('viewsetのcreate')
+        logger.debug(request.data)
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(data=request.data)
+        logger.info(serializer.is_valid())
+        logger.info(serializer.errors)
+
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+
+            login_user = mUser.objects.get(username=request.data['loginUser'])
+            user = mUser.objects.get(username=request.data['name'])
+            room_id = Room.objects.get(id=serializer.data['id'])
+            # 中間テーブル作成
+            login_mUser_room = mUser_Room.objects.create(
+                user_id=login_user,
+                room_id=room_id
+            )
+            user_mUser_room = mUser_Room.objects.create(
+                user_id=user,
+                room_id=room_id
+            )
+            login_mUser_room.save()
+            user_mUser_room.save()
+
+            return Response(self.get_serializer(queryset, many=True).data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class MessageViewSet(viewsets.ModelViewSet):
+    permission_classes = (permissions.AllowAny,)
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+
+    def list(self, request, *args, **kwargs):
+        logger.info('GET')
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

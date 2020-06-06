@@ -8,9 +8,11 @@ https://docs.djangoproject.com/en/3.0/howto/deployment/asgi/
 """
 
 import os
-
+import django
 from django.core.asgi import get_asgi_application
+from channels.routing import get_defalut_application
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'server.settings')
-
-application = get_asgi_application()
+django.setup()
+# application = get_asgi_application()
+application = get_defalut_application()

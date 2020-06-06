@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import (
     mUser,
-    Message,
     HashTag,
     Tweet,
     Reply,
@@ -15,8 +14,10 @@ from .models import (
     Bbs,
     Tag,
     Category,
+    Room,
+    Message,
+    mUser_Room,
 )
-
 from rest_framework.renderers import JSONRenderer
 
 import logging
@@ -345,3 +346,35 @@ class BbsSerializer(serializers.ModelSerializer):
         title = validated_data['title']
         content = validated_data['content']
         return Bbs.objects.create(writer=user, title=title, content=content)
+
+class RoomSerializer(serializers.ModelSerializer):
+
+    name = serializers.CharField(required=True)
+
+    class Meta:
+        model = Room
+        fields = [
+            'id',
+            'name',
+            'created_at',
+        ]
+
+    def create(self, validated_data):
+        logger.info(validated_data)
+        name = validated_data['name']
+        return Room.objects.create(name=name)
+
+class MessageSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Message
+        fields = [
+            'id',
+            'content',
+            'sender',
+            'receiver',
+            'image',
+            'readed',
+            'deleted',
+            'created_at',
+        ]

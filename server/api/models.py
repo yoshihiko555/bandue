@@ -117,25 +117,25 @@ class mUser(AbstractBaseUser, PermissionsMixin):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
 
-class Message(models.Model):
-
-    content = models.TextField(_('Content'))
-    sender = models.ForeignKey('api.mUser', related_name='sender', on_delete=models.CASCADE)
-    receiver = models.ForeignKey('api.mUser', related_name='receiver', on_delete=models.CASCADE)
-    images = models.ImageField(_('Image'), upload_to=content_file_name, blank=True, null=True)
-    created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
-    is_opened = models.BooleanField(
-        _('Is Opened'),
-        default=False,
-        help_text=_(
-            'Designates whether this message was opened by reveiver'
-        ),
-    )
-
-    deleted = models.BooleanField(_('Delete Flag'), default=False)
-
-    def __str__(self):
-        return self.content
+# class Message(models.Model):
+#
+#     content = models.TextField(_('Content'))
+#     sender = models.ForeignKey('api.mUser', related_name='sender', on_delete=models.CASCADE)
+#     receiver = models.ForeignKey('api.mUser', related_name='receiver', on_delete=models.CASCADE)
+#     images = models.ImageField(_('Image'), upload_to=content_file_name, blank=True, null=True)
+#     created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
+#     is_opened = models.BooleanField(
+#         _('Is Opened'),
+#         default=False,
+#         help_text=_(
+#             'Designates whether this message was opened by reveiver'
+#         ),
+#     )
+#
+#     deleted = models.BooleanField(_('Delete Flag'), default=False)
+#
+#     def __str__(self):
+#         return self.content
 
 
 class HashTag(models.Model):
@@ -393,4 +393,31 @@ class Bbs(models.Model):
     deleted = models.BooleanField(_('Delete Flag'), default=False)
 
     def __str__(self):
+        return self.title
+
+class Room(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    name = models.CharField(_('Name'), max_length=70)
+    created_at = models.DateTimeField(_('Created At'), default=timezone.now)
+
+    def __str__(self):
+        return self.name
+
+class Message(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    room = models.ForeignKey(Room, related_name='room', on_delete=models.CASCADE)
+    sender = models.ForeignKey(mUser, related_name='sender', on_delete=models.CASCADE)
+    receiver = models.ForeignKey(mUser, related_name='receiver', on_delete=models.CASCADE)
+    content = models.TextField(_('Content'))
+    image = models.ImageField(_('Image'), upload_to=content_file_name, blank=True, null=True)
+    readed = models.BooleanField(_('Readed'), default=False)
+    deleted = models.BooleanField(_('Deleted'), default=False)
+    created_at = models.DateTimeField(_('Created At'), default=timezone.now)
+
+    def __str__(self):
         return self.content
+
+class mUser_Room(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    user_id = models.ForeignKey(mUser, related_name='user_id', on_delete=models.CASCADE)
+    room_id = models.ForeignKey(Room, related_name='room_id', on_delete=models.CASCADE)

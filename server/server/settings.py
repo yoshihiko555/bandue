@@ -64,7 +64,9 @@ INSTALLED_APPS = [
     'webpack_loader',
     'api.apps.ApiConfig',
     # 'front_view.apps.FrontViewConfig',
-    'django_filters'
+    'ws.apps.WsConfig',
+    'django_filters',
+    'channels',
 ]
 
 REST_FRAMEWORK = {
@@ -101,6 +103,15 @@ WEBPACK_LOADER = {
     }
 }
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -131,7 +142,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'server.wsgi.application'
-
+ASGI_APPLICATION = 'server.routing.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
