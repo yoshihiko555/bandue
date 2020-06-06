@@ -5,11 +5,8 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<div id="home">
-	<home
-		:is-auth='isAuth'
-		:lodding='lodding'
-	></home>
+<div id="main">
+	<home/>
 </div>
-{% render_bundle 'home' %}
+{% render_bundle 'main' %}
 {% endblock %}
