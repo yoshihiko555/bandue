@@ -397,11 +397,8 @@ class Bbs(models.Model):
 
 class Room(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    name = models.CharField(_('Name'), max_length=70)
+    users = models.ManyToManyField(mUser)
     created_at = models.DateTimeField(_('Created At'), default=timezone.now)
-
-    def __str__(self):
-        return self.name
 
 class Message(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
@@ -417,6 +414,7 @@ class Message(models.Model):
     def __str__(self):
         return self.content
 
+# 多分使わない(後で削除予定)
 class mUser_Room(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     user_id = models.ForeignKey(mUser, related_name='user_id', on_delete=models.CASCADE)

@@ -46,6 +46,7 @@ class MessageConsumer(AsyncWebsocketConsumer):
         logger.info('受信')
         try:
             text_data_json = json.loads(text_data)
+            logger.info(text_data_json)
             roomId = text_data_json['roomId']
             content = text_data_json['content']
             sender = text_data_json['sender']
@@ -74,7 +75,6 @@ class MessageConsumer(AsyncWebsocketConsumer):
                 'content': content,
                 'sender': sender,
                 'receiver': receiver,
-
             }))
         except Exception as e:
             raise

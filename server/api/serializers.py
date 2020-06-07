@@ -348,23 +348,52 @@ class BbsSerializer(serializers.ModelSerializer):
         return Bbs.objects.create(writer=user, title=title, content=content)
 
 class RoomSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(required=False)
+    room_name = serializers.SerializerMethodField()
+    users = serializers.SerializerMethodField()
 
-    name = serializers.CharField(required=True)
+    def __init__(self, *args, **kwargs):
+        self.login_user = kwargs['context']['view'].get_login_user()
+        super().__init__(*args, **kwargs)
 
     class Meta:
         model = Room
         fields = [
             'id',
             'name',
+            'room_name',
+            'users',
             'created_at',
         ]
 
+    def get_room_name(self, obj):
+        room_name = ''
+        target_user = Room.objects.get(id=obj.id).users.exclude(username=self.login_user)
+        for i in target_user:
+            room_name += i.username
+        return room_name
+
+    def get_users(self, obj):
+        users = Room.objects.get(id=obj.id).users.exclude(username=self.login_user)
+        user_contents = ProfileSubSerializer(users, many=True).data
+        return user_contents
+
     def create(self, validated_data):
-        logger.info(validated_data)
         name = validated_data['name']
-        return Room.objects.create(name=name)
+        room = Room.objects.create()
+        room.users.add(mUser.objects.get(username=self.login_user))
+        room.users.add(mUser.objects.get(username=name))
+        return room
 
 class MessageSerializer(serializers.ModelSerializer):
+
+    sender = serializers.SerializerMethodField()
+    receiver = serializers.SerializerMethodField()
+    isMe = serializers.SerializerMethodField()
+
+    def __init__(self, *args, **kwargs):
+        self.login_user = kwargs['context']['view'].get_login_user()
+        super().__init__(*args, **kwargs)
 
     class Meta:
         model = Message
@@ -376,5 +405,18 @@ class MessageSerializer(serializers.ModelSerializer):
             'image',
             'readed',
             'deleted',
+            'isMe',
             'created_at',
         ]
+
+    def get_sender(self, obj):
+        sender_name = obj.sender.username
+        return sender_name
+
+    def get_receiver(self, obj):
+        receiver_name = obj.receiver.username
+        return receiver_name
+
+    def get_isMe(self, obj):
+        isMe = str(obj.sender.username) == str(self.login_user)
+        return isMe

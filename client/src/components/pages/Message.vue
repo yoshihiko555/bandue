@@ -25,10 +25,10 @@
 							<v-list-item
 								v-for='(room, i) in rooms'
 								:key='i'
-								@click='showRoom(room.id, room.name)'
+								@click='showRoom(room.id, room.room_name)'
 							>
 								<v-list-item-content>
-									<v-list-item-title v-text='room.name'></v-list-item-title>
+									<v-list-item-title v-text='room.room_name'></v-list-item-title>
 								</v-list-item-content>
 							</v-list-item>
 						</v-list>
@@ -70,16 +70,20 @@
 			var JWTToken = this.$session.get('token')
 			axios.defaults.xsrfCookieName = 'csrftoken'
 			axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
+			const loginUser = this.$session.get('username')
 			axios({
 				method: 'GET',
 				url: 'http://192.168.33.12:8000/api/room/',
+				params: {
+					loginUser: loginUser
+				},
 				headers: {
 					Authorization: `JWT ${JWTToken}`,
 					'Content-Type': 'application/json'
 				}
 			})
 			.then(res => {
-				console.log(res)
+				console.log('ルーム一覧',res.data)
 				this.rooms = res.data
 			})
 			.catch(e => {
@@ -87,9 +91,8 @@
 			})
 		},
 		methods: {
-			showRoom (id, name) {
-				console.log(id, name)
-				this.$refs.messageBox.showMessage(id, name)
+			showRoom (id, roomName) {
+				this.$refs.messageBox.showMessage(id, roomName)
 			}
 		}
 	}

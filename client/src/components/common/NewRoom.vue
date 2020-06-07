@@ -71,7 +71,7 @@
 			},
 			newRoom (member) {
 				console.log('新規メッセージ作成')
-				console.log(member)
+				console.log('メンバー：' + member)
 				var JWTToken = this.$session.get('token')
 				var loginUser = this.$session.get('username')
 				axios.defaults.xsrfCookieName = 'csrftoken'

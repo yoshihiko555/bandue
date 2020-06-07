@@ -95,7 +95,7 @@ class TweetFilter(django_filter.FilterSet):
 
 
     def tweet_filter(self, queryset, name, value):
-
+        logger.debug('フィルター開始')
         res = queryset
         if self.target_user != None:
             target_user = mUser.objects.get(username=self.target_user)
@@ -165,7 +165,7 @@ class TweetViewSet(viewsets.ModelViewSet):
     filter_class = TweetFilter
 
     def get_login_user(self):
-
+        logger.info(self.login_user)
         return self.login_user if hasattr(self, 'login_user') else None
 
 
@@ -427,7 +427,6 @@ class BbsViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
 
-        logger.debug(self.request.query_params)
         self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
@@ -468,7 +467,6 @@ class BbsListView(generics.ListCreateAPIView):
     @transaction.atomic
     def post(self, request, format=None):
 
-        logger.info('test')
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -526,37 +524,25 @@ class RoomViewSet(viewsets.ModelViewSet):
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
 
+    def get_login_user(self):
+        return self.login_user if hasattr(self, 'login_user') else None
+
     def list(self, request, *args, **kwargs):
+        self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
+        login_user = mUser.objects.get(username=self.login_user)
+        rooms = mUser_Room.objects.filter(user_id=login_user.id)
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
-        logger.debug('viewsetのcreate')
-        logger.debug(request.data)
+        self.login_user = request.data['loginUser'] if 'loginUser' in request.data else None
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(data=request.data)
-        logger.info(serializer.is_valid())
-        logger.info(serializer.errors)
 
         if serializer.is_valid():
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
-
-            login_user = mUser.objects.get(username=request.data['loginUser'])
-            user = mUser.objects.get(username=request.data['name'])
-            room_id = Room.objects.get(id=serializer.data['id'])
-            # 中間テーブル作成
-            login_mUser_room = mUser_Room.objects.create(
-                user_id=login_user,
-                room_id=room_id
-            )
-            user_mUser_room = mUser_Room.objects.create(
-                user_id=user,
-                room_id=room_id
-            )
-            login_mUser_room.save()
-            user_mUser_room.save()
 
             return Response(self.get_serializer(queryset, many=True).data, status=status.HTTP_201_CREATED, headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -566,8 +552,12 @@ class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
 
+    def get_login_user(self):
+        return self.login_user if hasattr(self, 'login_user') else None
+
     def list(self, request, *args, **kwargs):
-        logger.info('GET')
+        logger.info('メッセージ一覧取得')
+        self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
