@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+# from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic.edit import ModelFormMixin, FormMixin
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.sites.shortcuts import get_current_site
@@ -60,7 +60,6 @@ from .models import (
     Bbs,
     Tag,
     Category,
-    Retweet,
     Room,
     Message,
     mUser_Room,
@@ -103,15 +102,17 @@ class TweetFilter(django_filter.FilterSet):
                 logger.debug('リプライツイート除いた一覧')
 
                 t_list = Tweet.objects.filter(author=target_user)
-                r_list = Retweet.objects.filter(retweet_user=target_user)
-                res = t_list.union(r_list).exclude(reply__isnull=False).order_by('-created_at')
+                # r_list = Retweet.objects.filter(retweet_user=target_user)
+                # res = t_list.union(r_list).exclude(reply__isnull=False).order_by('-created_at')
+                res = t_list.exclude(reply__isnull=False).order_by('-created_at')
 
             elif value == 1:
                 logger.debug('リプライツイート含めた一覧')
 
                 t_list = Tweet.objects.filter(author=target_user)
-                r_list = Retweet.objects.filter(retweet_user=target_user)
-                res = t_list.union(r_list).order_by('-created_at')
+                # r_list = Retweet.objects.filter(retweet_user=target_user)
+                # res = t_list.union(r_list).order_by('-created_at')
+                res = t_list.order_by('-created_at')
 
             elif value == 2:
                 logger.debug('画像含めた一覧')
@@ -171,7 +172,6 @@ class TweetViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
 
-        logger.debug(self.request.query_params)
         self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
@@ -258,53 +258,57 @@ class TweetViewSet(viewsets.ModelViewSet):
 
 
     def set_tweet_relation(self, login_user, tweet):
+        '''
+        チェック対象
+        1.リツイートかどうか
+          -リツイート
+            2.リツイートしているか
+                元のツイート取得
+                    -リツイートしていない
+                        新規作成、紐付け
+                    -リツイートしている
+                        削除、紐付け解除
+          -リツイートじゃない
+            2.リツイートしているか
+                -リツイートしていない
+                    新規作成、紐付け
+                -リツイートしている
+                    削除、紐付け解除
+        '''
 
-        try:
-            logger.debug('リツイート存在チェック')
-            retweet = Retweet.objects.get(relation=tweet)
-            logger.debug('リツイートが存在するため、ユーザーが紐づいているかチェック')
-            return self.remove_tweet_relation_info(tweet, retweet, login_user)
-
-        except Retweet.DoesNotExist:
-            logger.debug('リツイートが存在しないから新規作成')
-            retweet = Retweet.objects.create(author=tweet.author, content=tweet.content, images=tweet.images)
-            return self.set_tweet_relation_info(tweet, retweet, login_user)
-
-
-    def set_tweet_relation_info(self, tweet, retweet, login_user):
-
-        retweet.relation = tweet
-        tweet.relation = retweet
-        retweet.liked.add(*list(tweet.liked.all()))
-        retweet.liked.add(*list(tweet.hashTag.all()))
-
-        logger.debug('ユーザーをリツイートユーザーに追加')
-
-        tweet.retweet_user.add(login_user)
-        retweet.retweet_user.add(login_user)
-        tweet.save()
-        retweet.save()
-
-        return Response({'status': 'success', 'isRetweeted': 1}, status=status.HTTP_200_OK)
+        tweet = Tweet.objects.get(retweets=tweet) if tweet.isRetweet else tweet
+        for retweet in tweet.retweets.all():
+            if retweet.retweet_user == login_user:
+                return self.set_tweet_relation_info(login_user=login_user,tweet=tweet,retweet=retweet,isRetweeted=True)
+        return self.set_tweet_relation_info(login_user=login_user,tweet=tweet,isRetweeted=False)
 
 
-    def remove_tweet_relation_info(self, tweet, retweet, login_user):
 
-        try:
-            retweet.retweet_user.all().get(username__exact=login_user.username)
-            logger.debug('ユーザーがリツイートに紐づいているため、紐付け解除')
-            tweet.retweet_user.remove(login_user)
-            retweet.retweet_user.remove(login_user)
-            if len(retweet.retweet_user.all()) == 0:
-                logger.debug('リツイートユーザーが0人のため、リツイートモデル削除')
-                retweet.delete()
-                tweet.relation = None
-                tweet.save()
+    def set_tweet_relation_info(self, login_user, tweet, isRetweeted, **kwargs):
 
-        except mUser.DoesNotExist:
-            logger.debug('ユーザーはリツイートに紐づいていない。この分岐はありえる？')
+        # 既にリツイートしている
+        if isRetweeted:
+            logger.debug('既にリツイートしているためリツイート削除と紐付け解除')
+            retweet = kwargs['retweet']
+            tweet.retweets.remove(retweet)
+            retweet.delete()
+            tweet.save()
+            return Response({'status': 'success'}, status=status.HTTP_200_OK)
 
-        return Response({'status': 'success', 'isRetweeted': 0}, status=status.HTTP_200_OK)
+        # まだリツイートしていない
+        else:
+            logger.debug('まだリツイートしていないため、リツイート新規作成')
+            res = Tweet.objects.create(
+                author=tweet.author,
+                content=tweet.content,
+                images=tweet.images,
+                isRetweet=True,
+                retweet_user=login_user
+            )
+            res.liked.add(*list(tweet.liked.all()))
+            res.hashTag.add(*list(tweet.hashTag.all()))
+            tweet.retweets.add(res)
+            return Response({'status': 'success'}, status=status.HTTP_201_CREATED)
 
 
 class ReplyViewSet(viewsets.ModelViewSet):

@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 def content_file_name(instance, filename):
     return 'upload/{0}/{1}/{2}'.format(instance.author, instance.title, filename)
 
+
 class UserManager(BaseUserManager):
 
     use_in_migrations = True
@@ -117,27 +118,6 @@ class mUser(AbstractBaseUser, PermissionsMixin):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
 
-# class Message(models.Model):
-#
-#     content = models.TextField(_('Content'))
-#     sender = models.ForeignKey('api.mUser', related_name='sender', on_delete=models.CASCADE)
-#     receiver = models.ForeignKey('api.mUser', related_name='receiver', on_delete=models.CASCADE)
-#     images = models.ImageField(_('Image'), upload_to=content_file_name, blank=True, null=True)
-#     created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
-#     is_opened = models.BooleanField(
-#         _('Is Opened'),
-#         default=False,
-#         help_text=_(
-#             'Designates whether this message was opened by reveiver'
-#         ),
-#     )
-#
-#     deleted = models.BooleanField(_('Delete Flag'), default=False)
-#
-#     def __str__(self):
-#         return self.content
-
-
 class HashTag(models.Model):
 
     title = models.CharField(_('Title'), max_length=30)
@@ -159,25 +139,15 @@ class Tweet(models.Model):
     created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
     updated_at = models.DateTimeField(_('Upadate Date'), auto_now=True)
     deleted = models.BooleanField(_('Delete Flag'), default=False)
-    retweet_user = models.ManyToManyField(mUser, related_name='tweet_retweet_user', blank=True)
-    relation = models.OneToOneField('api.Retweet', on_delete=models.SET_NULL, blank=True, null=True)
 
-    def __str__(self):
-        return self.content
+    # リツイートかのフラグ
+    isRetweet = models.BooleanField(_('This is retweet whether or not'), default=False)
 
+    # リツイート一覧 (元のツイートが持つ。元のツイートはisRetweet=False)
+    retweets = models.ManyToManyField('self', blank=True, symmetrical=False)
 
-class Retweet(models.Model):
-
-    author = models.ForeignKey(mUser, on_delete=models.CASCADE, related_name='retweet_author')
-    content = models.TextField(_('Content'))
-    liked = models.ManyToManyField(mUser, blank=True, related_name='retweet_liked')
-    hashTag = models.ManyToManyField(HashTag, blank=True)
-    images = models.ImageField(_('Images'), upload_to=content_file_name, blank=True, null=True)
-    created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
-    updated_at = models.DateTimeField(_('Upadate Date'), auto_now=True)
-    deleted = models.BooleanField(_('Delete Flag'), default=False)
-    retweet_user = models.ManyToManyField(mUser, related_name='retweet_retweet_user', blank=True)
-    relation = models.OneToOneField('api.Tweet', on_delete=models.SET_NULL, blank=True, null=True)
+    # リツイートしたユーザー
+    retweet_user = models.ForeignKey(mUser, on_delete=models.SET_NULL, related_name='tweet_retweet_user', blank=True, null=True)
 
     def __str__(self):
         return self.content
@@ -279,6 +249,7 @@ class MemberShip(models.Model):
     def __str__(self):
         return self.inviter.username + ' が ' + self.band.name + ' に ' + self.muser.username + ' を招待'
 
+
 class Entry(models.Model):
 
     title = models.CharField(_('Title'), max_length=100)
@@ -359,6 +330,7 @@ class Entry(models.Model):
     def __str__(self):
         return self.title
 
+
 class Category(models.Model):
 
     name = models.CharField(_('Category'), max_length=50, default='未分類')
@@ -370,6 +342,7 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+
 class Tag(models.Model):
 
     name = models.CharField(_('Tag'), max_length=50)
@@ -380,6 +353,7 @@ class Tag(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Bbs(models.Model):
 
@@ -395,12 +369,16 @@ class Bbs(models.Model):
     def __str__(self):
         return self.title
 
+
 class Room(models.Model):
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     users = models.ManyToManyField(mUser)
     created_at = models.DateTimeField(_('Created At'), default=timezone.now)
 
+
 class Message(models.Model):
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     room = models.ForeignKey(Room, related_name='room', on_delete=models.CASCADE)
     sender = models.ForeignKey(mUser, related_name='sender', on_delete=models.CASCADE)
@@ -413,6 +391,7 @@ class Message(models.Model):
 
     def __str__(self):
         return self.content
+
 
 # 多分使わない(後で削除予定)
 class mUser_Room(models.Model):

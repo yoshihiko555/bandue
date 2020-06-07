@@ -121,14 +121,18 @@ class TweetSerializer(serializers.ModelSerializer):
     liked = serializers.SerializerMethodField()
     liked_count = serializers.SerializerMethodField()
     isLiked = serializers.SerializerMethodField()
-    isRetweeted = serializers.SerializerMethodField()
-    retweet_count = serializers.SerializerMethodField()
     reply = serializers.SerializerMethodField()
     isReplied = serializers.SerializerMethodField()
     reply_count = serializers.SerializerMethodField()
+    isRetweeted = serializers.SerializerMethodField()
+    retweets = serializers.SerializerMethodField()
+    retweet_user = serializers.SerializerMethodField()
+    retweet_target = serializers.SerializerMethodField()
+    retweet_count = serializers.SerializerMethodField()
+
 
     def __init__(self, *args, **kwargs):
-        self.login_user = kwargs['context']['view'].get_login_user()
+        self.login_user = kwargs['context']['view'].get_login_user() if 'context' in kwargs else None
         super().__init__(*args, **kwargs)
 
     class Meta:
@@ -145,11 +149,15 @@ class TweetSerializer(serializers.ModelSerializer):
             'created_at',
             'updated_at',
             'isLiked',
-            'isRetweeted',
-            'retweet_count',
             'reply',
             'isReplied',
             'reply_count',
+            'isRetweet',
+            'isRetweeted',
+            'retweets',
+            'retweet_user',
+            'retweet_target',
+            'retweet_count',
         ]
 
     def get_author(self, obj):
@@ -173,30 +181,14 @@ class TweetSerializer(serializers.ModelSerializer):
 
     def get_isLiked(self, obj):
         # とりあえずの実装。ORMの理解が深まり次第リファクタリング予定
-        isLiked = 0
-        logger.debug(self.login_user)
-        logger.debug(obj.id)
+        isLiked = False
         if self.login_user != None:
             tweet = Tweet.objects.get(id=obj.id)
             for u in tweet.liked.all():
                 if u.username == self.login_user:
-                    isLiked = 1
+                    isLiked = True
                     break
         return isLiked
-
-    def get_isRetweeted(self, obj):
-        # とりあえずの実装。ORMの理解が深まり次第リファクタリング予定
-        isRetweeted = 0
-        if self.login_user != None:
-            tweet = Tweet.objects.get(id=obj.id)
-            for u in tweet.retweet_user.all():
-                if u.username == self.login_user:
-                    isRetweeted = 1
-                    break
-        return isRetweeted
-
-    def get_retweet_count(self, obj):
-        return obj.retweet_user.count()
 
     def get_reply(self, obj):
         try:
@@ -208,11 +200,46 @@ class TweetSerializer(serializers.ModelSerializer):
 
     def get_isReplied(self, obj):
         tweet = Tweet.objects.get(id=obj.id)
-        isReplied = 1 if len(tweet.reply_set.all()) != 0 else 0
+        isReplied = True if len(tweet.reply_set.all()) != 0 else False
         return isReplied
 
     def get_reply_count(self, obj):
         return len(Tweet.objects.get(id=obj.id).reply_set.all())
+
+    def get_isRetweeted(self, obj):
+        # とりあえずの実装。ORMの理解が深まり次第リファクタリング予定
+        isRetweeted = False
+        if self.login_user != None:
+            tweet = Tweet.objects.get(id=obj.id)
+            target_tweet = Tweet.objects.get(retweets=tweet) if tweet.isRetweet else tweet
+            for t in target_tweet.retweets.all():
+                if t.retweet_user.username == self.login_user:
+                    isRetweeted = True
+                    break
+        return isRetweeted
+
+    def get_retweets(self, obj):
+        try:
+            return TweetSerializer(Tweet.objects.get(pk=obj.id).retweets.all(), many=True).data
+        except:
+            return None
+
+    def get_retweet_user(self, obj):
+        try:
+            return obj.retweet_user.username
+        except:
+            return None
+
+    def get_retweet_target(self, obj):
+        if obj.isRetweet:
+            return None
+        else:
+            return None
+
+    def get_retweet_count(self, obj):
+        tweet = Tweet.objects.get(id=obj.id)
+        target_tweet = Tweet.objects.get(retweets=tweet) if tweet.isRetweet else tweet
+        return len(target_tweet.retweets.all())
 
     def create(self, validated_data):
         user = mUser.objects.get(pk=validated_data['author_pk'])
@@ -224,6 +251,19 @@ class TweetSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+
+class TweetSubSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Tweet
+        fields = [
+            'id',
+            'author',
+            'author_pk',
+            'content',
+            'created_at',
+            'updated_at',
+        ]
 
 
 class ReplySerializer(serializers.ModelSerializer):

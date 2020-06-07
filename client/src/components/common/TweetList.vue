@@ -8,6 +8,13 @@
 				<v-card-title>
 					<router-link @click.native='reload()' :to='{ name : "Profile", params : { username: tweet.author}}' class='tweet_author'>{{ tweet.author }}</router-link>
 					<span class='ml-8' style='font-size:50%;'>{{ tweet.updated_at }}</span>
+					<span v-if='tweet.isRetweeted'>
+						<v-icon
+							class='mr-1 retweet'
+							color='green lighten-1'
+						>mdi-repeat</v-icon>
+						リツイート済み
+					</span>
 
 					<v-spacer></v-spacer>
 
@@ -52,20 +59,21 @@
 							align='center'
 							justify='end'
 						>
-							<v-icon v-if='tweet.isRetweeted === 0'
+							<v-icon v-if='!tweet.isRetweeted'
 								class='mr-1 retweet'
-								color='black lighten-3'
+								color='black lighten-5'
 								@click='retweet(tweet.id, tweet.isRetweeted, index)'
 								ref='retweet'
-							>mdi-heart</v-icon>
+							>mdi-repeat</v-icon>
 							<v-icon v-else
 								class='mr-1 retweet'
-								color='black lighten-1'
+								color='green lighten-1'
 								@click='retweet(tweet.id, tweet.isRetweeted, index)'
 								ref='retweet'
-							>mdi-heart</v-icon>
+							>mdi-repeat</v-icon>
+							<span class='mr-2' ref='tweet_retweet_count'>{{ tweet.retweet_count }}</span>
 
-							<v-icon v-if='tweet.isLiked === 0'
+							<v-icon v-if='!tweet.isLiked'
 							 	class='mr-1 liked'
 								color='red lighten-3'
 								@click='liked(tweet.id, tweet.isLiked, index)'
@@ -261,7 +269,6 @@
 			},
 			retweet (tweetId, isRetweeted, index) {
                 console.log('retweet')
-                console.log(this.tweetId)
                 var JWTToken = this.$session.get('token')
                 axios.defaults.xsrfCookieName = 'csrftoken'
                 axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
@@ -279,7 +286,6 @@
                 })
                 .then(res => {
                     console.log(res.data)
-					console.log(res.data.isRetweeted)
                 })
                 .catch(e => {
                     console.log(e)
