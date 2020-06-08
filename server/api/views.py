@@ -374,7 +374,6 @@ class mUserViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = MUserSerializer
 
     @action(methods=['post'], detail=False)
-
     def isFollow(self, request):
         login_user = request.user
         target_user = request.data['target_user']
@@ -412,6 +411,16 @@ class mUserViewSet(viewsets.ReadOnlyModelViewSet):
         logger.debug('成功')
         logger.debug(login_user.followees.all())
         return Response({'status': 'success', 'isFollow': 0}, status=status.HTTP_200_OK)
+
+    @action(methods=['GET'], detail=False)
+    def checkUserDuplication(self, request):
+        username = request.query_params['username']
+        try:
+            mUser.objects.get(username=username)
+        except mUser.DoesNotExist:
+            return Response({'status': 'success', 'result': True}, status=status.HTTP_200_OK)
+        else:
+            return Response({'status': 'success', 'result': False}, status=status.HTTP_200_OK)
 
 
 class BbsViewSet(viewsets.ModelViewSet):

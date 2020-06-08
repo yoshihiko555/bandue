@@ -11,10 +11,7 @@ import store from '@/store'
 import vuetify from '@/plugins/vuetify'
 import VueSession from 'vue-session'
 import eventHub from '@/plugins/eventHub'
-import { Common } from '@/static/js/common'
 require('@/static/scss/main.scss')
-
-const Com = new Common()
 
 Vue.config.productionTip = false
 
