@@ -70,17 +70,18 @@
 			var JWTToken = this.$session.get('token')
 			axios.defaults.xsrfCookieName = 'csrftoken'
 			axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
-			const loginUser = this.$session.get('username')
-			axios({
+			const loginUser = this.$store.state.loginUser
+			// const loginUser = this.$session.get('username')
+			this.$axios({
 				method: 'GET',
-				url: 'http://192.168.33.12:8000/api/room/',
+				url: 'api/room/',
 				params: {
 					loginUser: loginUser
 				},
-				headers: {
-					Authorization: `JWT ${JWTToken}`,
-					'Content-Type': 'application/json'
-				}
+				// headers: {
+				// 	Authorization: `JWT ${JWTToken}`,
+				// 	'Content-Type': 'application/json'
+				// }
 			})
 			.then(res => {
 				console.log('ルーム一覧',res.data)

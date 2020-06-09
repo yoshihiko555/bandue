@@ -72,21 +72,22 @@
 			newRoom (member) {
 				console.log('新規メッセージ作成')
 				console.log('メンバー：' + member)
-				var JWTToken = this.$session.get('token')
-				var loginUser = this.$session.get('username')
-				axios.defaults.xsrfCookieName = 'csrftoken'
-				axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
-				axios({
+				// var JWTToken = this.$session.get('token')
+				var loginUser = this.$store.state.loginUser
+				// var loginUser = this.$session.get('username')
+				// axios.defaults.xsrfCookieName = 'csrftoken'
+				// axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
+				this.$axios({
 					method: 'POST',
-					url: 'http://192.168.33.12:8000/api/room/',
+					url: 'api/room/',
 					data: {
 						name: member,
 						loginUser: loginUser
 					},
-					headers: {
-						Authorization: `JWT ${JWTToken}`,
-						'Content-Type': 'application/json'
-					}
+					// headers: {
+					// 	Authorization: `JWT ${JWTToken}`,
+					// 	'Content-Type': 'application/json'
+					// }
 				})
 				.then(res => {
 					console.log(res)

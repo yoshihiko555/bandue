@@ -166,7 +166,6 @@ class TweetViewSet(viewsets.ModelViewSet):
     filter_class = TweetFilter
 
     def get_login_user(self):
-        logger.info(self.login_user)
         return self.login_user if hasattr(self, 'login_user') else None
 
 

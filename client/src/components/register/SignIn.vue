@@ -91,18 +91,19 @@
 		}),
 		methods: {
 			login () {
-				console.log(this.credentials)
-				axios.post('http://192.168.33.12:8000/auth/', this.credentials)
-				.then(res => {
-					this.$session.start()
-					this.$session.set('token', res.data.token)
-					this.$session.set('username', JSON.parse(res.config.data).username)
-					this.$router.push('/')
-					Com.reload(this.$router)
-				})
-				.catch(e => {
-					console.log(e)
-				})
+				console.log('入力情報', this.credentials)
+				this.$store.dispatch('AuthCheckAction', this.credentials)
+				// axios.post('http://192.168.33.12:8000/auth/', this.credentials)
+				// .then(res => {
+				// 	this.$session.start()
+				// 	this.$session.set('token', res.data.token)
+				// 	this.$session.set('username', JSON.parse(res.config.data).username)
+				// 	this.$router.push('/')
+				// 	Com.reload(this.$router)
+				// })
+				// .catch(e => {
+				// 	console.log(e)
+				// })
 			},
 
 			reload () {

@@ -88,7 +88,7 @@
 		}),
 
 		mounted: function () {
-			this.username = this.$session.get('username')
+			this.username = this.$store.state.loginUser
 		},
 
 		methods: {

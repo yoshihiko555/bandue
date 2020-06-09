@@ -57,26 +57,26 @@
 			receiver: null,
 		}),
 		mounted: function () {
-			this.loginUser = (this.$session.has('token')) ? this.$session.get('username') : null
+			this.loginUser = (this.$store.state.isAuth) ? this.$store.state.loginUser : null
 		},
 		updated () {
 			this.scrollEnd()
 		},
 		methods: {
 			showMessage (id, roomName) {
-				var JWTToken = this.$session.get('token')
-				axios.defaults.xsrfCookieName = 'csrftoken'
-				axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
-				axios({
+				// var JWTToken = this.$session.get('token')
+				// axios.defaults.xsrfCookieName = 'csrftoken'
+				// axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
+				this.$axios({
 					method: 'GET',
-					url: 'http://192.168.33.12:8000/api/message/',
+					url: 'api/message/',
 					params: {
 						loginUser: this.loginUser
 					},
-					headers: {
-						Authorization: `JWT ${JWTToken}`,
-						'Content-Type': 'application/json'
-					}
+					// headers: {
+					// 	Authorization: `JWT ${JWTToken}`,
+					// 	'Content-Type': 'application/json'
+					// }
 				})
 				.then(res => {
 					console.log('メッセージ一覧', res.data)
@@ -84,7 +84,8 @@
 					this.isShowMsg = true
 					this.roomName = roomName
 					this.roomId = id
-					this.sender = this.$session.get('username')
+					this.sender = this.$store.state.loginUser
+					// this.sender = this.$session.get('username')
 					this.receiver = roomName
 					const url = 'ws://' + window.location.host + '/ws/' + id + '/'
 					this.ws = new WebSocket(url)

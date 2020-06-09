@@ -56,19 +56,19 @@
 				this.$emit('closeModal')
 			},
 			tweetEdit () {
-				var JWTToken = this.$session.get('token')
-				axios.defaults.xsrfCookieName = 'csrftoken'
-				axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
+				// var JWTToken = this.$session.get('token')
+				// axios.defaults.xsrfCookieName = 'csrftoken'
+				// axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
 				axios({
 					method: 'PUT',
-					url: 'http://192.168.33.12:8000/api/tweet/' + this.tweet.id + '/',
+					url: 'api/tweet/' + this.tweet.id + '/',
 					data: {
 						content : this.tweet.content
 					},
-					headers: {
-						Authorization: `JWT ${JWTToken}`,
-						'Content-Type': 'application/json'
-					}
+					// headers: {
+					// 	Authorization: `JWT ${JWTToken}`,
+					// 	'Content-Type': 'application/json'
+					// }
 				})
 				.then(res => {
 					console.log(res)

@@ -1,15 +1,18 @@
 import Vue from 'vue'
 import RegisterWrap from '@/components/register/RegisterWrap'
 import router from '@/router'
-import store from '@/store'
+import { store, initialState } from '@/store'
 import vuetify from '@/plugins/vuetify'
 import 'vuetify/dist/vuetify.min.css'
 import VueSession from 'vue-session'
+import http from '@/plugins/http'
 require('@/static/scss/main.scss')
 
 Vue.config.productionTip = false
+Vue.prototype.$store = store
 
 Vue.use(VueSession)
+Vue.use(http)
 
 // window.state = store.state
 
@@ -21,10 +24,7 @@ new Vue({
 	vuetify,
 	router,
 	store,
-	data: {
-
-	},
-	methods: {
-
+	created () {
+		sessionStorage.setItem('initialState', JSON.stringify(initialState))
 	}
 }).$mount('#register')

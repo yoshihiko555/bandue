@@ -179,14 +179,15 @@
 			const pattern = /\/profile\/(.+?)\/.*/
 			const result = currentPath.match(pattern)
 			this.username = result[1]
-			const loginUser = this.$session.get('username')
+			const loginUser = this.$store.state.loginUser
+			// const loginUser = this.$session.get('username')
 			if (loginUser === this.username) {
 				this.isMe = true
 			}
 		},
 		mounted: function () {
-			const token = this.$session.get('token')
-			axios.get('http://192.168.33.12:8000/api/profile/' + this.username)
+			// const token = this.$session.get('token')
+			this.$axios.get('api/profile/' + this.username)
 			.then(res => {
 				res.data.created_at = res.data.created_at.substr(0, 10)
 				this.profileData = res.data

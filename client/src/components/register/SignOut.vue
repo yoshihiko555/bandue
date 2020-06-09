@@ -52,8 +52,9 @@
 
 			signout () {
 				console.log('サインアウト')
-				this.$session.remove('token')
-				console.log(this.$session.has('token'))
+				this.$store.commit('initState')
+				// this.$session.remove('token')
+				// console.log(this.$session.has('token'))
 				this.$router.push('/')
 				Com.reload(this.$router)
 				// const token = this.$session.get('token')

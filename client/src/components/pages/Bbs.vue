@@ -150,12 +150,12 @@
 			articleList: {}
 		}),
 		mounted: function () {
-			var JWTToken = this.$session.get('token')
-			axios.defaults.xsrfCookieName = 'csrftoken'
-			axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
-			axios({
+			// var JWTToken = this.$session.get('token')
+			// axios.defaults.xsrfCookieName = 'csrftoken'
+			// axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
+			this.$axios({
 				method: 'GET',
-				url: 'http://192.168.33.12:8000/api/bbs/'
+				url: 'api/bbs/'
 			})
 			.then(res => {
 				console.log(res.data)

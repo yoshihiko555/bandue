@@ -13,8 +13,9 @@
 
 		}),
 		mounted: function () {
-			this.$session.start()
-			if (this.$session.has('token')) {
+			// this.$session.start()
+			// if (this.$session.has('token')) {
+			if (this.$store.state.isAuth) {
 				// HOMEへ
 				this.$router.push('/home')
 				Com.reload(this.$router)

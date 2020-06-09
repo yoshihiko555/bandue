@@ -58,12 +58,12 @@
 		    lodding: true
 		}),
 		mounted: function () {
-	      this.$session.start()
-	      console.log('ログイン状態', this.$session.has('token'))
-	      this.isAuth = this.$session.has('token')
+	      // this.$session.start()
+	      // console.log('ログイン状態', this.$session.has('token'))
+	      this.isAuth = this.$store.state.isAuth
 	      this.lodding = false
 
-	      if (!this.$session.has('token')) {
+	      if (!this.$store.state.isAuth) {
 	          this.$router.push('/signin')
 	          Com.reload(this.$router)
 	      }

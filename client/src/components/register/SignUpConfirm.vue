@@ -61,18 +61,21 @@ export default {
   }),
   methods: {
     signup () {
-      console.log(this.data)
-      axios.defaults.xsrfCookieName = 'csrftoken'
-      axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
-      axios.post('http://192.168.33.12:8000/api/signup/', this.data)
+      console.log('入力情報',this.data)
+      // axios.defaults.xsrfCookieName = 'csrftoken'
+      // axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
+      this.$axios.post('api/signup/', this.data)
         .then(res => {
           console.log(res)
-          axios.post('http://192.168.33.12:8000/auth/', this.data)
+		  // サインアップ後は、認証完了の状態にするだけでいい？
+          this.$axios.post('auth/', this.data)
             .then(res => {
               console.log(res)
-              this.$session.start()
-              this.$session.set('token', res.data.token)
-			  this.$session.set('username', JSON.parse(res.config.data).username)
+              // this.$session.start()
+              // this.$session.set('token', res.data.token)
+			  // this.$session.set('username', JSON.parse(res.config.data).username)
+			  // 認証データの設定
+			  this.$store.commit('setToken', { res: res.data, req:res.requestData })
               this.$emit('signup-change-view', Con.SIGNUP_DONE_VIEW)
             })
             .catch(e => {

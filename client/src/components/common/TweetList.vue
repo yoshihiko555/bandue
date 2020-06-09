@@ -145,10 +145,12 @@
 		mounted: function () {
 			console.log('ツイートリストフラグ:', this.tweetListFlg)
 			console.log('ユーザーネーム:', this.username)
-			console.log('ログインユーザー:', this.$session.get('username'))
-			const loginUser = this.$session.get('username')
+			console.log('ログインユーザー:', this.$store.state.loginUser)
+			const loginUser = this.$store.state.loginUser
+			// const loginUser = this.$session.get('username')
 			const targetUser = (this.username !== undefined) ? this.username : loginUser
-			axios.get('http://192.168.33.12:8000/api/tweet/', {
+			// axios.get('http://192.168.33.12:8000/api/tweet/', {
+			this.$axios.get('api/tweet/', {
 				params: {
 					tweetListFlg: this.tweetListFlg,
 					targetUser: targetUser,
@@ -161,7 +163,7 @@
 					res.data[i].updated_at = updatedAt
 				}
 				this.tweetList = res.data
-				console.log(this.tweetList)
+				console.log('ツイート一覧',this.tweetList)
 			})
 			.catch(e => {
 				console.log(e)

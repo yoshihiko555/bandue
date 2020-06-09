@@ -30,20 +30,20 @@
         methods: {
             retweet (tweetId, isRetweeted, index) {
                 console.log('retweet')
-                var JWTToken = this.$session.get('token')
-                axios.defaults.xsrfCookieName = 'csrftoken'
-                axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
+                // var JWTToken = this.$session.get('token')
+                // axios.defaults.xsrfCookieName = 'csrftoken'
+                // axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
                 const targetUrl = 'retweet'
                 axios({
                     method: 'POST',
-                    url: 'http://192.168.33.12:8000/api/tweet/' + targetUrl + '/',
+                    url: 'api/tweet/' + targetUrl + '/',
                     data: {
                         target_tweet_id : tweetId
                     },
-                    headers: {
-                        Authorization: `JWT ${JWTToken}`,
-                        'Content-Type': 'application/json'
-                    }
+                    // headers: {
+                    //     Authorization: `JWT ${JWTToken}`,
+                    //     'Content-Type': 'application/json'
+                    // }
                 })
                 .then(res => {
                     console.log(res.data)

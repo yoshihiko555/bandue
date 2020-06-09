@@ -112,7 +112,7 @@
 		}),
 
 		mounted: function () {
-			const loginUser = this.$session.get('username')
+			const loginUser = this.$store.state.loginUser
 			axios.get('http://192.168.33.12:8000/api/profile/' + loginUser)
 			.then(res => {
 				this.profileData = res.data
