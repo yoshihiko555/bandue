@@ -47,7 +47,6 @@
 </template>
 
 <script>
-import axios from 'axios'
 import { Const } from '@/static/js/const'
 
 const Con = new Const()
@@ -62,18 +61,13 @@ export default {
   methods: {
     signup () {
       console.log('入力情報',this.data)
-      // axios.defaults.xsrfCookieName = 'csrftoken'
-      // axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
-      this.$axios.post('api/signup/', this.data)
+      this.$axios.post('/api/signup/', this.data)
         .then(res => {
           console.log(res)
-		  // サインアップ後は、認証完了の状態にするだけでいい？
+		  // サインアップ後は、認証完了の状態にするだけでいい？※要検討
           this.$axios.post('auth/', this.data)
             .then(res => {
               console.log(res)
-              // this.$session.start()
-              // this.$session.set('token', res.data.token)
-			  // this.$session.set('username', JSON.parse(res.config.data).username)
 			  // 認証データの設定
 			  this.$store.commit('setToken', { res: res.data, req:res.requestData })
               this.$emit('signup-change-view', Con.SIGNUP_DONE_VIEW)

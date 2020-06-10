@@ -36,8 +36,6 @@
 </template>
 
 <script>
-	import axios from 'axios'
-
 	export default {
 		name: 'TweetEdit',
 		props: ['tweet', 'tweetEditDialog'],
@@ -56,19 +54,12 @@
 				this.$emit('closeModal')
 			},
 			tweetEdit () {
-				// var JWTToken = this.$session.get('token')
-				// axios.defaults.xsrfCookieName = 'csrftoken'
-				// axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
-				axios({
+				this.$axios({
 					method: 'PUT',
-					url: 'api/tweet/' + this.tweet.id + '/',
+					url: '/api/tweet/' + this.tweet.id + '/',
 					data: {
 						content : this.tweet.content
 					},
-					// headers: {
-					// 	Authorization: `JWT ${JWTToken}`,
-					// 	'Content-Type': 'application/json'
-					// }
 				})
 				.then(res => {
 					console.log(res)

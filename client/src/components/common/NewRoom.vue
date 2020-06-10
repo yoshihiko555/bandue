@@ -39,8 +39,6 @@
 </template>
 
 <script>
-	import axios from 'axios'
-
 	export default {
 		name: 'NewRoom',
 		data: () => ({
@@ -49,17 +47,11 @@
 		}),
 		methods: {
 			getUsers () {
-				var JWTToken = this.$session.get('token')
-				axios.defaults.xsrfCookieName = 'csrftoken'
-				axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
-				var loginUser = this.$session.get('username')
-				axios({
+				// フォローユーザー一覧取得
+				var loginUser = this.$store.state.loginUser
+				this.$axios({
 					method: 'GET',
-					url: 'http://192.168.33.12:8000/api/profile/' + loginUser + '/',
-					headers: {
-						Authorization: `JWT ${JWTToken}`,
-						'Content-Type': 'application/json'
-					}
+					url: '/api/profile/' + loginUser + '/',
 				})
 				.then(res => {
 					console.log(res)
@@ -72,22 +64,14 @@
 			newRoom (member) {
 				console.log('新規メッセージ作成')
 				console.log('メンバー：' + member)
-				// var JWTToken = this.$session.get('token')
 				var loginUser = this.$store.state.loginUser
-				// var loginUser = this.$session.get('username')
-				// axios.defaults.xsrfCookieName = 'csrftoken'
-				// axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
 				this.$axios({
 					method: 'POST',
-					url: 'api/room/',
+					url: '/api/room/',
 					data: {
 						name: member,
 						loginUser: loginUser
 					},
-					// headers: {
-					// 	Authorization: `JWT ${JWTToken}`,
-					// 	'Content-Type': 'application/json'
-					// }
 				})
 				.then(res => {
 					console.log(res)

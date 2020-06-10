@@ -47,7 +47,6 @@
 		data: () => ({
 			sidebarItem: 7,
 			dialog: false,
-			username: '',
 			items: [
 				{
 					icon: 'mdi-home',
@@ -88,7 +87,7 @@
 		}),
 
 		mounted: function () {
-			this.username = this.$store.state.loginUser
+
 		},
 
 		methods: {
@@ -113,7 +112,7 @@
 			},
 
 			toProfile () {
-				this.$router.push(this.username)
+				this.$router.push(this.$store.state.loginUser)
 				Com.reload(this.$router)
 			},
 

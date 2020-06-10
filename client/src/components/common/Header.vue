@@ -9,35 +9,36 @@
 </template>
 
 <script>
-import { Common } from '@/static/js/common'
+	import { Common } from '@/static/js/common'
 
-const Com = new Common()
-export default {
-  data: () => ({
+	const Com = new Common()
 
-  }),
-  methods: {
-    reload () {
-      Com.reload(this.$router)
-    }
-  }
-}
+	export default {
+		data: () => ({
+
+		}),
+		methods: {
+			reload () {
+				Com.reload(this.$router)
+			}
+		}
+	}
 </script>
 
 <style lang='scss'>
-#header_wrap {
-	padding: 0;
+	#header_wrap {
+		padding: 0;
 
-	height: $header;
+		height: $header;
 
-	.logo{
-		padding-left: 2%;
-		font-size: 22px;
+		.logo{
+			padding-left: 2%;
+			font-size: 22px;
 
-		a {
-			color: #333;
-			text-decoration: blink;
+			a {
+				color: #333;
+				text-decoration: blink;
+			}
 		}
 	}
-}
 </style>

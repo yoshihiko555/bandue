@@ -67,8 +67,6 @@
 </template>
 
 <script>
-	import axios from 'axios'
-
 	export default {
 		name: 'CreateArticle',
 		components: {
@@ -93,20 +91,13 @@
 
 			create () {
 				console.log('投稿')
-				// var JWTToken = this.$session.get('token')
-				// axios.defaults.xsrfCookieName = 'csrftoken'
-				// axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
 				this.$axios({
 					method: 'POST',
-					url: 'api/bbs/',
+					url: '/api/bbs/',
 					data: {
 						title: this.title,
 						content : this.content
 					},
-					// headers: {
-					// 	Authorization: `JWT ${JWTToken}`,
-					// 	'Content-Type': 'application/json'
-					// }
 				})
 				.then(res => {
 					console.log(res.data)

@@ -41,7 +41,7 @@
 					x-large
 					class='teal lighten-4'
 					:disabled='!valid'
-					@click='login'
+					@click='signin'
 					tabindex='3'
 				>SignIn</v-btn>
 			</v-col>
@@ -66,7 +66,6 @@
 </template>
 
 <script>
-	import axios from 'axios'
 	import { Common } from '@/static/js/common'
 
 	const Com = new Common()
@@ -90,20 +89,9 @@
 			}
 		}),
 		methods: {
-			login () {
+			signin () {
 				console.log('入力情報', this.credentials)
 				this.$store.dispatch('AuthCheckAction', this.credentials)
-				// axios.post('http://192.168.33.12:8000/auth/', this.credentials)
-				// .then(res => {
-				// 	this.$session.start()
-				// 	this.$session.set('token', res.data.token)
-				// 	this.$session.set('username', JSON.parse(res.config.data).username)
-				// 	this.$router.push('/')
-				// 	Com.reload(this.$router)
-				// })
-				// .catch(e => {
-				// 	console.log(e)
-				// })
 			},
 
 			reload () {

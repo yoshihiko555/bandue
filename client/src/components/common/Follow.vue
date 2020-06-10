@@ -10,11 +10,6 @@
 </template>
 
 <script>
-    import axios from 'axios'
-
-    const IS_NOT_FOLLOW = 0
-    const IS_FOLLOW = 1
-
     export default {
         props: ['username'],
         data: () => ({
@@ -22,19 +17,12 @@
         }),
         created () {
             console.log(this.username)
-            // var JWTToken = this.$session.get('token')
-            // axios.defaults.xsrfCookieName = 'csrftoken'
-            // axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
             this.$axios({
                 method: 'POST',
-                url: 'api/users/isFollow/',
+                url: '/api/users/isFollow/',
                 data: {
                     target_user : this.username
                 },
-                // headers: {
-                //     Authorization: `JWT ${JWTToken}`,
-                //     'Content-Type': 'application/json'
-                // }
             })
             .then(res => {
                 console.log(res.data)
@@ -56,20 +44,13 @@
         methods: {
             follow () {
                 console.log('followMethod')
-                // var JWTToken = this.$session.get('token')
-                // axios.defaults.xsrfCookieName = 'csrftoken'
-                // axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
                 const targetUrl = (this.isFollow) ? 'unfollow' : 'follow'
                 this.$axios({
                     method: 'POST',
-                    url: 'api/users/' + targetUrl + '/',
+                    url: '/api/users/' + targetUrl + '/',
                     data: {
                         target_user : this.username
                     },
-                    // headers: {
-                    //     Authorization: `JWT ${JWTToken}`,
-                    //     'Content-Type': 'application/json'
-                    // }
                 })
                 .then(res => {
                     console.log(res.data)

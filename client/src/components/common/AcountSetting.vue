@@ -102,8 +102,6 @@
 </template>
 
 <script>
-	import axios from 'axios'
-
 	export default {
 		name: 'AcountSetting',
 		data: () => ({
@@ -113,7 +111,7 @@
 
 		mounted: function () {
 			const loginUser = this.$store.state.loginUser
-			axios.get('http://192.168.33.12:8000/api/profile/' + loginUser)
+			this.$axios.get('/api/profile/' + loginUser)
 			.then(res => {
 				this.profileData = res.data
 				console.log(res)

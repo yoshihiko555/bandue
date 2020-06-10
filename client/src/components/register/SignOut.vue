@@ -53,32 +53,8 @@
 			signout () {
 				console.log('サインアウト')
 				this.$store.commit('initState')
-				// this.$session.remove('token')
-				// console.log(this.$session.has('token'))
 				this.$router.push('/')
 				Com.reload(this.$router)
-				// const token = this.$session.get('token')
-				// axios.defaults.xsrfCookieName = 'csrftoken'
-				// axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
-				// axios.delete('http://192.168.33.12:8000/api/signout/', {
-
-				// 今後取得したTOKENを利用して処理を行う場合のために一旦残しておく
-				// 以下のようにheadersの中に、tokenを埋め込んでAjaxを投げると、
-				// サーバ側でtokenが正しいか判定して、処理を行う
-				// (例)パスワードのリセット処理などで行う
-				// 	headers: {
-				// 		'Content-Type': 'application/json',
-				// 		Authorization: `Bearer ${token}`
-				// 	}
-				// })
-
-				// .then(res => {
-					// console.log(res)
-				// })
-				// .catch(e => {
-				// 	console.log(e)
-				// 	console.log(this.$session.has('token'))
-				// })
 			}
 		}
 	}

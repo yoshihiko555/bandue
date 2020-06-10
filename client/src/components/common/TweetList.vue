@@ -103,9 +103,9 @@
 </template>
 
 <script>
-	import axios from 'axios'
-	import { Common } from '@/static/js/common'
 	import TweetEdit from '@/components/common/TweetEdit'
+	import { Common } from '@/static/js/common'
+
 	const Com = new Common()
 
 	export default {
@@ -147,9 +147,7 @@
 			console.log('ユーザーネーム:', this.username)
 			console.log('ログインユーザー:', this.$store.state.loginUser)
 			const loginUser = this.$store.state.loginUser
-			// const loginUser = this.$session.get('username')
 			const targetUser = (this.username !== undefined) ? this.username : loginUser
-			// axios.get('http://192.168.33.12:8000/api/tweet/', {
 			this.$axios.get('api/tweet/', {
 				params: {
 					tweetListFlg: this.tweetListFlg,
@@ -201,20 +199,13 @@
 
 				this.$refs.tweet_isLikedCount[index].textContent = targetValue
 
-				var JWTToken = this.$session.get('token')
-				axios.defaults.xsrfCookieName = 'csrftoken'
-				axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
 				const targetUrl = 'liked'
 				axios({
 					method: 'POST',
-					url: 'http://192.168.33.12:8000/api/tweet/' + targetUrl + '/',
+					url: '/api/tweet/' + targetUrl + '/',
 					data: {
 						target_tweet_id : tweetId
 					},
-					headers: {
-						Authorization: `JWT ${JWTToken}`,
-						'Content-Type': 'application/json'
-					}
 				})
 				.then(res => {
 					console.log(res)
@@ -248,19 +239,12 @@
 
 			// TODO 削除前に確認モーダル表示
 			showDeleteDialog (tweet) {
-				var JWTToken = this.$session.get('token')
-				axios.defaults.xsrfCookieName = 'csrftoken'
-				axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
 				axios({
 					method: 'DELETE',
-					url: 'http://192.168.33.12:8000/api/tweet/' + tweet.id + '/',
+					url: '/api/tweet/' + tweet.id + '/',
 					data: {
 						content : tweet.content
 					},
-					headers: {
-						Authorization: `JWT ${JWTToken}`,
-						'Content-Type': 'application/json'
-					}
 				})
 				.then(res => {
 					console.log(res)
@@ -271,20 +255,13 @@
 			},
 			retweet (tweetId, isRetweeted, index) {
                 console.log('retweet')
-                var JWTToken = this.$session.get('token')
-                axios.defaults.xsrfCookieName = 'csrftoken'
-                axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
                 const targetUrl = 'retweet'
                 axios({
                     method: 'POST',
-                    url: 'http://192.168.33.12:8000/api/tweet/' + targetUrl + '/',
+                    url: '/api/tweet/' + targetUrl + '/',
                     data: {
                         target_tweet_id : tweetId
                     },
-                    headers: {
-                        Authorization: `JWT ${JWTToken}`,
-                        'Content-Type': 'application/json'
-                    }
                 })
                 .then(res => {
                     console.log(res.data)

@@ -42,8 +42,6 @@
 </template>
 
 <script>
-	import axios from 'axios'
-
 	export default {
 		name: 'MessageBox',
 		data: () => ({
@@ -64,19 +62,12 @@
 		},
 		methods: {
 			showMessage (id, roomName) {
-				// var JWTToken = this.$session.get('token')
-				// axios.defaults.xsrfCookieName = 'csrftoken'
-				// axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
 				this.$axios({
 					method: 'GET',
-					url: 'api/message/',
+					url: '/api/message/',
 					params: {
 						loginUser: this.loginUser
 					},
-					// headers: {
-					// 	Authorization: `JWT ${JWTToken}`,
-					// 	'Content-Type': 'application/json'
-					// }
 				})
 				.then(res => {
 					console.log('メッセージ一覧', res.data)
@@ -85,7 +76,6 @@
 					this.roomName = roomName
 					this.roomId = id
 					this.sender = this.$store.state.loginUser
-					// this.sender = this.$session.get('username')
 					this.receiver = roomName
 					const url = 'ws://' + window.location.host + '/ws/' + id + '/'
 					this.ws = new WebSocket(url)

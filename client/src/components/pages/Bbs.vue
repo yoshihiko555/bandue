@@ -76,7 +76,7 @@
 								<v-chip
 									v-for='tag in tags'
 									:key='tag'
-									@click='test'
+									@click='tag'
 								>
 									{{ tag }}
 								</v-chip>
@@ -97,7 +97,7 @@
 								<v-list-item
 									v-for='category in categorys'
 									:key='category'
-									@click='test2'
+									@click='category'
 								>
 									<v-list-item-content>
 										<v-list-item-title v-text='category'></v-list-item-title>
@@ -115,7 +115,6 @@
 </template>
 
 <script>
-	import axios from 'axios'
 	import Header from '@/components/common/Header'
 	import Footer from '@/components/common/Footer'
 	import Sidebar from '@/components/common/Sidebar'
@@ -150,15 +149,12 @@
 			articleList: {}
 		}),
 		mounted: function () {
-			// var JWTToken = this.$session.get('token')
-			// axios.defaults.xsrfCookieName = 'csrftoken'
-			// axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
 			this.$axios({
 				method: 'GET',
-				url: 'api/bbs/'
+				url: '/api/bbs/'
 			})
 			.then(res => {
-				console.log(res.data)
+				console.log('記事一覧', res.data)
 				this.articleList = res.data
 			})
 			.catch(e => {
@@ -167,11 +163,11 @@
 		},
 
 		methods: {
-			test () {
+			tag () {
 				console.log('タグをクリック')
 			},
 
-			test2 () {
+			category () {
 				console.log('カテゴリーをクリック')
 			}
 		}

@@ -14,8 +14,6 @@
 </template>
 
 <script>
-    import axios from 'axios'
-
     export default {
         props: [
             'tweet_id',
@@ -30,20 +28,13 @@
         methods: {
             retweet (tweetId, isRetweeted, index) {
                 console.log('retweet')
-                // var JWTToken = this.$session.get('token')
-                // axios.defaults.xsrfCookieName = 'csrftoken'
-                // axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
                 const targetUrl = 'retweet'
-                axios({
+                this.$axios({
                     method: 'POST',
-                    url: 'api/tweet/' + targetUrl + '/',
+                    url: '/api/tweet/' + targetUrl + '/',
                     data: {
                         target_tweet_id : tweetId
                     },
-                    // headers: {
-                    //     Authorization: `JWT ${JWTToken}`,
-                    //     'Content-Type': 'application/json'
-                    // }
                 })
                 .then(res => {
                     console.log(res.data)

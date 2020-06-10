@@ -36,8 +36,6 @@
 </template>
 
 <script>
-	import axios from 'axios'
-
 	export default {
 		props: ['data'],
 		name: 'Tweet',
@@ -48,19 +46,12 @@
 		}),
 		methods: {
 			tweet () {
-				// var JWTToken = this.$session.get('token')
-				// axios.defaults.xsrfCookieName = 'csrftoken'
-				// axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
 				this.$axios({
 					method: 'POST',
-					url: 'api/tweet/',
+					url: '/api/tweet/',
 					data: {
 						content : this.tweet_content
 					},
-					// headers: {
-					// 	Authorization: `JWT ${JWTToken}`,
-					// 	'Content-Type': 'application/json'
-					// }
 				})
 				.then(res => {
 					console.log(res.data)

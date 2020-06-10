@@ -43,7 +43,6 @@
 	const Com = new Common()
 
 	export default {
-		// props: ['isAuth', 'lodding'],
 		name: 'Index',
 		components: {
 			Header,
@@ -58,12 +57,10 @@
 		    lodding: true
 		}),
 		mounted: function () {
-	      // this.$session.start()
-	      // console.log('ログイン状態', this.$session.has('token'))
-	      this.isAuth = this.$store.state.isAuth
+		  this.isAuth = this.$store.state.isAuth
 	      this.lodding = false
 
-	      if (!this.$store.state.isAuth) {
+	      if (!this.isAuth) {
 	          this.$router.push('/signin')
 	          Com.reload(this.$router)
 	      }

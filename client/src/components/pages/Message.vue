@@ -47,7 +47,6 @@
 </template>
 
 <script>
-	import axios from 'axios'
 	import Header from '@/components/common/Header'
 	import Footer from '@/components/common/Footer'
 	import Sidebar from '@/components/common/Sidebar'
@@ -67,21 +66,13 @@
 			rooms: {},
 		}),
 		mounted: function () {
-			var JWTToken = this.$session.get('token')
-			axios.defaults.xsrfCookieName = 'csrftoken'
-			axios.defaults.xsrfHeaderName = 'X-CSRFTOKEN'
 			const loginUser = this.$store.state.loginUser
-			// const loginUser = this.$session.get('username')
 			this.$axios({
 				method: 'GET',
-				url: 'api/room/',
+				url: '/api/room/',
 				params: {
 					loginUser: loginUser
 				},
-				// headers: {
-				// 	Authorization: `JWT ${JWTToken}`,
-				// 	'Content-Type': 'application/json'
-				// }
 			})
 			.then(res => {
 				console.log('ルーム一覧',res.data)

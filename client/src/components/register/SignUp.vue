@@ -69,7 +69,6 @@
 
 <script>
 	import _ from 'lodash'
-	import axios from 'axios'
 	import { Const } from '@/static/js/const'
 
 	const Con = new Const()
@@ -83,7 +82,6 @@
 			showPassword: false,
 			isIcon: true,
 			isUserDuplication: true,
-			diff: false,
 			rules: {
 				// username: [
 					// v => !!v || '必須項目です',
@@ -142,9 +140,9 @@
 			},
 			// イベントの間引き処理(イベント発火の１秒後にajaxが飛ぶ)
 			checkUsername: _.debounce(function checkUsername(val) {
-				axios({
+				this.$axios({
 					methods: 'GET',
-					url: 'http://192.168.33.12:8000/api/users/checkUserDuplication/',
+					url: '/api/users/checkUserDuplication/',
 					params: {
 						username: val
 					}
