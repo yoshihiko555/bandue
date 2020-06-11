@@ -229,16 +229,22 @@ class TweetViewSet(viewsets.ModelViewSet):
 
         logger.debug('likedメソッド')
         login_user = request.user
-        tweet = Tweet.objects.get(pk=request.data['target_tweet_id'])
-        return self.set_tweet_liked_info(tweet, login_user)
+        target_tweet = Tweet.objects.get(pk=request.data['target_tweet_id'])
+        tweet = Tweet.objects.get(retweet=target_tweet) if target_tweet.isRetweet == True else target_tweet
+        isExist = True if tweet.retweet != None else False
+        return self.set_tweet_liked_info(tweet, login_user, isExist)
 
-    def set_tweet_liked_info(self, tweet, login_user):
+    def set_tweet_liked_info(self, tweet, login_user, isExist):
         try:
             tweet.liked.all().get(username__exact=login_user.username)
+            if isExist:
+                tweet.retweet.liked.remove(login_user)
             tweet.liked.remove(login_user)
             return Response({'status': 'success', 'isLiked': 0}, status=status.HTTP_200_OK)
         except mUser.DoesNotExist:
             tweet.liked.add(login_user)
+            if isExist:
+                tweet.retweet.liked.add(login_user)
             return Response({'status': 'success', 'isLiked': 1}, status=status.HTTP_200_OK)
 
 
@@ -266,7 +272,7 @@ class TweetViewSet(viewsets.ModelViewSet):
         '''
         tweet = Tweet.objects.get(retweet=tweet) if tweet.isRetweet == True else tweet
         isExist = True if tweet.retweet != None else False
-        return self.set_tweet_relation_info(login_user=login_user, tweet=tweet, isExist=isExist)
+        return self.set_tweet_relation_info(login_user, tweet, isExist)
 
 
     def set_tweet_relation_info(self, login_user, tweet, isExist):
