@@ -143,11 +143,11 @@ class Tweet(models.Model):
     # リツイートかのフラグ
     isRetweet = models.BooleanField(_('This is retweet whether or not'), default=False)
 
-    # リツイート一覧 (元のツイートが持つ。元のツイートはisRetweet=False)
-    retweets = models.ManyToManyField('self', blank=True, symmetrical=False)
+    # リツイート
+    retweet = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
 
-    # リツイートしたユーザー
-    retweet_user = models.ForeignKey(mUser, on_delete=models.SET_NULL, related_name='tweet_retweet_user', blank=True, null=True)
+    # リツイートしたユーザー一覧
+    retweet_user = models.ManyToManyField(mUser, blank=True, symmetrical=False)
 
     def __str__(self):
         return self.content

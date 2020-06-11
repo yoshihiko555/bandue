@@ -10,6 +10,7 @@
 </template>
 
 <script>
+    const IS_FOLLOW = 1
     export default {
         props: ['username'],
         data: () => ({

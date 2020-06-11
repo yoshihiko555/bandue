@@ -200,7 +200,7 @@
 				this.$refs.tweet_isLikedCount[index].textContent = targetValue
 
 				const targetUrl = 'liked'
-				axios({
+				this.$axios({
 					method: 'POST',
 					url: '/api/tweet/' + targetUrl + '/',
 					data: {
@@ -239,7 +239,7 @@
 
 			// TODO 削除前に確認モーダル表示
 			showDeleteDialog (tweet) {
-				axios({
+				this.$axios({
 					method: 'DELETE',
 					url: '/api/tweet/' + tweet.id + '/',
 					data: {
@@ -256,7 +256,7 @@
 			retweet (tweetId, isRetweeted, index) {
                 console.log('retweet')
                 const targetUrl = 'retweet'
-                axios({
+                this.$axios({
                     method: 'POST',
                     url: '/api/tweet/' + targetUrl + '/',
                     data: {

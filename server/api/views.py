@@ -258,28 +258,32 @@ class TweetViewSet(viewsets.ModelViewSet):
 
     def set_tweet_relation(self, login_user, tweet):
         '''
+        ※6/11追加
         チェック対象
-        1.リツイートかどうか
-          -リツイート
-            2.リツイートしているか
-                元のツイート取得
-                    -リツイートしていない
-                        新規作成、紐付け
-                    -リツイートしている
-                        削除、紐付け解除
-          -リツイートじゃない
-            2.リツイートしているか
-                -リツイートしていない
-                    新規作成、紐付け
-                -リツイートしている
-                    削除、紐付け解除
-        '''
+        0.既にリツイートが存在するか
+          -リツイートが存在する
+          　 そのリツイート、元ツイートのリツイートユーザーに追加
 
-        tweet = Tweet.objects.get(retweets=tweet) if tweet.isRetweet else tweet
-        for retweet in tweet.retweets.all():
-            if retweet.retweet_user == login_user:
-                return self.set_tweet_relation_info(login_user=login_user,tweet=tweet,retweet=retweet,isRetweeted=True)
-        return self.set_tweet_relation_info(login_user=login_user,tweet=tweet,isRetweeted=False)
+          -リツイートが存在しない
+                1.リツイートかどうか
+                  -リツイート
+                    2.リツイートしているか
+                        元のツイート取得
+                            -リツイートしていない
+                                新規作成、紐付け
+                            -リツイートしている
+                                削除、紐付け解除
+                  -リツイートじゃない
+                    2.リツイートしているか
+                        -リツイートしていない
+                            新規作成、紐付け
+                        -リツイートしている
+                            削除、紐付け解除
+        '''
+        for user in tweet.retweet_user.all():
+            if user == login_user:
+                return self.set_tweet_relation_info(login_user=login_user, tweet=tweet, isRetweeted=True)
+        return self.set_tweet_relation_info(login_user=login_user, tweet=tweet, isRetweeted=False)
 
 
 
@@ -288,8 +292,9 @@ class TweetViewSet(viewsets.ModelViewSet):
         # 既にリツイートしている
         if isRetweeted:
             logger.debug('既にリツイートしているためリツイート削除と紐付け解除')
-            retweet = kwargs['retweet']
-            tweet.retweets.remove(retweet)
+            retweet = tweet.retweet
+            tweet.retweet = None
+            tweet.retweet_user.remove(login_user)
             retweet.delete()
             tweet.save()
             return Response({'status': 'success'}, status=status.HTTP_200_OK)
@@ -302,11 +307,15 @@ class TweetViewSet(viewsets.ModelViewSet):
                 content=tweet.content,
                 images=tweet.images,
                 isRetweet=True,
-                retweet_user=login_user
+                retweet=tweet,
             )
             res.liked.add(*list(tweet.liked.all()))
             res.hashTag.add(*list(tweet.hashTag.all()))
-            tweet.retweets.add(res)
+            tweet.retweet = res
+            res.retweet_user.add(login_user)
+            tweet.retweet_user.add(login_user)
+            res.save()
+            tweet.save()
             return Response({'status': 'success'}, status=status.HTTP_201_CREATED)
 
 
