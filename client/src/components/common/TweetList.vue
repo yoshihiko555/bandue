@@ -63,13 +63,13 @@
 								class='mr-1 retweet'
 								color='black lighten-5'
 								@click='retweet(tweet.id, tweet.isRetweeted, index)'
-								ref='retweet'
+								ref='tweet_retweet'
 							>mdi-repeat</v-icon>
 							<v-icon v-else
 								class='mr-1 retweet'
 								color='green lighten-1'
 								@click='retweet(tweet.id, tweet.isRetweeted, index)'
-								ref='retweet'
+								ref='tweet_retweet'
 							>mdi-repeat</v-icon>
 							<span class='mr-2' ref='tweet_retweet_count'>{{ tweet.retweet_count }}</span>
 
@@ -255,6 +255,27 @@
 			},
 			retweet (tweetId, isRetweeted, index) {
                 console.log('retweet')
+
+				let targetValue = parseInt(this.$refs.tweet_retweet_count[index].textContent)
+
+				for (let i in this.$refs.tweet_retweet[index].$el.classList) {
+					console.log(this.$refs.tweet_retweet[index].$el.classList[i])
+					let className = this.$refs.tweet_retweet[index].$el.classList[i]
+					if (className === 'text--lighten-1') {
+						this.$refs.tweet_retweet[index].$el.classList.remove(className)
+						this.$refs.tweet_retweet[index].$el.classList.add('text--lighten-3')
+						this.$refs.tweet_retweet[index].$el.classList.add('black--text')
+						targetValue = targetValue - 1
+					} else if (className === 'text--lighten-5') {
+						this.$refs.tweet_retweet[index].$el.classList.remove(className)
+						this.$refs.tweet_retweet[index].$el.classList.add('text--lighten-1')
+						this.$refs.tweet_retweet[index].$el.classList.add('green--text')
+						targetValue = targetValue + 1
+					}
+				}
+
+				this.$refs.tweet_retweet_count[index].textContent = targetValue
+
                 const targetUrl = 'retweet'
                 this.$axios({
                     method: 'POST',
