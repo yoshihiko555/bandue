@@ -12,13 +12,13 @@ export default {
 		})
 		// リクエストのデフォルト定義
 		http.interceptors.request.use((config) => {
-			console.log('リクエスト情報', config)
 			// ヘッダーに認証済みのToken埋め込み
 			if (Vue.prototype.$store.state.isAuth) {
 				config.headers = {
 					Authorization: `JWT ${Vue.prototype.$store.state.token}`,
 					'Content-Type': 'application/json'
 				}
+				if (!('params' in config)) config.params = {}
 				if (config.method === 'get') config.params.loginUser = Vue.prototype.$store.state.loginUser
 			}
 			return config

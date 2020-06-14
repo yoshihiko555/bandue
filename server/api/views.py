@@ -174,6 +174,7 @@ class TweetViewSet(viewsets.ModelViewSet):
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(queryset, many=True)
+        logger.info(serializer.data)
         return Response(serializer.data)
 
 
@@ -198,14 +199,6 @@ class TweetViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-    def retrieve(self, request, pk=None):
-
-        logger.debug('★★★★★詳細取得★★★★★')
-        queryset = self.queryset.get(pk=pk)
-        serializer = self.get_serializer(queryset)
-        return Response(serializer.data)
-
-
     def update(self, request, pk=None):
 
         logger.debug('★★★★★Tweet更新★★★★★')
@@ -219,8 +212,14 @@ class TweetViewSet(viewsets.ModelViewSet):
 
 
     def destroy(self, request, pk=None):
-
         logger.info('Tweet削除')
+        try:
+            instance = self.get_object()
+            self.perform_destroy(instance)
+            queryset = self.filter_queryset(self.get_queryset())
+            serializer = self.get_serializer(queryset, many=True)
+        except Http404:
+            pass
         return Response(serializer.data)
 
 

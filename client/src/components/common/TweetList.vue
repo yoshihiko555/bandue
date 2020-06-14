@@ -4,9 +4,14 @@
 			<v-card
 				flat
 				class='tweet_wrap'
+				@click.self.native='showTweetDetail(tweet)'
 			>
 				<v-card-title>
-					<router-link @click.native='reload()' :to='{ name : "Profile", params : { username: tweet.author}}' class='tweet_author'>{{ tweet.author }}</router-link>
+					<router-link
+						@click.native='reload()'
+						:to='{ name : "Profile", params : { username: tweet.author}}'
+						class='tweet_author z10'
+					>{{ tweet.author }}</router-link>
 					<span class='ml-8' style='font-size:50%;'>{{ tweet.updated_at }}</span>
 					<span v-if='tweet.isRetweeted'>
 						<v-icon
@@ -19,7 +24,7 @@
 					<v-spacer></v-spacer>
 
 					<!-- Tweet編集ボタン -->
-					<v-menu bottom left>
+					<v-menu bottom left class='z10'>
 						<template v-slot:activator='{ on }'>
 							<v-btn
 								dark
@@ -27,6 +32,7 @@
 								v-on='on'
 								color='grey'
 								v-show='tweetListFlg != 4'
+								class='z10'
 							>
 								<v-icon>mdi-dots-vertical</v-icon>
 							</v-btn>
@@ -59,32 +65,36 @@
 							align='center'
 							justify='end'
 						>
-							<v-icon v-if='!tweet.isRetweeted'
-								class='mr-1 retweet'
-								color='black lighten-5'
+							<v-btn
+								icon
 								@click='retweet(tweet.id, tweet.isRetweeted, index)'
-								ref='tweet_retweet'
-							>mdi-repeat</v-icon>
-							<v-icon v-else
-								class='mr-1 retweet'
-								color='green lighten-1'
-								@click='retweet(tweet.id, tweet.isRetweeted, index)'
-								ref='tweet_retweet'
-							>mdi-repeat</v-icon>
+								class='z10'
+							>
+								<v-icon v-if='!tweet.isRetweeted'
+									color='black lighten-5'
+									ref='tweet_retweet'
+								>mdi-repeat</v-icon>
+								<v-icon v-else
+									color='green lighten-1'
+									ref='tweet_retweet'
+								>mdi-repeat</v-icon>
+							</v-btn>
 							<span class='mr-2' ref='tweet_retweet_count'>{{ tweet.retweet_count }}</span>
 
-							<v-icon v-if='!tweet.isLiked'
-							 	class='mr-1 liked'
-								color='red lighten-3'
+							<v-btn
+								icon
 								@click='liked(tweet.id, tweet.isLiked, index)'
-								ref='tweet_isLiked'
-							>mdi-heart</v-icon>
-							<v-icon v-else
-							 	class='mr-1 liked'
-								color='red lighten-1'
-								@click='liked(tweet.id, tweet.isLiked, index)'
-								ref='tweet_isLiked'
-							>mdi-heart</v-icon>
+								class='z10'
+							>
+								<v-icon v-if='!tweet.isLiked'
+									color='red lighten-3'
+									ref='tweet_isLiked'
+								>mdi-heart</v-icon>
+								<v-icon v-else
+									color='red lighten-1'
+									ref='tweet_isLiked'
+								>mdi-heart</v-icon>
+							</v-btn>
 							<span class='mr-2' ref='tweet_isLikedCount'>{{ tweet.liked_count }}</span>
 						</v-row>
 					</v-list-item>
@@ -99,11 +109,18 @@
 			:tweet='selectTweet'
 		></TweetEdit>
 
+		<TweetDetail
+			@closeModal='closeModal'
+			:tweetDetailDialog='tweetDetailDialog'
+			:tweet='selectTweet'
+		></TweetDetail>
+
 	</div>
 </template>
 
 <script>
 	import TweetEdit from '@/components/common/TweetEdit'
+	import TweetDetail from '@/components/common/TweetDetail'
 	import { Common } from '@/static/js/common'
 
 	const Com = new Common()
@@ -121,10 +138,11 @@
 			}
 		},
 		components: {
-			TweetEdit
+			TweetEdit,
+			TweetDetail,
 		},
 		data: () => ({
-			tweetList: {},
+			tweetList: [],
 			kebabMenu: [
 				{
 					title: 'Edit',
@@ -137,6 +155,7 @@
 			],
 			tweetEditDialog: false,
 			tweetDeleteDialog: false,
+			tweetDetailDialog: false,
 			selectTweet: {},
 		}),
 		created () {
@@ -234,6 +253,7 @@
 
 			closeModal () {
 				this.tweetEditDialog = false
+				this.tweetDetailDialog = false
 			},
 
 			// TODO 削除前に確認モーダル表示
@@ -241,19 +261,17 @@
 				this.$axios({
 					method: 'DELETE',
 					url: '/api/tweet/' + tweet.id + '/',
-					data: {
-						content : tweet.content
-					},
 				})
 				.then(res => {
 					console.log(res)
+					this.tweetList = res.data
 				})
 				.catch(e => {
 					console.log(e)
 				})
 			},
 			retweet (tweetId, isRetweeted, index) {
-                console.log('retweet')
+				console.log('retweet')
 
 				let targetValue = parseInt(this.$refs.tweet_retweet_count[index].textContent)
 
@@ -289,19 +307,53 @@
                 .catch(e => {
                     console.log(e)
                 })
-            }
+            },
+			showTweetDetail (tweet) {
+				this.tweetDetailDialog = true
+				this.selectTweet = tweet
+			}
+
 		}
 	}
 </script>
 
-<style>
-	.tweet_author {
+<style lang='scss'>
+	.tweet_wrap {
 		cursor: pointer;
-		color: #333 !important;
-		text-decoration: none;
+		&::after {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			z-index: 0;
+		}
+
+		.tweet_author {
+			color: #333 !important;
+			text-decoration: none;
+			position: relative;
+
+			&::after {
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				content: '';
+				width: 100%;
+				height: 2px;
+				background: #333;
+				transform: scale(0, 1);
+				transform-origin: center top;
+				transition: transform .3s;
+			}
+
+			&:hover {
+				&::after {
+					transform: scale(1, 1);
+				}
+			}
+		}
 	}
-	.liked,
-	.retweet {
-		cursor: pointer;
-	}
+
 </style>

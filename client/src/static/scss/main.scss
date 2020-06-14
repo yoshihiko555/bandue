@@ -1,3 +1,9 @@
 .main {
 	min-height: calc(100vh - #{($header + $footer)}) !important;
 }
+
+.z10 { z-index: 10 !important }
+.z20 { z-index: 20 !important }
+.z30 { z-index: 30 !important }
+.z40 { z-index: 40 !important }
+.z50 { z-index: 50 !important }
