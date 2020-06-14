@@ -152,7 +152,6 @@
 				params: {
 					tweetListFlg: this.tweetListFlg,
 					targetUser: targetUser,
-					loginUser: loginUser
 				}
 			})
 			.then(res => {

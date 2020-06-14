@@ -7,19 +7,41 @@ const Com = new Common()
 
 Vue.use(Vuex)
 
-// 初期値設定
+// 認証状態の初期値設定
 export const initialState = {
     isAuth: false,
     token: '',
     loginUser: '',
 }
 
+const auth = {
+    namespaced: true,
+    state: {
+        checkAuth: false, // true:認証失敗
+    },
+    getters: {
+        getCheckAuth: state => state.checkAuth
+    },
+    mutations: {
+        setAuthFailure: function (state, payload) {
+            state.checkAuth = payload
+        }
+    },
+    actions: {
+        refreshAuth: function (ctx, kwargs) {
+            this.commit('auth/setAuthFailure', false)
+        }
+    }
+}
+
 export const store = new Vuex.Store({
   state: initialState,
+  getters: {
+  },
   mutations: {
       // 認証成功後のデータを設定
       setToken: function (state, payload) {
-          console.log('認証データの設定', payload)
+          console.log('認証データの設定', payload, auth)
           state.isAuth = true
           state.token = payload.res.token
           state.loginUser = payload.req.username
@@ -33,6 +55,7 @@ export const store = new Vuex.Store({
   actions: {
       // 認証チェック
       AuthCheckAction: function (ctx, kwargs) {
+          console.log('action')
           Vue.prototype.$axios({
               method: 'POST',
               url: 'auth/',
@@ -40,16 +63,19 @@ export const store = new Vuex.Store({
           })
           .then(res => {
               console.log(res)
+              this.commit('auth/setAuthFailure', false)
               this.commit('setToken', { res: res.data, req: res.requestData })
               router.push('/')
               Com.reload(router)
           })
           .catch(e => {
               console.log(e)
+              this.commit('auth/setAuthFailure', true)
           })
       }
   },
   modules: {
+      auth
   },
   // 認証データの保存先をセッションに設定
   plugins: [VuexPersistedstate({storage: window.sessionStorage})]

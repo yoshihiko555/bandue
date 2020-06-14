@@ -2,6 +2,7 @@
 	<v-card
 		class='pa-3 signup_wrap'
 		outlined
+		width=400
 	>
 		<v-card-title>
 			<h1 class="register_title" val='Testデータ'>BandueにSignUpする</h1>

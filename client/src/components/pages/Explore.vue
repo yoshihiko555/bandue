@@ -14,6 +14,16 @@
 							<h1 class="explote_signin_title">Bandue</h1>
 						</v-card-title>
 
+						<v-alert
+							dense
+							outlined
+							type='error'
+							transition='scale-transition'
+							v-show='checkAuth'
+						>
+							<strong>ユーザー名</strong>、または<strong>パスワード</strong>が間違っています。再度入力し直してください。
+						</v-alert>
+
 						<v-form ref='form' v-model='valid'>
 							<v-text-field
 								v-model='credentials.username'
@@ -78,8 +88,9 @@
 </template>
 
 <script>
-	import { Common } from '@/static/js/common'
 	import Footer from '@/components/common/Footer'
+	import { mapState } from 'vuex'
+	import { Common } from '@/static/js/common'
 
 	const Com = new Common()
 
@@ -105,6 +116,12 @@
 				]
 			}
 		}),
+		created () {
+			this.$store.dispatch('auth/refreshAuth')
+		},
+		computed: {
+			...mapState('auth', ['checkAuth'])
+		},
 		methods: {
 			signin () {
 				console.log('入力情報', this.credentials)
@@ -120,8 +137,7 @@
 
 				// Enter
 				if (keycode === 13 && this.valid) {
-					console.log('Enterで送信')
-					this.login()
+					this.signin()
 				} else {
 					if (len !== 0) {
 						this.isIcon = false

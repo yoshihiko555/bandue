@@ -37,7 +37,6 @@ new Vue({
   store,
   vuetify,
   created () {
-      console.log('認証情報：', Vue.prototype.$store.state)
       sessionStorage.setItem('initialState', JSON.stringify(initialState))
   }
 }).$mount('#main')

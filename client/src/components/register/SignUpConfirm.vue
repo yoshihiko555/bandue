@@ -2,8 +2,7 @@
 	<v-card
 		class='pa-3'
 		outlined
-		width=368.8
-		height=314
+		width=400
 	>
 		<v-card-title>
 			<h1 class="register_title">確認画面</h1>

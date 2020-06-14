@@ -2,6 +2,7 @@
 	<v-card
 		class='pa-3'
 		outlined
+		width=400
 	>
 		<v-card-title>
 			<h1 class="register_title">登録が完了しました。</h1>
