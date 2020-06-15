@@ -40,6 +40,11 @@
 						</SignIn>
 					</div>
 
+					<div v-else-if='view == 2'>
+						<SignUpComplete>
+						</SignUpComplete>
+					</div>
+
 					</v-row>
 				</v-col>
 			</v-row>
@@ -55,6 +60,7 @@ import SignUp from './SignUp'
 import SignUpConf from './SignUpConfirm'
 import SignUpDone from './SignUpDone'
 import SignIn from './SignIn'
+import SignUpComplete from './SignUpComplete'
 
 import { Const } from '@/static/js/const'
 
@@ -68,7 +74,8 @@ export default {
     SignUp,
     SignUpConf,
     SignUpDone,
-    SignIn
+    SignIn,
+	SignUpComplete
   },
   data: () => ({
     signupCnt: 0,

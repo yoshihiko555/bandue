@@ -25,6 +25,40 @@ class SignUpView(TemplateView):
 class SignInView(TemplateView):
     template_name = 'register/signin.html'
 
+class SignUpCompleteView(TemplateView):
+    template_name = 'register/signup_complete.html'
+
+    # # 認証の制限時間を設定
+    # timeout_seconds = getattr(settings, 'ACTIVATION_TIMEOUT_SECONDS', 60*60*24)
+    #
+    # # 認証ページに飛んで来たら、tokenが正しいか判定。
+    # # 正しくなければエラーページに飛ばし、正しければユーザーのステータスをactiveにする。
+    # def get(self, request, **kwargs):
+    #     token = kwargs.get('token')
+    #     try:
+    #         user_pk = loads(token, max_age=self.timeout_seconds)
+    #
+    #     except SignatureExpired:
+    #         return HttpResponse("Expired error")
+    #
+    #     except BadSignature:
+    #         return HttpResponse("token error")
+    #
+    #     else:
+    #         try:
+    #             user = mUser.objects.get(pk=user_pk)
+    #
+    #         except MyUser.DoesNotExist:
+    #             return HttpResponseBadRequest()
+    #         else:
+    #             # TODO アクティブじゃなければログイン出来ないようにする？
+    #             if not user.is_active:
+    #                 user.is_active = True
+    #                 user.save()
+    #                 return super().get(request, **kwargs)
+    #
+    #     return HttpResponseBadRequest()
+
 class ProfileView(TemplateView):
     template_name = 'pages/profile.html'
     lookup_field = 'username'
@@ -46,3 +80,6 @@ class SettingView(TemplateView):
 
 class BbsView(TemplateView):
     template_name = 'pages/bbs.html'
+
+class BbsDetailView(TemplateView):
+    template_name = 'pages/bbsDetail.html'

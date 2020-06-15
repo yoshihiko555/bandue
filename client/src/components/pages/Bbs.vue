@@ -119,6 +119,9 @@
 	import Footer from '@/components/common/Footer'
 	import Sidebar from '@/components/common/Sidebar'
 	import CreateArticle from '@/components/common/CreateArticle'
+	import { Common } from '@/static/js/common'
+
+	const Com = new Common()
 
 	export default {
 		name: 'Bbs',
@@ -146,7 +149,7 @@
 				'category3',
 				'category4'
 			],
-			articleList: {}
+			articleList: []
 		}),
 		mounted: function () {
 			this.$axios({
@@ -169,7 +172,10 @@
 
 			category () {
 				console.log('カテゴリーをクリック')
-			}
+			},
+			reload () {
+				Com.reload(this.$router)
+			},
 		}
 	}
 </script>

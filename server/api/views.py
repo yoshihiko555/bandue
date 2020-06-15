@@ -514,7 +514,20 @@ class SignUpView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            user = mUser.objects.get(id=serializer.data['pk'])
 
+            current_site = get_current_site(self.request)
+            domain = current_site.domain
+            context = {
+                'protocol': 'https' if self.request.is_secure() else 'http',
+                'domain': domain,
+                'token': dumps(user.pk),
+                'user': user,
+            }
+
+            subject = '題名'
+            message = render_to_string('register/message.txt', context)
+            user.email_user(subject, message)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -200,3 +200,4 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # LOGIN_REDIRECT_URL 'api:index'
 
 AUTH_USER_MODEL = 'api.mUser'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

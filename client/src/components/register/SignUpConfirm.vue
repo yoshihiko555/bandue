@@ -52,7 +52,7 @@ const Con = new Const()
 
 export default {
   props: ['data'],
-  name: 'signup-conf',
+  name: 'SignUpConf',
   data: () => ({
     valid: true,
     loading: false
@@ -63,20 +63,20 @@ export default {
       this.$axios.post('/api/signup/', this.data)
         .then(res => {
           console.log(res)
+		  this.$emit('signup-change-view', Con.SIGNUP_DONE_VIEW)
 		  // サインアップ後は、認証完了の状態にするだけでいい？※要検討
-          this.$axios.post('auth/', this.data)
-            .then(res => {
-              console.log(res)
-			  // 認証データの設定
-			  this.$store.commit('setToken', { res: res.data, req:res.requestData })
-              this.$emit('signup-change-view', Con.SIGNUP_DONE_VIEW)
-            })
-            .catch(e => {
-              console.log(e)
-            })
+          // this.$axios.post('auth/', this.data)
+          //   .then(res => {
+          //     console.log(res)
+			//   // 認証データの設定
+			//   this.$store.commit('setToken', { res: res.data, req:res.requestData })
+          //   })
+          //   .catch(e => {
+          //     console.log(e)
+          //   })
         })
         .catch(e => {
-          console.log(e)
+          console.log(e.response)
         })
     },
     back () {

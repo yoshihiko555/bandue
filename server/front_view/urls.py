@@ -7,10 +7,12 @@ urlpatterns = [
     path('home/', views.HomeView.as_view(), name='home'),
     path('explore/', views.ExploreView.as_view(), name='explore'),
     path('signup/', views.SignUpView.as_view(), name='signup'),
+    path('signup_complete/<token>/', views.SignUpCompleteView.as_view(), name='signup-comp'),
     path('signin/', views.SignInView.as_view(), name='signin'),
     path('profile/<str:username>/', views.ProfileView.as_view(), name='profile'),
     path('message/', views.MessageView.as_view(), name='message'),
     path('setting/', views.SettingView.as_view(), name='setting'),
     path('bbs/', views.BbsView.as_view(), name='bbs'),
+    path('bbs/<str:title>', views.BbsDetailView.as_view(), name='bbs-detail'),
     path('<str:username>/', views.ProfileView.as_view(), name='profile'),
 ]

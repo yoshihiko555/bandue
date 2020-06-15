@@ -326,6 +326,7 @@ class EntrySerializer(serializers.ModelSerializer):
 
 class MUserSerializer(serializers.ModelSerializer):
 
+    email = serializers.EmailField()
     password = serializers.CharField(write_only=True, required=False)
 
     class Meta:
