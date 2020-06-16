@@ -432,8 +432,9 @@ class mUserViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({'status': 'success', 'result': True}, status=status.HTTP_200_OK)
         else:
             return Response({'status': 'success', 'result': False}, status=status.HTTP_200_OK)
-
-
+# --------------------------
+# BBS系は後で削除予定
+# --------------------------
 class BbsViewSet(viewsets.ModelViewSet):
 
     permission_classes = (permissions.AllowAny,)
@@ -501,6 +502,9 @@ class BbsDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Entry.objects.all()
     serializer_class = BbsSerializer
 
+# --------------------------
+# BBS系は後で削除予定
+# --------------------------
 
 class SignUpView(generics.CreateAPIView):
 
@@ -594,3 +598,22 @@ class MessageViewSet(viewsets.ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+class EntryViewSet(viewsets.ModelViewSet):
+    permission_classes = (permissions.AllowAny,)
+    queryset = Entry.objects.all()
+    serializer_class = EntrySerializer
+
+    def create(self, request, *args, **kwargs):
+        request.data.update({
+            'author_pk': str(request.user.pk)
+        })
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+
+            return Response(self.get_serializer(queryset, many=True).data, status=status.HTTP_201_CREATED, headers=headers)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

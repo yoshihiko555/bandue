@@ -296,7 +296,17 @@ class HashTagSerializer(serializers.ModelSerializer):
 class EntrySerializer(serializers.ModelSerializer):
 
     author = serializers.SerializerMethodField()
-    author_pk = serializers.SerializerMethodField()
+    author_pk = serializers.CharField(required=False)
+    type = serializers.SerializerMethodField()
+    prefecture = serializers.SerializerMethodField()
+    day_week = serializers.SerializerMethodField()
+    direction = serializers.SerializerMethodField()
+    sex = serializers.SerializerMethodField()
+    age = serializers.SerializerMethodField()
+
+    def __init__(self, *args, **kwargs):
+        self.req_data = kwargs['data'] if 'data' in kwargs else None
+        super(EntrySerializer, self).__init__(*args, **kwargs)
 
     class Meta:
         model = Entry
@@ -313,15 +323,68 @@ class EntrySerializer(serializers.ModelSerializer):
             'direction',
             'part',
             'genre',
+            'sex',
+            'age',
         ]
 
     def get_author(self, obj):
-        author_contents = obj.author.username
-        return author_contents
+        try:
+            return obj.author.username
+        except:
+            return None
 
-    def get_author_pk(self, obj):
-        author_pk_contents = obj.author.pk
-        return author_pk_contents
+    def get_type(self, obj):
+        try:
+            return obj.get_type_display()
+        except:
+            return None
+
+    def get_prefecture(self, obj):
+        try:
+            return obj.get_prefecture_display()
+        except:
+            return None
+
+    def get_day_week(self, obj):
+        try:
+            return obj.get_day_week_display()
+        except:
+            return None
+
+    def get_direction(self, obj):
+        try:
+            return obj.get_direction_display()
+        except:
+            return None
+
+    def get_sex(self, obj):
+        try:
+            return obj.get_sex_display()
+        except:
+            return None
+
+    def get_age(self, obj):
+        try:
+            return obj.get_age_display()
+        except:
+            return None
+
+    def create(self, validated_data):
+        entry = Entry.objects.create(
+            author = mUser.objects.get(pk=validated_data['author_pk']),
+            title = validated_data['title'],
+            content = validated_data['content'],
+            type = self.req_data['type'],
+            prefecture = self.req_data['prefecture'],
+            area = validated_data['area'],
+            day_week = self.req_data['day_week'],
+            direction = self.req_data['direction'],
+            part = validated_data['part'],
+            genre = validated_data['genre'],
+            sex = self.req_data['sex'],
+            age = self.req_data['age'],
+        )
+        return entry
 
 
 class MUserSerializer(serializers.ModelSerializer):
@@ -341,6 +404,9 @@ class MUserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return mUser.objects.create_user(username=validated_data['username'], email=validated_data['email'], password=validated_data['password'])
 
+# --------------------------
+# BBS系は後で削除予定
+# --------------------------
 class BbsSerializer(serializers.ModelSerializer):
 
     writer = serializers.SerializerMethodField()

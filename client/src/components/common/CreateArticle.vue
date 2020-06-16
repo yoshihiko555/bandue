@@ -24,17 +24,109 @@
 				<v-row>
 					<v-col cols='12'>
 						<v-form>
+							<!-- タイトル -->
 							<v-text-field
-								v-model='title'
+								v-model='articleData.title'
 								outlined
 								placeholder='Title'
 							></v-text-field>
+
+							<!-- 内容 -->
 							<v-textarea
-								v-model='content'
+								v-model='articleData.content'
 								outlined
 								placeholder='Content'
-								rows='20'
+								rows='15'
 							></v-textarea>
+
+							<v-row>
+								<v-col cols='4'>
+								<!-- 記事の種類 -->
+								<v-select
+									v-model='articleData.type'
+									:items='entryType'
+									item-text='text'
+									item-value='value'
+									label='Entry Type'
+									dense
+								></v-select>
+
+								<!-- 都道府県 -->
+								<v-select
+									v-model='articleData.prefecture'
+									:items='prefecture'
+									item-text='text'
+									item-value='value'
+									label='Prefecture'
+									dense
+								></v-select>
+
+								<!-- 活動の曜日 -->
+								<v-select
+									v-model='articleData.day_week'
+									:items='dayWeek'
+									item-text='text'
+									item-value='value'
+									label='Day Week'
+									dense
+								></v-select>
+								</v-col>
+
+								<v-col cols='4'>
+								<!-- 活動の方向性 -->
+								<v-select
+									v-model='articleData.direction'
+									:items='direction'
+									item-text='text'
+									item-value='value'
+									label='Direction'
+									dense
+								></v-select>
+
+								<!-- 募集する性別 -->
+								<v-select
+									v-model='articleData.sex'
+									:items='sex'
+									item-text='text'
+									item-value='value'
+									label='Sex'
+									dense
+								></v-select>
+
+								<!-- 募集する年齢 -->
+								<v-select
+									v-model='articleData.age'
+									:items='age'
+									item-text='text'
+									item-value='value'
+									label='Age'
+									dense
+								></v-select>
+								</v-col>
+
+								<v-col cols='4'>
+								<!-- 活動エリア -->
+								<v-text-field
+									v-model='articleData.area'
+									label='Area'
+									dense
+								></v-text-field>
+
+								<!-- 募集パート -->
+								<v-text-field
+									v-model='articleData.part'
+									label='Part'
+									dense
+								></v-text-field>
+
+								<!-- ジャンル -->
+								<v-text-field
+									v-model='articleData.genre'
+									label='Genre'
+									dense
+								></v-text-field>
+								</v-col>
+							</v-row>
 						</v-form>
 					</v-col>
 				</v-row>
@@ -67,6 +159,9 @@
 </template>
 
 <script>
+	import { Const } from '@/static/js/const'
+
+	const Con = new Const()
 	export default {
 		name: 'CreateArticle',
 		components: {
@@ -76,8 +171,25 @@
 			dialog: false,
 			isSave: false,
 			offset: true,
-			title: '',
-			content: ''
+			articleData: {
+				title: '',
+				content: '',
+				type: 'NO',
+				prefecture: 0,
+				area: '',
+				day_week: 'NO',
+				direction: 'NO',
+				part: '',
+				genre: '',
+				sex: 0,
+				age: 0,
+			},
+			entryType: Con.ENTRY_TYPE,
+			prefecture: Con.PREFECTURE,
+			dayWeek: Con.DAY_WEEK,
+			direction: Con.DIRECTION,
+			sex: Con.SEX,
+			age: Con.AGE,
 		}),
 		mounted: function () {
 
@@ -93,11 +205,8 @@
 				console.log('投稿')
 				this.$axios({
 					method: 'POST',
-					url: '/api/bbs/',
-					data: {
-						title: this.title,
-						content : this.content
-					},
+					url: '/api/entry/',
+					data: this.articleData,
 				})
 				.then(res => {
 					console.log(res.data)
@@ -107,7 +216,7 @@
 				.catch(e => {
 					console.log(e)
 				})
-			}
+			},
 		}
 	}
 </script>

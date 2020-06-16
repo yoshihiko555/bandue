@@ -154,7 +154,7 @@
 		mounted: function () {
 			this.$axios({
 				method: 'GET',
-				url: '/api/bbs/'
+				url: '/api/entry/'
 			})
 			.then(res => {
 				console.log('記事一覧', res.data)

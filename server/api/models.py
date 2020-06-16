@@ -256,12 +256,14 @@ class Entry(models.Model):
     content = models.TextField(_('Content'))
     author = models.ForeignKey(mUser, on_delete=models.CASCADE)
     ENTRY_TYPE_CHOICES = (
+        ('NO', _('指定なし')),
         ('RE', _('Recruitment Member')),
         ('JO', _('Join a Group')),
         ('SU', _('Support')),
     )
     type = models.CharField(choices=ENTRY_TYPE_CHOICES, max_length=30)
     PREFECTURE_CHOICES = (
+        (0, _('指定なし')),
         (1, _('Hokkaido')),
         (2, _('Aomori Prefecture')),
         (3, _('Iwate Prefecture')),
@@ -313,12 +315,14 @@ class Entry(models.Model):
     prefecture = models.IntegerField(choices=PREFECTURE_CHOICES, null=True, blank=True)
     area = models.CharField(_('Area'), max_length=20 , null=True, blank=True)
     DAY_WEEK_CHOICES = (
+        ('NO', _('指定なし')),
         ('WD', _('Weekdays')),
         ('WE', _('Weekends')),
         ('AL', _('Always')),
     )
     day_week = models.CharField(choices=DAY_WEEK_CHOICES, max_length=20, null=True, blank=True)
     DIRECTION_CHOICES = (
+        ('NO', _('指定なし')),
         ('OR', _('Original')),
         ('CO', _('Copy')),
         ('AL', _('All')),
@@ -326,11 +330,33 @@ class Entry(models.Model):
     direction = models.CharField(choices=DIRECTION_CHOICES, max_length=20, null=True, blank=True)
     part = models.TextField(_('Part'), null=True, blank=True)
     genre = models.TextField(_('Genre'), null=True, blank=True)
+    SEX_CHOICES = (
+        (0, _('指定なし')),
+        (1, _('Male')),
+        (2, _('Famale')),
+    )
+    sex = models.IntegerField(choices=SEX_CHOICES, null=True, blank=True)
+    AGE_CHOICES = (
+        (0, _('指定なし')),
+        (1, _('~19')),
+        (2, _('20~29')),
+        (3, _('30~39')),
+        (4, _('40~49')),
+        (5, _('50~59')),
+        (6, _('60~69')),
+        (7, _('70~79')),
+        (8, _('80~89')),
+        (9, _('90~99')),
+    )
+    age = models.IntegerField(choices=AGE_CHOICES, null=True, blank=True)
+    is_public = models.BooleanField(_('Public Flag'), default=False)
 
     def __str__(self):
         return self.title
 
-
+# --------------------------
+# BBS系は後で削除予定
+# --------------------------
 class Category(models.Model):
 
     name = models.CharField(_('Category'), max_length=50, default='未分類')
@@ -360,8 +386,9 @@ class Bbs(models.Model):
     writer = models.ForeignKey(mUser, on_delete=models.CASCADE, related_name='writer')
     title = models.CharField(_('Title'), max_length=100)
     content = models.TextField(_('Content'))
-    tag = models.ManyToManyField(Tag, blank=True)
-    images = models.ImageField(_('Images'), upload_to=content_file_name, blank=True, null=True)
+
+    # tag = models.ManyToManyField(Tag, blank=True)
+    # images = models.ImageField(_('Images'), upload_to=content_file_name, blank=True, null=True)
     created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
     updated_at = models.DateTimeField(_('Upadate Date'), auto_now=True)
     deleted = models.BooleanField(_('Delete Flag'), default=False)
@@ -369,6 +396,9 @@ class Bbs(models.Model):
     def __str__(self):
         return self.title
 
+# --------------------------
+# BBS系は後で削除予定
+# --------------------------
 
 class Room(models.Model):
 
