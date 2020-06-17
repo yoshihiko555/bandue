@@ -293,20 +293,31 @@ class HashTagSerializer(serializers.ModelSerializer):
         ]
 
 
+class SelectSerializer(serializers.Field):
+
+    def to_internal_value(self, data):
+        return data
+
+    def get_attribute(self, instance):
+        method = 'get_%s_display' % (self.field_name)
+        disp_name = getattr(instance, method)()
+        return disp_name
+
+    def to_representation(self, value):
+        logger.info(value)
+        return value
+
+
 class EntrySerializer(serializers.ModelSerializer):
 
-    author = serializers.SerializerMethodField()
+    author = serializers.ReadOnlyField(source='author.username')
     author_pk = serializers.CharField(required=False)
-    type = serializers.SerializerMethodField()
-    prefecture = serializers.SerializerMethodField()
-    day_week = serializers.SerializerMethodField()
-    direction = serializers.SerializerMethodField()
-    sex = serializers.SerializerMethodField()
-    age = serializers.SerializerMethodField()
-
-    def __init__(self, *args, **kwargs):
-        self.req_data = kwargs['data'] if 'data' in kwargs else None
-        super(EntrySerializer, self).__init__(*args, **kwargs)
+    type = SelectSerializer()
+    prefecture = SelectSerializer()
+    day_week = SelectSerializer()
+    direction = SelectSerializer()
+    sex = SelectSerializer()
+    age = SelectSerializer()
 
     class Meta:
         model = Entry
@@ -327,62 +338,20 @@ class EntrySerializer(serializers.ModelSerializer):
             'age',
         ]
 
-    def get_author(self, obj):
-        try:
-            return obj.author.username
-        except:
-            return None
-
-    def get_type(self, obj):
-        try:
-            return obj.get_type_display()
-        except:
-            return None
-
-    def get_prefecture(self, obj):
-        try:
-            return obj.get_prefecture_display()
-        except:
-            return None
-
-    def get_day_week(self, obj):
-        try:
-            return obj.get_day_week_display()
-        except:
-            return None
-
-    def get_direction(self, obj):
-        try:
-            return obj.get_direction_display()
-        except:
-            return None
-
-    def get_sex(self, obj):
-        try:
-            return obj.get_sex_display()
-        except:
-            return None
-
-    def get_age(self, obj):
-        try:
-            return obj.get_age_display()
-        except:
-            return None
-
     def create(self, validated_data):
         entry = Entry.objects.create(
             author = mUser.objects.get(pk=validated_data['author_pk']),
             title = validated_data['title'],
             content = validated_data['content'],
-            type = self.req_data['type'],
-            prefecture = self.req_data['prefecture'],
+            type = validated_data['type'],
+            prefecture = validated_data['prefecture'],
             area = validated_data['area'],
-            day_week = self.req_data['day_week'],
-            direction = self.req_data['direction'],
+            day_week = validated_data['day_week'],
+            direction = validated_data['direction'],
             part = validated_data['part'],
             genre = validated_data['genre'],
-            sex = self.req_data['sex'],
-            age = self.req_data['age'],
+            sex = validated_data['sex'],
+            age = validated_data['age'],
         )
         return entry
 

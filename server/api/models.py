@@ -348,6 +348,10 @@ class Entry(models.Model):
         (8, _('80~89')),
         (9, _('90~99')),
     )
+    # 募集年齢を複数選択可能にするには？
+    # リスト形式でDBで持つようにする？
+    #     - 新たにライブラリを入れれば可能。
+    # もしくは、新たにテーブルを作成する
     age = models.IntegerField(choices=AGE_CHOICES, null=True, blank=True)
     is_public = models.BooleanField(_('Public Flag'), default=False)
 
