@@ -147,7 +147,7 @@ class Tweet(models.Model):
     retweet = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
 
     # リツイートしたユーザー一覧
-    retweet_user = models.ManyToManyField(mUser, blank=True, symmetrical=False)
+    retweet_user = models.CharField(_('Retweet User Name'), max_length=70)
 
     def __str__(self):
         return self.content

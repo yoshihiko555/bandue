@@ -60,16 +60,12 @@ class ProfileSerializer(serializers.ModelSerializer):
         ]
 
     def get_followees(self, obj):
-        try:
-            return ProfileSubSerializer(mUser.objects.get(id=obj.id).followees.all(), many=True).data
-        except:
-            return None
+        return ProfileSubSerializer(obj.followees.all(), many=True).data
+
 
     def get_followers(self, obj):
-        try:
-            return ProfileSubSerializer(mUser.objects.filter(followees=mUser.objects.get(id=obj.id)), many=True).data
-        except:
-            return None
+        return ProfileSubSerializer(mUser.objects.filter(followees=obj), many=True).data
+
 
     def get_followees_count(self, obj):
         return obj.followees.count()
@@ -78,16 +74,12 @@ class ProfileSerializer(serializers.ModelSerializer):
         return len(self.get_followers(obj)) if self.get_followers(obj) != None else 0
 
     def get_tweet(self, obj):
-        try:
-            return TweetSerializer(mUser.objects.get(id=obj.id).author.all(), many=True).data
-        except:
-            return None
+        return TweetSerializer(obj.author.all(), many=True).data
+
 
     def get_bbs(self, obj):
-        try:
-            return BbsSerializer(mUser.objects.get(id=obj.id).writer.all(), many=True).data
-        except:
-            return None
+        return BbsSerializer(obj.writer.all(), many=True).data
+
 
 class ProfileSubSerializer(serializers.ModelSerializer):
 
@@ -151,98 +143,79 @@ class TweetSerializer(serializers.ModelSerializer):
         ]
 
     def get_author(self, obj):
-        try:
-            return obj.author.username
-        except:
-            return None
+        return obj.author.username
+
 
     def get_hashTag(self, obj):
-        try:
-            return HashTagSerializer(obj.hashTag.all(), many=True).data
-        except:
-            return None
+        return HashTagSerializer(obj.hashTag.all(), many=True).data
+
 
     def get_liked(self, obj):
-        try:
-            return ProfileSubSerializer(Tweet.objects.get(id=obj.id).liked.all(), many=True).data
-        except:
-            return None
+        return ProfileSubSerializer(obj.liked.all(), many=True).data
+
 
     def get_liked_count(self, obj):
+        if obj.isRetweet == True:
+            return obj.retweet.liked.count()
         return obj.liked.count()
+
 
     def get_isLiked(self, obj):
         # とりあえずの実装。ORMの理解が深まり次第リファクタリング予定
         isLiked = False
         if self.login_user != None:
-            try:
-                tweet = Tweet.objects.get(id=obj.id)
-                for u in tweet.liked.all():
-                    if u.username == self.login_user:
-                        isLiked = True
-                        break
-            except:
-                pass
+            target_tweet = obj.retweet if obj.isRetweet else obj
+            for u in target_tweet.liked.all():
+                if u.username == self.login_user:
+                    isLiked = True
+                    break
         return isLiked
 
+
     def get_reply(self, obj):
-        try:
-            return ReplySerializer(Tweet.objects.get(id=obj.id).reply_set.all(), many=True).data
-        except:
-            return None
+        return ReplySerializer(obj.reply_set.all(), many=True).data
+
 
     def get_isReplied(self, obj):
-        try:
-            tweet = Tweet.objects.get(id=obj.id)
-            isReplied = True if len(tweet.reply_set.all()) != 0 else False
-            return isReplied
-        except:
-            return None
+        isReplied = True if len(obj.reply_set.all()) != 0 else False
+        return isReplied
+
 
     def get_reply_count(self, obj):
-        try:
-            return len(Tweet.objects.get(id=obj.id).reply_set.all())
-        except:
-            return None
+        return len(obj.reply_set.all())
+
 
     def get_isRetweeted(self, obj):
         # とりあえずの実装。ORMの理解が深まり次第リファクタリング予定
         isRetweeted = False
         if self.login_user != None:
-            try:
-                tweet = Tweet.objects.get(id=obj.id)
-                for user in tweet.retweet_user.all():
-                    if user.username == self.login_user:
-                        isRetweeted = True
-                        break
-            except:
-                pass
+            target_tweet = obj.retweet if obj.isRetweet else obj
+            for retweet in Tweet.objects.filter(retweet=target_tweet):
+                if retweet.retweet_user == self.login_user:
+                    isRetweeted = True
+                    break
         return isRetweeted
 
+
     def get_retweet(self, obj):
-        try:
-            if len(Tweet.objects.get(pk=objid).retweet) >= 1:
-                return TweetSerializer(Tweet.objects.get(pk=obj.id).retweet).data
-        except:
-            return None
+        return TweetSerializer(Tweet.objects.filter(retweet=obj), many=True).data
+
 
     def get_retweet_user(self, obj):
-        try:
-            return TweetSerializer(Tweet.objects.get(pk=obj.id).retweet_user.all(), many=True).data
-        except:
-            return None
+        return obj.retweet_user
+
 
     def get_retweet_count(self, obj):
-        try:
-            tweet = Tweet.objects.get(id=obj.id)
-            return len(tweet.retweet_user.all())
-        except:
-            return None
+        if obj.isRetweet == True:
+            return len(Tweet.objects.filter(retweet=obj.retweet))
+        return len(Tweet.objects.filter(retweet=obj))
+
 
     def create(self, validated_data):
         user = mUser.objects.get(pk=validated_data['author_pk'])
         content = validated_data['content']
         return Tweet.objects.create(author=user, content=content)
+
 
     def update(self, instance, validated_data):
         instance.content = validated_data['content']
