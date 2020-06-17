@@ -99,11 +99,11 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True, verbose_name='Upadate Date')),
                 ('deleted', models.BooleanField(default=False, verbose_name='Delete Flag')),
                 ('isRetweet', models.BooleanField(default=False, verbose_name='This is retweet whether or not')),
+                ('retweet_user', models.CharField(max_length=70, verbose_name='Retweet User Name')),
                 ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='author', to=settings.AUTH_USER_MODEL)),
                 ('hashTag', models.ManyToManyField(blank=True, to='api.HashTag')),
                 ('liked', models.ManyToManyField(blank=True, related_name='liked', to=settings.AUTH_USER_MODEL)),
                 ('retweet', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='api.Tweet')),
-                ('retweet_user', models.ManyToManyField(blank=True, to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.CreateModel(

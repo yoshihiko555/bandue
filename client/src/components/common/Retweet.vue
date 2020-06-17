@@ -1,51 +1,86 @@
 <template>
-    <v-icon v-if='isRetweeted === 0'
-        class='mr-1 retweet'
-        color='black lighten-1'
-        @click='retweet'
-        ref='retweet'
-    >mdi-heart</v-icon>
-    <v-icon v-else
-        class='mr-1 retweet'
-        color='black lighten-5'
-        @click='retweet'
-        ref='retweet'
-    >mdi-heart</v-icon>
+    <div>
+        <v-btn
+            icon
+            @click='retweetConfirm(tweet, index)'
+            class='z10'
+        >
+            <v-icon v-if='!tweet.isRetweeted'
+                color='grey lighten-1'
+            >mdi-repeat</v-icon>
+            <v-icon v-else
+                color='green lighten-1'
+            >mdi-repeat</v-icon>
+            <span class='mr-2' ref='tweet_retweet_count'>{{ tweet.retweet_count }}</span>
+        </v-btn>
+
+        <RetweetConfirm
+            @closeModal='closeModal'
+            @retweet='retweet'
+            :retweetConfirmDialog='retweetConfirmDialog'
+            :tweet='selectTweet'
+        ></RetweetConfirm>
+    </div>
 </template>
 
 <script>
+    import RetweetConfirm from '@/components/common/RetweetConfirm'
+
     export default {
-        props: [
-            'tweet_id',
-            'isRetweeted'
-        ],
-        data: () => ({
-
-        }),
-        created () {
-
+        props: {
+            tweet: {
+                type: Object,
+                required: true
+            },
+            index: {
+                type: Number,
+                required: true
+            }
         },
+        components: {
+            RetweetConfirm,
+        },
+        data: () => ({
+            retweetConfirmDialog: false,
+            selectTweet: {},
+        }),
         methods: {
-            retweet (tweetId, isRetweeted, index) {
-                console.log('retweet')
+            retweetConfirm (tweet, index) {
+                this.retweetConfirmDialog = true
+                this.selectTweet = tweet
+            },
+            closeModal () {
+                this.retweetConfirmDialog = false
+            },
+            retweet () {
+				console.log('retweet')
+                let tweet = this.selectTweet
+
+                if (tweet.isRetweeted) {
+                    tweet.retweet_count--
+                } else {
+                    tweet.retweet_count++
+                }
+                tweet.isRetweeted = !tweet.isRetweeted
+
                 const targetUrl = 'retweet'
                 this.$axios({
                     method: 'POST',
                     url: '/api/tweet/' + targetUrl + '/',
                     data: {
-                        target_tweet_id : tweetId
+                        target_tweet_id : tweet.id
                     },
                 })
                 .then(res => {
                     console.log(res.data)
-					console.log(res.data.isRetweeted)
                 })
                 .catch(e => {
                     console.log(e)
                 })
-            }
+                this.retweetConfirmDialog = false
+                this.selectTweet = {}
+            },
         }
-
     }
 
 </script>

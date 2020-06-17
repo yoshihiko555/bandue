@@ -65,37 +65,8 @@
 							align='center'
 							justify='end'
 						>
-							<v-btn
-								icon
-								@click='retweet(tweet.id, tweet.isRetweeted, index)'
-								class='z10'
-							>
-								<v-icon v-if='!tweet.isRetweeted'
-									color='black lighten-5'
-									ref='tweet_retweet'
-								>mdi-repeat</v-icon>
-								<v-icon v-else
-									color='green lighten-1'
-									ref='tweet_retweet'
-								>mdi-repeat</v-icon>
-							</v-btn>
-							<span class='mr-2' ref='tweet_retweet_count'>{{ tweet.retweet_count }}</span>
-
-							<v-btn
-								icon
-								@click='liked(tweet.id, tweet.isLiked, index)'
-								class='z10'
-							>
-								<v-icon v-if='!tweet.isLiked'
-									color='red lighten-3'
-									ref='tweet_isLiked'
-								>mdi-heart</v-icon>
-								<v-icon v-else
-									color='red lighten-1'
-									ref='tweet_isLiked'
-								>mdi-heart</v-icon>
-							</v-btn>
-							<span class='mr-2' ref='tweet_isLikedCount'>{{ tweet.liked_count }}</span>
+							<retweet :tweet=tweet :index=index></retweet>
+							<like :tweet=tweet :index=index></like>
 						</v-row>
 					</v-list-item>
 				</v-card-actions>
@@ -121,6 +92,8 @@
 <script>
 	import TweetEdit from '@/components/common/TweetEdit'
 	import TweetDetail from '@/components/common/TweetDetail'
+	import Retweet from '@/components/common/Retweet'
+	import Like from '@/components/common/Like'
 	import { Common } from '@/static/js/common'
 
 	const Com = new Common()
@@ -140,6 +113,8 @@
 		components: {
 			TweetEdit,
 			TweetDetail,
+			Retweet,
+			Like,
 		},
 		data: () => ({
 			tweetList: [],
@@ -157,6 +132,7 @@
 			tweetDeleteDialog: false,
 			tweetDetailDialog: false,
 			selectTweet: {},
+			tweet: {},
 		}),
 		created () {
 			this.$eventHub.$on('create-tweet', this.tweetUpdate)
@@ -198,43 +174,6 @@
 			reload () {
 				Com.reload(this.$router)
 			},
-			liked (tweetId, isLiked, index) {
-				let targetValue = parseInt(this.$refs.tweet_isLikedCount[index].textContent)
-
-				for (let i in this.$refs.tweet_isLiked[index].$el.classList) {
-					// console.log(this.$refs.tweet_isLiked[index].$el.classList[i])
-					let className = this.$refs.tweet_isLiked[index].$el.classList[i]
-					if (className === 'text--lighten-1') {
-						this.$refs.tweet_isLiked[index].$el.classList.remove(className)
-						this.$refs.tweet_isLiked[index].$el.classList.add('text--lighten-3')
-						targetValue = targetValue - 1
-					} else if (className === 'text--lighten-3') {
-						this.$refs.tweet_isLiked[index].$el.classList.remove(className)
-						this.$refs.tweet_isLiked[index].$el.classList.add('text--lighten-1')
-						targetValue = targetValue + 1
-					}
-				}
-
-				this.$refs.tweet_isLikedCount[index].textContent = targetValue
-
-				const targetUrl = 'liked'
-				this.$axios({
-					method: 'POST',
-					url: '/api/tweet/' + targetUrl + '/',
-					data: {
-						target_tweet_id : tweetId
-					},
-				})
-				.then(res => {
-					console.log(res)
-					console.log(res.data.isLiked)
-					// ここでツイートのisLikedを変えてあげる必要あり
-					// isLikedはres.data.isLikedで取れる
-				})
-				.catch(e => {
-					console.log(e)
-				})
-			},
 			tweetEditMethods (i, tweet) {
 				const methodsList = [
 					this.showTweetEdit,
@@ -245,7 +184,6 @@
 					methodsList[i](tweet)
 				}
 			},
-
 			showTweetEdit (tweet) {
 				this.tweetEditDialog = true
 				this.selectTweet = tweet
@@ -255,7 +193,6 @@
 				this.tweetEditDialog = false
 				this.tweetDetailDialog = false
 			},
-
 			// TODO 削除前に確認モーダル表示
 			showDeleteDialog (tweet) {
 				this.$axios({
@@ -270,44 +207,6 @@
 					console.log(e)
 				})
 			},
-			retweet (tweetId, isRetweeted, index) {
-				console.log('retweet')
-
-				let targetValue = parseInt(this.$refs.tweet_retweet_count[index].textContent)
-
-				for (let i in this.$refs.tweet_retweet[index].$el.classList) {
-					console.log(this.$refs.tweet_retweet[index].$el.classList[i])
-					let className = this.$refs.tweet_retweet[index].$el.classList[i]
-					if (className === 'text--lighten-1') {
-						this.$refs.tweet_retweet[index].$el.classList.remove(className)
-						this.$refs.tweet_retweet[index].$el.classList.add('text--lighten-3')
-						this.$refs.tweet_retweet[index].$el.classList.add('black--text')
-						targetValue = targetValue - 1
-					} else if (className === 'text--lighten-5') {
-						this.$refs.tweet_retweet[index].$el.classList.remove(className)
-						this.$refs.tweet_retweet[index].$el.classList.add('text--lighten-1')
-						this.$refs.tweet_retweet[index].$el.classList.add('green--text')
-						targetValue = targetValue + 1
-					}
-				}
-
-				this.$refs.tweet_retweet_count[index].textContent = targetValue
-
-                const targetUrl = 'retweet'
-                this.$axios({
-                    method: 'POST',
-                    url: '/api/tweet/' + targetUrl + '/',
-                    data: {
-                        target_tweet_id : tweetId
-                    },
-                })
-                .then(res => {
-                    console.log(res.data)
-                })
-                .catch(e => {
-                    console.log(e)
-                })
-            },
 			showTweetDetail (tweet) {
 				this.tweetDetailDialog = true
 				this.selectTweet = tweet

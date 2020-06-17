@@ -228,29 +228,23 @@ class TweetViewSet(viewsets.ModelViewSet):
 
         logger.debug('likedメソッド')
         login_user = request.user
-        target_tweet = Tweet.objects.get(pk=request.data['target_tweet_id'])
-        tweet = Tweet.objects.get(retweet=target_tweet) if target_tweet.isRetweet == True else target_tweet
-        isExist = True if tweet.retweet != None else False
-        return self.set_tweet_liked_info(tweet, login_user, isExist)
+        tweet = Tweet.objects.get(pk=request.data['target_tweet_id'])
+        target_tweet = tweet.retweet if tweet.isRetweet == True else tweet
+        return self.set_tweet_liked_info(target_tweet, login_user)
 
-    def set_tweet_liked_info(self, tweet, login_user, isExist):
+    def set_tweet_liked_info(self, tweet, login_user):
         try:
-            tweet.liked.all().get(username__exact=login_user.username)
-            if isExist:
-                tweet.retweet.liked.remove(login_user)
+            tweet.liked.all().get(username=login_user.username)
             tweet.liked.remove(login_user)
             return Response({'status': 'success', 'isLiked': 0}, status=status.HTTP_200_OK)
         except mUser.DoesNotExist:
             tweet.liked.add(login_user)
-            if isExist:
-                tweet.retweet.liked.add(login_user)
             return Response({'status': 'success', 'isLiked': 1}, status=status.HTTP_200_OK)
 
 
     @transaction.atomic
     @action(methods=['post'], detail=False)
     def retweet(self, request):
-
         logger.debug('retweetメソッド')
         login_user = request.user
         tweet = Tweet.objects.get(pk=request.data['target_tweet_id'])
@@ -258,63 +252,31 @@ class TweetViewSet(viewsets.ModelViewSet):
 
 
     def set_tweet_relation(self, login_user, tweet):
-        '''
-        ツイートかリツイートがクリックされる
-         - 対象ツイートを取得（リツイートあってもなくても）
-         　　- リツイートが存在する
-                - リツイートしている
-                   -　紐付け解除
-                - リツイートしてない
-                   -　紐付け
-            - リツイートが存在しない
-                - 新規作成して紐付け
-        '''
-        tweet = Tweet.objects.get(retweet=tweet) if tweet.isRetweet == True else tweet
-        isExist = True if tweet.retweet != None else False
-        return self.set_tweet_relation_info(login_user, tweet, isExist)
+        tweet = tweet.retweet if tweet.isRetweet == True else tweet
+        return self.set_tweet_relation_info(login_user, tweet)
 
 
-    def set_tweet_relation_info(self, login_user, tweet, isExist):
+    def set_tweet_relation_info(self, login_user, tweet):
 
-        if isExist:
-            logger.debug('リツイートが存在する')
-            retweet = tweet.retweet
-            isRetweeted = False
-            for user in tweet.retweet_user.all():
-                if user == login_user:
-                    isRetweeted = True
-            if isRetweeted:
-                logger.debug('既にリツイートしているためリツイート削除と紐付け解除')
-                tweet.retweet_user.remove(login_user)
-                retweet.retweet_user.remove(login_user)
-                if len(tweet.retweet_user.all()) == 0:
-                    logger.debug('リツイートユーザーが0人のため紐付け解除')
-                    tweet.retweet = None
-                    retweet.delete()
-                tweet.save()
+
+        for retweet in Tweet.objects.filter(retweet=tweet):
+            if retweet.retweet_user == login_user.username:
+                logger.debug('紐づくリツイートが存在するため削除')
+                retweet.delete()
                 return Response({'status': 'success'}, status=status.HTTP_200_OK)
-            else:
-                logger.debug('リツイートしてないため紐付け')
-                tweet.retweet_user.add(login_user)
-                retweet.retweet_user.add(login_user)
-                return Response({'status': 'success'}, status=status.HTTP_200_OK)
-        else:
-            logger.debug('リツイートが存在しないため、新規作成し紐付け')
-            retweet = Tweet.objects.create(
-                author=tweet.author,
-                content=tweet.content,
-                images=tweet.images,
-                isRetweet=True,
-                retweet=tweet,
-            )
-            retweet.liked.add(*list(tweet.liked.all()))
-            retweet.hashTag.add(*list(tweet.hashTag.all()))
-            tweet.retweet = retweet
-            retweet.retweet_user.add(login_user)
-            tweet.retweet_user.add(login_user)
-            retweet.save()
-            tweet.save()
-            return Response({'status': 'success'}, status=status.HTTP_201_CREATED)
+
+        logger.debug('リツイートを新規作成')
+        retweet = Tweet.objects.create(
+            author=tweet.author,
+            content=tweet.content,
+            images=tweet.images,
+            isRetweet=True,
+            retweet=tweet,
+            retweet_user=login_user.username
+        )
+        retweet.liked.add(*list(tweet.liked.all()))
+        retweet.hashTag.add(*list(tweet.hashTag.all()))
+        return Response({'status': 'success'}, status=status.HTTP_201_CREATED)
 
 
 
