@@ -111,13 +111,13 @@
 
 		mounted: function () {
 			const loginUser = this.$store.state.loginUser
-			this.$axios.get('/api/profile/' + loginUser)
+			this.$axios.get('/api/profile/' + loginUser + '/')
 			.then(res => {
 				this.profileData = res.data
 				console.log(res)
 			})
 			.catch(e => {
-				console.log(e)
+				console.log(e.response)
 			})
 		},
 

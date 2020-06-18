@@ -29,24 +29,100 @@
 								:key='i'
 								:value="'tab-' + i"
 							>
-							<div v-for='(article, i) in articleList' :key='i'>
-								<v-card
-									flat
-									class='article_wrap'
-								>
-									<v-card-title>
-										{{ article.title }}
-									</v-card-title>
+								<v-expansion-panels accordion tile flat multiple focusable class='mt-3'>
+									<v-expansion-panel
+										v-for='(article, i) in articleList'
+										:key='i'
+										class='article_wrap'
+										color='orange'
+									>
 
-									<v-card-text>
-										{{ article.content }}
-									</v-card-text>
+										<v-expansion-panel-header>
+											<v-row>
+												<v-col cols='8'>
+													<span class='font-weight-black'>{{ article.title }}</span>
+												</v-col>
+												<v-col cols='4'>
+													<span class="font-weight-thin">{{ article.author }}</span>
+												</v-col>
+											</v-row>
+										</v-expansion-panel-header>
 
-									<v-card-text>
-										{{ article.writer }}
-									</v-card-text>
-								</v-card>
-							</div>
+										<v-expansion-panel-content class="blue-grey lighten-5">
+											<v-row class='article_content_border'>
+												<v-col cols='12'>
+													<v-card-subtitle class="font-weight-black">記事の内容</v-card-subtitle>
+													<v-card-text>
+														{{ article.content }}
+													</v-card-text>
+												</v-col>
+											</v-row>
+
+											<v-row class='article_content_border'>
+												<v-col cols='4'>
+													<v-card-subtitle class="font-weight-black">記事の種類</v-card-subtitle>
+													<v-card-text>
+														{{ article.type }}
+													</v-card-text>
+												</v-col>
+												<v-col cols='4'>
+													<v-card-subtitle class="font-weight-black">都道府県</v-card-subtitle>
+													<v-card-text>
+														{{ article.prefecture }}
+													</v-card-text>
+												</v-col>
+												<v-col cols='4'>
+													<v-card-subtitle class="font-weight-black">活動エリア</v-card-subtitle>
+													<v-card-text>
+														{{ article.area }}
+													</v-card-text>
+												</v-col>
+												<v-col cols='4'>
+													<v-card-subtitle class="font-weight-black">活動曜日</v-card-subtitle>
+													<v-card-text>
+														{{ article.day_week }}
+													</v-card-text>
+												</v-col>
+												<v-col cols='4'>
+													<v-card-subtitle class="font-weight-black">活動方向性</v-card-subtitle>
+													<v-card-text>
+														{{ article.direction }}
+													</v-card-text>
+												</v-col>
+											</v-row>
+
+											<v-row class='article_content_border'>
+												<v-col cols='6'>
+													<v-card-subtitle class="font-weight-black">パート</v-card-subtitle>
+													<v-card-text>
+														{{ article.part }}
+													</v-card-text>
+												</v-col>
+												<v-col cols='6'>
+													<v-card-subtitle class="font-weight-black">ジャンル</v-card-subtitle>
+													<v-card-text>
+														{{ article.genre }}
+													</v-card-text>
+												</v-col>
+											</v-row>
+
+											<v-row>
+												<v-col cols='6'>
+													<v-card-subtitle class="font-weight-black">募集性別</v-card-subtitle>
+													<v-card-text>
+														{{ article.sex }}
+													</v-card-text>
+												</v-col>
+												<v-col cols='6'>
+													<v-card-subtitle class="font-weight-black">募集年齢</v-card-subtitle>
+													<v-card-text>
+														{{ article.age }}
+													</v-card-text>
+												</v-col>
+											</v-row>
+										</v-expansion-panel-content>
+									</v-expansion-panel>
+								</v-expansion-panels>
 							</v-tab-item>
 						</v-tabs-items>
 					</v-col>
@@ -151,6 +227,9 @@
 			],
 			articleList: []
 		}),
+		created () {
+			this.$eventHub.$on('create-article', this.articleUpdate)
+		},
 		mounted: function () {
 			this.$axios({
 				method: 'GET',
@@ -166,6 +245,10 @@
 		},
 
 		methods: {
+			articleUpdate (res) {
+				console.log('記事更新')
+				this.articleList = res.data
+			},
 			tag () {
 				console.log('タグをクリック')
 			},
@@ -183,5 +266,22 @@
 <style lang='scss'>
 	.bbslist_tab_wrap {
 		border-bottom: solid 1px #ccc !important;
+	}
+
+	.article_wrap {
+		> button {
+			border-bottom: solid 0.5px #ccc;
+		}
+		.v-expansion-panel-header__icon {
+			display: none;
+		}
+
+		.v-expansion-panel-content {
+			background-color: #fefefe;
+		}
+
+		.article_content_border {
+			border-bottom: solid 0.5px #ccc;
+		}
 	}
 </style>

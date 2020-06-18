@@ -355,7 +355,7 @@ class BbsSerializer(serializers.ModelSerializer):
     writer_pk = serializers.CharField(required=False)
 
     def __init__(self, *args, **kwargs):
-        self.login_user = kwargs['context']['view'].get_login_user()
+        self.login_user = kwargs['context']['view'].get_login_user() if 'context' in kwargs else None
         super().__init__(*args, **kwargs)
 
     class Meta:

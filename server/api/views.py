@@ -334,7 +334,7 @@ class TweetDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
-
+    permission_classes = (permissions.AllowAny,)
     queryset = mUser.objects.all()
     serializer_class = ProfileSerializer
     lookup_field = 'username'
@@ -579,3 +579,13 @@ class EntryViewSet(viewsets.ModelViewSet):
 
             return Response(self.get_serializer(queryset, many=True).data, status=status.HTTP_201_CREATED, headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def destroy(self, request, pk=None):
+        try:
+            instance = self.get_object()
+            self.perform_destroy(instance)
+            queryset = self.filter_queryset(self.get_queryset())
+            serializer = self.get_serializer(queryset, many=True)
+        except Http404:
+            pass
+        return Response(serializer.data)

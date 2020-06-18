@@ -211,7 +211,7 @@
 				.then(res => {
 					console.log(res.data)
 					this.dialog = false
-					this.$eventHub.$emit('create-tweet', res)
+					this.$eventHub.$emit('create-article', res)
 				})
 				.catch(e => {
 					console.log(e)

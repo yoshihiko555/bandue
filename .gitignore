@@ -1,8 +1,9 @@
 .DS_Store
 node_modules
-/bundles
+bundles
 webpak-stats.json
 db.sqlite3
+migrations
 
 # local env files
 .env.local
