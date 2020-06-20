@@ -11,8 +11,8 @@
             <v-icon v-else
                 color='green lighten-1'
             >mdi-repeat</v-icon>
-            <span class='mr-2' ref='tweet_retweet_count'>{{ tweet.retweet_count }}</span>
         </v-btn>
+        <span class='mr-2' ref='tweet_retweet_count'>{{ tweet.retweet_count }}</span>
 
         <RetweetConfirm
             @closeModal='closeModal'

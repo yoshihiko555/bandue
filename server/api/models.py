@@ -9,7 +9,7 @@ import os, uuid, logging
 logger = logging.getLogger(__name__)
 
 def content_file_name(instance, filename):
-    return 'upload/{0}/{1}/{2}'.format(instance.author, instance.title, filename)
+    return 'upload/{0}/{1}/'.format(instance.author, filename)
 
 
 class UserManager(BaseUserManager):

@@ -55,6 +55,9 @@
 					{{ tweet.content }}
 				</v-card-text>
 
+				<div>
+					<img :src='tweet.images' width="100">
+				</div>
 				<v-card-actions>
 					<v-list-item>
 						<v-list-item-content v-for='tag in tweet.hashTag' :key='tag.title'>

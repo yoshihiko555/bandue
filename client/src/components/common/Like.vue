@@ -1,19 +1,21 @@
 <template>
-    <v-btn
-        icon
-        @click='liked(tweet, index)'
-        class='z10'
-    >
-        <v-icon v-if='!tweet.isLiked'
-            color='red lighten-3'
-            ref='tweet_isLiked'
-        >mdi-heart</v-icon>
-        <v-icon v-else
-            color='red lighten-1'
-            ref='tweet_isLiked'
-        >mdi-heart</v-icon>
+    <div>
+        <v-btn
+            icon
+            @click='liked(tweet, index)'
+            class='z10'
+        >
+            <v-icon v-if='!tweet.isLiked'
+                color='red lighten-3'
+                ref='tweet_isLiked'
+            >mdi-heart</v-icon>
+            <v-icon v-else
+                color='red lighten-1'
+                ref='tweet_isLiked'
+            >mdi-heart</v-icon>
+        </v-btn>
         <span class='mr-2' ref='tweet_isLikedCount'>{{ tweet.liked_count }}</span>
-    </v-btn>
+    </div>
 </template>
 
 <script>

@@ -26,9 +26,13 @@ export default {
 		// レスポンスのデフォルト定義
 		http.interceptors.response.use((res) => {
 			// リクエストデータのJSON解析
-			var requestData = (res.config.data !== undefined) ? JSON.parse(res.config.data) : null
-			res.requestData = requestData
-
+			try {
+				var requestData = (res.config.data !== undefined) ? JSON.parse(res.config.data) : null
+				res.requestData = requestData
+			} catch (e) {
+				console.log(e)
+			} finally {
+			}
 			return res
 		})
 		Vue.prototype.$axios = http

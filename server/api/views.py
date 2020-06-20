@@ -35,6 +35,7 @@ from rest_framework_jwt.settings import api_settings
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework import status, viewsets, filters
 from rest_framework.views import APIView
+from rest_framework.parsers import FileUploadParser
 from .serializers import (
     ProfileSerializer,
     TweetSerializer,
@@ -160,6 +161,7 @@ class TweetViewSet(viewsets.ModelViewSet):
     queryset = Tweet.objects.all()
     serializer_class = TweetSerializer
     filter_class = TweetFilter
+    parser_class = (FileUploadParser)
 
     def get_login_user(self):
         return self.login_user if hasattr(self, 'login_user') else None

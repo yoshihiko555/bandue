@@ -212,9 +212,11 @@ class TweetSerializer(serializers.ModelSerializer):
 
 
     def create(self, validated_data):
+        logger.info(validated_data)
         user = mUser.objects.get(pk=validated_data['author_pk'])
         content = validated_data['content']
-        return Tweet.objects.create(author=user, content=content)
+        images = validated_data['images'] if 'images' in validated_data else None
+        return Tweet.objects.create(author=user, content=content, images=images)
 
 
     def update(self, instance, validated_data):
