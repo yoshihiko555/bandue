@@ -81,8 +81,5 @@ class SettingView(TemplateView):
 class BbsView(TemplateView):
     template_name = 'pages/bbs.html'
 
-class BbsDetailView(TemplateView):
-    template_name = 'pages/bbsDetail.html'
-
 class InfoView(TemplateView):
     template_name = 'pages/info.html'

@@ -278,7 +278,6 @@ class SelectSerializer(serializers.Field):
         return disp_name
 
     def to_representation(self, value):
-        logger.info(value)
         return value
 
 
@@ -286,12 +285,18 @@ class EntrySerializer(serializers.ModelSerializer):
 
     author = serializers.ReadOnlyField(source='author.username')
     author_pk = serializers.CharField(required=False)
-    type = SelectSerializer()
-    prefecture = SelectSerializer()
-    day_week = SelectSerializer()
-    direction = SelectSerializer()
-    sex = SelectSerializer()
-    age = SelectSerializer()
+    # type = SelectSerializer()
+    # prefecture = SelectSerializer()
+    # day_week = SelectSerializer()
+    # direction = SelectSerializer()
+    # sex = SelectSerializer()
+    # age = SelectSerializer()
+    type_disp = serializers.SerializerMethodField()
+    prefecture_disp = serializers.SerializerMethodField()
+    day_week_disp = serializers.SerializerMethodField()
+    direction_disp = serializers.SerializerMethodField()
+    sex_disp = serializers.SerializerMethodField()
+    age_disp = serializers.SerializerMethodField()
 
     class Meta:
         model = Entry
@@ -302,15 +307,39 @@ class EntrySerializer(serializers.ModelSerializer):
             'author',
             'author_pk',
             'type',
+            'type_disp',
             'prefecture',
+            'prefecture_disp',
             'area',
             'day_week',
+            'day_week_disp',
             'direction',
+            'direction_disp',
             'part',
             'genre',
             'sex',
+            'sex_disp',
             'age',
+            'age_disp',
         ]
+
+    def get_type_disp(self, obj):
+        return obj.get_type_display()
+
+    def get_prefecture_disp(self, obj):
+        return obj.get_prefecture_display()
+
+    def get_day_week_disp(self, obj):
+        return obj.get_day_week_display()
+
+    def get_direction_disp(self, obj):
+        return obj.get_direction_display()
+
+    def get_sex_disp(self, obj):
+        return obj.get_sex_display()
+
+    def get_age_disp(self, obj):
+        return obj.get_age_display()
 
     def create(self, validated_data):
         entry = Entry.objects.create(

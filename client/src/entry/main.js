@@ -3,7 +3,6 @@ import IsAuth from '@/components/pages/IsAuth.vue'
 import Explore from '@/components/pages/Explore.vue'
 import Home from '@/components/pages/Home.vue'
 import Bbs from '@/components/pages/Bbs.vue'
-import BbsDetail from '@/components/common/BbsDetail.vue'
 import Message from '@/components/pages/Message.vue'
 import Info from '@/components/pages/Info.vue'
 import Profile from '@/components/pages/Profile.vue'
@@ -30,7 +29,6 @@ Vue.component('is-auth', IsAuth)
 Vue.component('explore', Explore)
 Vue.component('home', Home)
 Vue.component('bbs', Bbs)
-Vue.component('bbs-detail', BbsDetail)
 Vue.component('message', Message)
 Vue.component('info', Info)
 Vue.component('profile', Profile)

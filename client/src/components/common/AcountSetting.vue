@@ -123,7 +123,17 @@
 
 		methods: {
 			update () {
-				console.log(this.profileData)
+				this.$axios({
+					method: 'PUT',
+					url: '/api/users/' + this.profileData.id + '/',
+					data: this.profileData,
+				})
+				.then(res => {
+					console.log(res)
+				})
+				.catch(e => {
+					console.log(e)
+				})
 			}
 		}
 	}

@@ -35,6 +35,7 @@
 										:key='i'
 										class='article_wrap'
 										color='orange'
+										@click='open'
 									>
 
 										<v-expansion-panel-header>
@@ -62,13 +63,13 @@
 												<v-col cols='4'>
 													<v-card-subtitle class="font-weight-black">記事の種類</v-card-subtitle>
 													<v-card-text>
-														{{ article.type }}
+														{{ article.type_disp }}
 													</v-card-text>
 												</v-col>
 												<v-col cols='4'>
 													<v-card-subtitle class="font-weight-black">都道府県</v-card-subtitle>
 													<v-card-text>
-														{{ article.prefecture }}
+														{{ article.prefecture_disp }}
 													</v-card-text>
 												</v-col>
 												<v-col cols='4'>
@@ -80,13 +81,13 @@
 												<v-col cols='4'>
 													<v-card-subtitle class="font-weight-black">活動曜日</v-card-subtitle>
 													<v-card-text>
-														{{ article.day_week }}
+														{{ article.day_week_disp }}
 													</v-card-text>
 												</v-col>
 												<v-col cols='4'>
 													<v-card-subtitle class="font-weight-black">活動方向性</v-card-subtitle>
 													<v-card-text>
-														{{ article.direction }}
+														{{ article.direction_disp }}
 													</v-card-text>
 												</v-col>
 											</v-row>
@@ -110,13 +111,13 @@
 												<v-col cols='6'>
 													<v-card-subtitle class="font-weight-black">募集性別</v-card-subtitle>
 													<v-card-text>
-														{{ article.sex }}
+														{{ article.sex_disp }}
 													</v-card-text>
 												</v-col>
 												<v-col cols='6'>
 													<v-card-subtitle class="font-weight-black">募集年齢</v-card-subtitle>
 													<v-card-text>
-														{{ article.age }}
+														{{ article.age_disp }}
 													</v-card-text>
 												</v-col>
 											</v-row>
@@ -249,6 +250,12 @@
 				console.log('記事更新')
 				this.articleList = res.data
 			},
+
+			open () {
+				// 既読機能用メソッド
+				console.log('open')
+			},
+
 			tag () {
 				console.log('タグをクリック')
 			},
@@ -256,6 +263,7 @@
 			category () {
 				console.log('カテゴリーをクリック')
 			},
+
 			reload () {
 				Com.reload(this.$router)
 			},
