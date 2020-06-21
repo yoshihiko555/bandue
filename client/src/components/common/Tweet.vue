@@ -107,7 +107,6 @@
 				this.showImage = true
 			},
 			delete_image () {
-				console.log('delete')
 				this.file = null
 				this.file = null
 				this.previewSrc = ''

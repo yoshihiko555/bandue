@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+
+{% block title %}Info{% endblock %}
+
+{% block content %}
+<div id="main">
+	<info/>
+</div>
+{% render_bundle 'main' %}
+{% endblock %}

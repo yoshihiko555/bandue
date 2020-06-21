@@ -19,9 +19,21 @@
 							<v-list-item-content>
 								<v-list-item-title v-text=item.title></v-list-item-title>
 							</v-list-item-content>
+
+							<v-list-item-action>
+								<v-badge
+									color='red accent-2'
+									:content='item.info_content'
+									:value='item.info_content'
+								>
+								</v-badge>
+							</v-list-item-action>
+
 						</v-list-item>
 					</v-list-item-group>
 				</v-list>
+
+				<v-btn @click='cntUp'>Messagge Up</v-btn>
 			</v-col>
 		</v-row>
 
@@ -36,8 +48,10 @@
 <script>
 	import SignOut from '@/components/register/SignOut'
 	import { Common } from '@/static/js/common'
+	import { Const } from '@/static/js/const'
 
 	const Com = new Common()
+	const Con = new Const()
 
 	export default {
 		name: 'Sidebar',
@@ -52,38 +66,45 @@
 					icon: 'mdi-home',
 					title: 'Home',
 					url: '/home',
+					info_content: 0,
 				},
 				{
 					icon: 'mdi-file-document-edit',
 					title: 'BBS',
 					url: '/bbs',
+					info_content: 0,
 				},
 				{
 					icon: 'mdi-forum',
 					title: 'Message',
 					url: '/message',
+					info_content: 0,
 				},
 				{
 					icon: 'mdi-information',
 					title: 'Info',
-					url: '',
+					url: '/info',
+					info_content: 0,
 				},
 				{
 					icon: 'mdi-account',
 					title: 'Profile',
 					url: '/profile/',
+					info_content: 0,
 				},
 				{
 					icon: 'mdi-cogs',
 					title: 'Setting',
 					url: '/setting',
+					info_content: 0,
 				},
 				{
 					icon: 'mdi-logout-variant',
 					title: 'Signout',
 					url: '',
+					info_content: 0,
 				}
-			]
+			],
 		}),
 
 		mounted: function () {
@@ -96,7 +117,7 @@
 					this.reload,				// HOME
 					this.reload,				// BBS
 					this.reload,				// Message
-					'',							// Info
+					this.reload,				// Info
 					this.toProfile,				// Profile
 					this.reload,				// Setting
 					this.togleSignoutModal		// Signout
@@ -118,6 +139,10 @@
 
 			reload () {
 				Com.reload(this.$router)
+			},
+			// メッセージ数UPテスト用
+			cntUp () {
+				this.items[Con.SIDEBAR_INDEX.Message].info_content++
 			}
 		}
 	}

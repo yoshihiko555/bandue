@@ -100,6 +100,18 @@ class Const {
 		{ text: '80~89', value: 8},
 		{ text: '90~99', value: 9},
 	]
+
+	// サイドバー
+	SIDEBAR_INDEX = {
+		'Home':		0,
+		'Bbs':		1,
+		'Message':	2,
+		'Info':		3,
+		'Profile':	4,
+		'Setting':	5,
+		'Signout':	6,
+	}
+
 }
 
 export { Const }
