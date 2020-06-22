@@ -99,7 +99,7 @@ class ProfileSubSerializer(serializers.ModelSerializer):
 
 class TweetSerializer(serializers.ModelSerializer):
 
-    author = serializers.SerializerMethodField()
+    author = serializers.CharField(source='author.username')
     author_pk = serializers.CharField(required=False)
     hashTag = serializers.SerializerMethodField()
     liked = serializers.SerializerMethodField()
@@ -110,7 +110,6 @@ class TweetSerializer(serializers.ModelSerializer):
     reply_count = serializers.SerializerMethodField()
     isRetweeted = serializers.SerializerMethodField()
     retweet = serializers.SerializerMethodField()
-    retweet_user = serializers.SerializerMethodField()
     retweet_count = serializers.SerializerMethodField()
 
 
@@ -141,9 +140,6 @@ class TweetSerializer(serializers.ModelSerializer):
             'retweet_user',
             'retweet_count',
         ]
-
-    def get_author(self, obj):
-        return obj.author.username
 
 
     def get_hashTag(self, obj):
@@ -201,10 +197,6 @@ class TweetSerializer(serializers.ModelSerializer):
         return TweetSerializer(Tweet.objects.filter(retweet=obj), many=True).data
 
 
-    def get_retweet_user(self, obj):
-        return obj.retweet_user
-
-
     def get_retweet_count(self, obj):
         if obj.isRetweet == True:
             return len(Tweet.objects.filter(retweet=obj.retweet))
@@ -226,8 +218,8 @@ class TweetSerializer(serializers.ModelSerializer):
 
 class ReplySerializer(serializers.ModelSerializer):
 
-    author = serializers.SerializerMethodField()
-    author_pk = serializers.SerializerMethodField()
+    author = serializers.CharField(source='author.username')
+    author_pk = serializers.CharField(source='author.pk')
 
     class Meta:
         model = Reply
@@ -239,14 +231,6 @@ class ReplySerializer(serializers.ModelSerializer):
             'content',
             'created_at',
         ]
-
-    def get_author(self, obj):
-        author_contents = obj.author.username
-        return author_contents
-
-    def get_author_pk(self, obj):
-        author_pk_contents = obj.author.pk
-        return author_pk_contents
 
     def create(self, validated_data):
         user = mUser.objects.get(pk=validated_data['author_pk'])
@@ -483,3 +467,12 @@ class MessageSerializer(serializers.ModelSerializer):
     def get_isMe(self, obj):
         isMe = str(obj.sender.username) == str(self.login_user)
         return isMe
+
+class SearchSerializer(serializers.Serializer):
+
+    def __init__(self, *args, **kwargs):
+        logger.debug('~~~~~~~~~~~~~~~~~~~SearchSerializerのinit====================')
+        logger.debug(self)
+        logger.debug(args)
+        logger.debug(kwargs)
+        return super().__init__(*args, **kwargs)

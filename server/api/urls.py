@@ -19,4 +19,5 @@ urlpatterns = [
     path('profile/<str:username>/', views.ProfileDetailView.as_view(), name='profile-detail'),
     path('signup/', views.SignUpView.as_view(), name='signup'),
     path('', include(router.urls)),
+    path('search/', views.SearchView.as_view(), name='search'),
 ]

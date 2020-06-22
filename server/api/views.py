@@ -45,6 +45,7 @@ from .serializers import (
     ReplySerializer,
     RoomSerializer,
     MessageSerializer,
+    SearchSerializer,
 )
 from .models import (
     mUser,
@@ -67,6 +68,7 @@ from .models import (
 )
 from .permissions import IsMyselfOrReadOnly
 from django_filters import rest_framework as django_filter
+from itertools import chain
 
 logger = logging.getLogger(__name__)
 
@@ -85,7 +87,8 @@ class TweetFilter(django_filter.FilterSet):
 
 
     tweetListFlg = django_filter.NumberFilter(method='tweet_filter')
-    content = django_filter.CharFilter(lookup_expr='contains')
+    q = django_filter.CharFilter(field_name='content', method='content_filter')
+    h = django_filter.CharFilter(field_name='hashTag', lookup_expr='contains')
     deleted = django_filter.BooleanFilter(field_name='deleted', method='deleted_filter')
 
 
@@ -93,6 +96,10 @@ class TweetFilter(django_filter.FilterSet):
         model = Tweet
         fields = ['deleted']
 
+    # TODO hashTagをどう持たせるか
+    def content_filter(self, queryset, name, value):
+        q_list = [Q(content__contains=i.strip()) for i in value.split(',')]
+        return Tweet.objects.filter(*q_list)
 
     def tweet_filter(self, queryset, name, value):
         logger.debug('フィルター開始')
@@ -592,3 +599,79 @@ class EntryViewSet(viewsets.ModelViewSet):
         except Http404:
             pass
         return Response(serializer.data)
+
+def analyzeMethod(func):
+    def inner(*args, **kwargs):
+        logger.debug('========================This is My AnalyzeMethod========================')
+        logger.debug('')
+        logger.debug('========================Arguments========================')
+        logger.debug(args)
+        logger.debug('========================Keyword Arguments========================')
+        logger.debug(kwargs)
+        logger.debug('========================Result========================')
+        res = func(*args, **kwargs)
+        logger.debug(res)
+        logger.debug('')
+        return func(*args, **kwargs)
+    return inner
+
+
+class MUserFilter(django_filter.FilterSet):
+
+    q = django_filter.CharFilter(field_name='username', method='username_filter')
+
+    class Meta:
+        model = mUser
+        fields = ['username']
+
+    def username_filter(self, queryset, name, value):
+        q_list = [Q(username__contains=i.strip()) for i in value.split(',')]
+        return mUser.objects.filter(*q_list)
+
+
+class SearchView(generics.ListAPIView):
+
+    permission_classes = (permissions.AllowAny,)
+    search_query = {
+        '0': {
+            'queryset': Tweet.objects.all(),
+            'serializer_class': TweetSerializer,
+            'filter_class': TweetFilter
+        },
+        '1': {
+            'queryset': Tweet.objects.all(),
+            'serializer_class': TweetSerializer,
+            'filter_class': TweetFilter
+        },
+        '2': {
+            'queryset': mUser.objects.all(),
+            'serializer_class': ProfileSerializer,
+            'filter_class': MUserFilter
+        },
+        '3': {
+            'queryset': Tweet.objects.all(),
+            'serializer_class': TweetSerializer,
+            'filter_class': TweetFilter
+        },
+    }
+
+    def get_login_user(self):
+        return self.login_user if hasattr(self, 'login_user') else None
+
+    @analyzeMethod
+    def list(self, request, *args, **kwargs):
+        self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
+        self.setSearchQuery(request, *args, **kwargs)
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def setSearchQuery(self, request, *args, **kwargs):
+        searchFlg = request.query_params['searchFlg']
+        self.queryset = self.search_query[searchFlg]['queryset']
+        self.serializer_class = self.search_query[searchFlg]['serializer_class']
+        self.filter_class = self.search_query[searchFlg]['filter_class']
