@@ -5,7 +5,7 @@ export default {
 	install: function (Vue, options) {
 		// デフォルト定義
 		const http = axios.create({
-			baseURL: 'http://192.168.33.12:8000/',
+			baseURL: 'http://localhost:8000/',
 			xsrfCookieName:'csrftoken',
 			xsrfHeaderName: 'X-CSRFTOKEN',
 			timeout: 10000,

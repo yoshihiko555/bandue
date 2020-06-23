@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   conda install -c conda-forge django-cors-headers && \
   conda install -c conda-forge django-webpack-loader && \
   python -m pip install -U channels && \
+  pip install channels_redis && \
   npm install -g yarn && \
   yarn global add add @vue/cli
 WORKDIR /home/bandue/
