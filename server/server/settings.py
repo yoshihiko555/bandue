@@ -45,6 +45,7 @@ else:
 ALLOWED_HOSTS = [
     '192.168.33.12',
     '192.168.33.13',
+    'localhost',
 ]
 
 

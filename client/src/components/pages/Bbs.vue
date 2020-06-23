@@ -289,7 +289,7 @@
 		}
 
 		.article_content_border {
-			border-bottom: solid 0.5px #ccc;
+			border-bottom: solid 0.5px #fff;
 		}
 	}
 </style>

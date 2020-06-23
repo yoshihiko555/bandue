@@ -8,7 +8,7 @@ module.exports = {
 
     // publicPathはdjango-webpack-loaderがパスをbundleにリダイレクトしたときに
     // http://192.168.33.12:8080/http://192.168.33.12:8080みたいに意味不明なURLを生み出さないための回避策
-    publicPath: 'http://192.168.33.12:8080',
+    publicPath: 'http://0.0.0.0:8080',
 
     // ビルド先のディレクトリの設定
     outputDir: './bundles/',
@@ -52,15 +52,11 @@ module.exports = {
 
         // 開発サーバーの設定
         config.devServer
-        // .allowedHosts([
-        //     '192.168.33.12:8080',
-        //     '192.168.33.13:8080',
-        // ])
-        .public('http://192.168.33.12:8080')
-        .host('192.168.33.12')
+        .public('http://0.0.0.0:8080')
+        .host('0.0.0.0')
         .port(8080)
         .hotOnly(true)
-        .watchOptions({ poll: 1000 })
+        .watchOptions({ poll: 1000 , ignored: /node_modules/, aggregateTimeout: 300 })
         .https(false)
         .headers({ 'Access-Control-Allow-Origin': ['\*'] })
 
