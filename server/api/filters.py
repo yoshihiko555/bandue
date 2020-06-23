@@ -19,19 +19,19 @@ from .models import (
     Message,
     mUser_Room,
 )
-
+import logging
+logger = logging.getLogger(__name__)
 
 class TweetFilter(django_filter.FilterSet):
 
 
     def __init__(self, *args, **kwargs):
         self.target_user = kwargs['data']['targetUser'] if 'targetUser' in kwargs['data'] else None
+        self.searchFlg = kwargs['data']['searchFlg'] if 'searchFlg' in kwargs['data'] else None
         super().__init__(*args, **kwargs)
-
 
     tweetListFlg = django_filter.NumberFilter(method='tweet_filter')
     q = django_filter.CharFilter(field_name='content', method='content_filter')
-    h = django_filter.CharFilter(field_name='hashTag', lookup_expr='contains')
     deleted = django_filter.BooleanFilter(field_name='deleted', method='deleted_filter')
 
 
@@ -39,10 +39,37 @@ class TweetFilter(django_filter.FilterSet):
         model = Tweet
         fields = ['deleted']
 
-    # TODO hashTagをどう持たせるか
     def content_filter(self, queryset, name, value):
-        q_list = [Q(content__contains=i.strip()) for i in value.split(',')]
-        return Tweet.objects.filter(*q_list)
+        h_list = []
+        q_list = []
+        qs = [i.strip() for i in value.split(',')]
+        for q in qs:
+            if q[0] == '#':
+                h_list.append(Q(hashTag__title=q))
+            else:
+                q_list.append(Q(content__contains=q))
+        query = q_list.pop()
+        for item in q_list:
+            query &= item
+        for item in h_list:
+            query |= item
+
+        q = Tweet.objects.filter(query)
+
+        # TODO トレンド順
+        if self.searchFlg == 0:
+            q = q.order_by('-created_at')
+
+        # 最新
+        elif self.searchFlg == 1:
+            q = q.order_by('-created_at')
+
+        # TODO 画像あるやつ
+        elif self.searchFlg == 3:
+            q = q.exclude(images__isnull=False).order_by('-created_at')
+
+        return q
+
 
     def tweet_filter(self, queryset, name, value):
         logger.debug('フィルター開始')
@@ -108,7 +135,6 @@ class TweetFilter(django_filter.FilterSet):
 
 class MUserFilter(django_filter.FilterSet):
 
-
     q = django_filter.CharFilter(field_name='username', method='username_filter')
 
     class Meta:
@@ -116,7 +142,7 @@ class MUserFilter(django_filter.FilterSet):
         fields = ['username']
 
     def username_filter(self, queryset, name, value):
+
+        # TODO フォロワー多い順とかに並べとく
         q_list = [Q(username__contains=i.strip()) for i in value.split(',')]
         return mUser.objects.filter(*q_list)
-
-

@@ -159,28 +159,29 @@ class SearchView(generics.ListAPIView, GetLoginUserMixin):
         '0': {
             'queryset': Tweet.objects.all(),
             'serializer_class': TweetSerializer,
-            'filter_class': TweetFilter
+            'filter_class': TweetFilter,
         },
         '1': {
             'queryset': Tweet.objects.all(),
             'serializer_class': TweetSerializer,
-            'filter_class': TweetFilter
+            'filter_class': TweetFilter,
         },
         '2': {
             'queryset': mUser.objects.all(),
             'serializer_class': ProfileSerializer,
-            'filter_class': MUserFilter
+            'filter_class': MUserFilter,
         },
         '3': {
             'queryset': Tweet.objects.all(),
             'serializer_class': TweetSerializer,
-            'filter_class': TweetFilter
+            'filter_class': TweetFilter,
         },
     }
 
     def list(self, request, *args, **kwargs):
         self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
-        self.setSearchQuery(request, *args, **kwargs)
+        searchFlg = request.query_params['searchFlg']
+        self.setSearchQuery(searchFlg, *args, **kwargs)
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -189,8 +190,7 @@ class SearchView(generics.ListAPIView, GetLoginUserMixin):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    def setSearchQuery(self, request, *args, **kwargs):
-        searchFlg = request.query_params['searchFlg']
+    def setSearchQuery(self, searchFlg, *args, **kwargs):
         self.queryset = self.search_query[searchFlg]['queryset']
         self.serializer_class = self.search_query[searchFlg]['serializer_class']
         self.filter_class = self.search_query[searchFlg]['filter_class']
