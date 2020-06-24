@@ -10,8 +10,8 @@
 						class='pa-3'
 						outlined
 					>
-						<v-card-title class="text-center">
-							<h1 class="explote_signin_title">Bandue</h1>
+						<v-card-title>
+							<img src='@/static/img/Logo_Icon&Text.png' alt="logo" width="150">
 						</v-card-title>
 
 						<v-alert

@@ -7,7 +7,7 @@
 					max-width='400'
 				>
 					<v-card-title>
-						<span class='title font-weight-light'>Bandue</span>
+						<img src='@/static/img/Logo_Icon.png' alt="logo" width="40">
 					</v-card-title>
 
 					<v-form>
