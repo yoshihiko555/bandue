@@ -11,9 +11,6 @@ from .models import (
     Band,
     MemberShip,
     Entry,
-    Bbs,
-    Tag,
-    Category,
     Room,
     Message,
     mUser_Room,
@@ -31,9 +28,6 @@ admin.site.register(mAccessLog)
 admin.site.register(Band)
 admin.site.register(MemberShip)
 admin.site.register(Entry)
-admin.site.register(Bbs)
-admin.site.register(Tag)
-admin.site.register(Category)
 admin.site.register(Room)
 admin.site.register(Message)
 admin.site.register(mUser_Room)

@@ -11,9 +11,6 @@ from .models import (
     Band,
     MemberShip,
     Entry,
-    Bbs,
-    Tag,
-    Category,
     Room,
     Message,
     mUser_Room,
@@ -38,7 +35,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     followees_count = serializers.SerializerMethodField()
     followers_count = serializers.SerializerMethodField()
     tweet = serializers.SerializerMethodField()
-    bbs = serializers.SerializerMethodField()
+    entry = serializers.SerializerMethodField()
 
     class Meta:
         model = mUser
@@ -56,7 +53,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'followees_count',
             'followers_count',
             'tweet',
-            'bbs'
+            'entry'
         ]
 
     def get_followees(self, obj):
@@ -77,8 +74,8 @@ class ProfileSerializer(serializers.ModelSerializer):
         return TweetSerializer(obj.author.all(), many=True).data
 
 
-    def get_bbs(self, obj):
-        return BbsSerializer(obj.writer.all(), many=True).data
+    def get_entry(self, obj):
+        return EntrySerializer(obj.author.all(), many=True).data
 
 
 class ProfileSubSerializer(serializers.ModelSerializer):
@@ -250,7 +247,7 @@ class HashTagSerializer(serializers.ModelSerializer):
             'slug',
         ]
 
-
+# カスタムフィールド参考用
 class SelectSerializer(serializers.Field):
 
     def to_internal_value(self, data):
@@ -360,39 +357,6 @@ class MUserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return mUser.objects.create_user(username=validated_data['username'], email=validated_data['email'], password=validated_data['password'])
 
-# --------------------------
-# BBS系は後で削除予定
-# --------------------------
-class BbsSerializer(serializers.ModelSerializer):
-
-    writer = serializers.SerializerMethodField()
-    writer_pk = serializers.CharField(required=False)
-
-    def __init__(self, *args, **kwargs):
-        self.login_user = kwargs['context']['view'].get_login_user() if 'context' in kwargs else None
-        super().__init__(*args, **kwargs)
-
-    class Meta:
-        model = Bbs
-        fields = [
-            'id',
-            'writer',
-            'writer_pk',
-            'title',
-            'content',
-            'created_at',
-            'updated_at',
-        ]
-
-    def get_writer(self, obj):
-        writer_contents = obj.writer.username
-        return writer_contents
-
-    def create(self, validated_data):
-        user = mUser.objects.get(pk=validated_data['writer_pk'])
-        title = validated_data['title']
-        content = validated_data['content']
-        return Bbs.objects.create(writer=user, title=title, content=content)
 
 class RoomSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=False)
