@@ -66,13 +66,17 @@ class IndexView(generic.TemplateView):
 
 
 
-class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
+class ProfileDetailView(generics.RetrieveAPIView):
     permission_classes = (permissions.AllowAny,)
     queryset = mUser.objects.all()
     serializer_class = ProfileSerializer
     lookup_field = 'username'
 
 
+class ProfileUpdateView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = (permissions.AllowAny,)
+    queryset = mUser.objects.all()
+    serializer_class = ProfileSerializer
 
 # ユーザー削除のView
 # サインアウトを実装してるときに間違って作った

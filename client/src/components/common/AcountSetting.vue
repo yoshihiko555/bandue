@@ -1,12 +1,12 @@
 <template>
-	<div class="">
+	<div class="acount_card_wrap">
 		<v-card
 			tile
 			outlined
 		>
-			<v-card-title>{{ profileData.username }}</v-card-title>
+			<v-card-title class='acount_title_wrap'>{{ profileData.username }}</v-card-title>
 
-			<v-form>
+			<v-form class='acount_form_wrap'>
 				<v-container>
 					<!-- ユーザー名 -->
 					<v-row>
@@ -27,12 +27,12 @@
 					<!-- 自己紹介 -->
 					<v-row>
 						<v-col cols='4'>
-							<v-card-text>Instroduction</v-card-text>
+							<v-card-text>Introduction</v-card-text>
 						</v-col>
 						<v-col cols='8'>
 							<v-textarea
-								v-model='profileData.instroduction'
-								:value="profileData.instroduction"
+								v-model='profileData.introduction'
+								:value="profileData.introduction"
 							>
 							</v-textarea>
 						</v-col>
@@ -49,6 +49,22 @@
 								:counter='70'
 								maxlength='70'
 								:value="profileData.email"
+							>
+							</v-text-field>
+						</v-col>
+					</v-row>
+
+					<!-- 住所 -->
+					<v-row>
+						<v-col cols='4'>
+							<v-card-text>Address</v-card-text>
+						</v-col>
+						<v-col cols='8'>
+							<v-text-field
+								v-model='profileData.address'
+								:counter='70'
+								maxlength='70'
+								:value="profileData.address"
 							>
 							</v-text-field>
 						</v-col>
@@ -89,9 +105,15 @@
 						<v-col cols='8' offset='4'>
 							<v-btn
 								class='teal lighten-4 ma-1'
-								@click='update'
+								@click='userUpdate'
 							>
 							更新
+							</v-btn>
+							<v-btn
+								class='red ma-1 white--text'
+								@click='userDelete'
+							>
+							削除
 							</v-btn>
 						</v-col>
 					</v-row>
@@ -102,6 +124,10 @@
 </template>
 
 <script>
+	import { Common } from '@/static/js/common'
+
+	const Com = new Common()
+
 	export default {
 		name: 'AcountSetting',
 		data: () => ({
@@ -122,10 +148,11 @@
 		},
 
 		methods: {
-			update () {
+			userUpdate () {
+			  console.log(this.profileData)
 				this.$axios({
 					method: 'PUT',
-					url: '/api/users/' + this.profileData.id + '/',
+					url: '/api/profile/' + this.profileData.id + '/',
 					data: this.profileData,
 				})
 				.then(res => {
@@ -134,7 +161,53 @@
 				.catch(e => {
 					console.log(e)
 				})
+			},
+			userDelete () {
+			  this.$axios({
+			    method: 'DELETE',
+			    url: '/api/profile/' + this.profileData.id + '/',
+			  })
+				.then(res => {
+					console.log(res)
+          this.$store.commit('initState')
+				  this.$router.push('/')
+				  Com.reload(this.$router)
+				})
+				.catch(e => {
+					console.log(e)
+				})
 			}
 		}
 	}
 </script>
+
+<style lang='scss'>
+  .acount_card_wrap {
+      height: 750px;
+    >div {
+      height: 100%;
+
+      .acount_title_wrap {
+        height: 10%;
+      }
+
+      .acount_form_wrap {
+        height: 90%;
+        overflow: auto;
+
+        &::-webkit-scrollbar {
+          width:7px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background-color: #cacaca;
+          border-radius: 5px;
+        }
+
+        &::-webkit-scrollbar-track {
+          background: rgba(100,100,100, 0);
+        }
+      }
+    }
+  }
+</style>

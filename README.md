@@ -9,12 +9,6 @@
 <br>
 
 # Introduction
-<span>
-  <img src="https://img.shields.io/github/issues/kRysTasis/coopy">
-  <img src="https://img.shields.io/github/forks/kRysTasis/coopy">
-  <img src="https://img.shields.io/github/stars/kRysTasis/coopy">
-</span>
-
 bandue is a revolutionary communication tool to connect with everyone who makes music
 
 <br>
@@ -33,8 +27,8 @@ Enter the command in the following procedure
 `$ docker build -t bandue:bandue .`
 
 2. Create Container  
-`$ docker run -itd -p 8000:8000 -p 8080:8080 --name bandue -v <your-volume-name>:/home/bandue/ bandue:bandue`  
-※For <your-volume-name>, enter the directory you want to share with the absolute path
+`$ docker run -itd -p 8000:8000 -p 8080:8080 --name bandue -v <your-volume-path>:/home/bandue/ bandue:bandue`  
+※For \<your-volume-path>, enter the directory you want to share with the absolute path
 
 3. Server Start-up  
 `$ docker exec -it bandue bash`  
