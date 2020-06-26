@@ -2,7 +2,7 @@
 	<v-container id='header_wrap'>
 		<v-row>
 			<v-col cols='12'>
-				<h1 class='logo' @click='reload'><router-link to='/'>Bandue</router-link></h1>
+				<h1 class='logo' @click='reload'><img src='@/static/img/Logo_Icon&Text.png' alt="logo" width="150"><router-link to='/'></router-link></h1>
 			</v-col>
 		</v-row>
 	</v-container>

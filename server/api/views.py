@@ -19,7 +19,6 @@ from .serializers import (
     TweetSerializer,
     EntrySerializer,
     MUserSerializer,
-    BbsSerializer,
     ReplySerializer,
     RoomSerializer,
     MessageSerializer,
@@ -37,9 +36,6 @@ from .models import (
     Band,
     MemberShip,
     Entry,
-    Bbs,
-    Tag,
-    Category,
     Room,
     Message,
     mUser_Room,
@@ -65,61 +61,18 @@ class IndexView(generic.TemplateView):
     template_name = 'pages/index.html'
 
 
-
-class ProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
+class ProfileDetailView(generics.RetrieveAPIView):
     permission_classes = (permissions.AllowAny,)
     queryset = mUser.objects.all()
     serializer_class = ProfileSerializer
     lookup_field = 'username'
 
 
-
-# ユーザー削除のView
-# サインアウトを実装してるときに間違って作った
-# 後で使うだろうから残しておく
-class DeleteUserView(generics.DestroyAPIView):
-
-    permission_classes = (permissions.IsAuthenticated,)
-    serializer_class = MUserSerializer
-    lookup_field = 'username'
-    queryset = mUser.objects.all()
-
-    def get_object(self):
-
-        try:
-            logger.info(self.request.user)
-            instance = self.queryset.get(username=self.request.user)
-            return instance
-        except mUser.DoesNotExist:
-            return Http404
-
-
-class BbsListView(generics.ListCreateAPIView):
-
+class ProfileUpdateView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (permissions.AllowAny,)
-    queryset = Entry.objects.all()
-    serializer_class = EntrySerializer
+    queryset = mUser.objects.all()
+    serializer_class = ProfileSerializer
 
-    @transaction.atomic
-    def post(self, request, format=None):
-
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class BbsDetailView(generics.RetrieveUpdateDestroyAPIView):
-
-    queryset = Entry.objects.all()
-    serializer_class = BbsSerializer
-
-# --------------------------
-# BBS系は後で削除予定
-# --------------------------
 
 class SignUpView(generics.CreateAPIView):
 

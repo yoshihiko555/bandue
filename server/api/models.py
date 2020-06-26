@@ -368,51 +368,6 @@ class Age(models.Model):
         return self.get_age_display()
 
 
-# --------------------------
-# BBS系は後で削除予定
-# --------------------------
-class Category(models.Model):
-
-    name = models.CharField(_('Category'), max_length=50, default='未分類')
-    created_by = models.ForeignKey(mUser, on_delete=models.CASCADE)
-    description = models.TextField(_('Description'), blank=True)
-    created_at = models.DateTimeField(_('Created at'), auto_now_add=True)
-    slug = models.SlugField(default=name)
-
-    def __str__(self):
-        return self.name
-
-
-class Tag(models.Model):
-
-    name = models.CharField(_('Tag'), max_length=50)
-    created_by = models.ForeignKey(mUser, on_delete=models.CASCADE)
-    description = models.TextField(_('Description'), blank=True)
-    created_at = models.DateTimeField(_('Created at'), auto_now_add=True)
-    slug = models.SlugField(default=name)
-
-    def __str__(self):
-        return self.name
-
-
-class Bbs(models.Model):
-
-    writer = models.ForeignKey(mUser, on_delete=models.CASCADE, related_name='writer')
-    title = models.CharField(_('Title'), max_length=100)
-    content = models.TextField(_('Content'))
-
-    # tag = models.ManyToManyField(Tag, blank=True)
-    # images = models.ImageField(_('Images'), upload_to=content_file_name, blank=True, null=True)
-    created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
-    updated_at = models.DateTimeField(_('Upadate Date'), auto_now=True)
-    deleted = models.BooleanField(_('Delete Flag'), default=False)
-
-    def __str__(self):
-        return self.title
-
-# --------------------------
-# BBS系は後で削除予定
-# --------------------------
 
 class Room(models.Model):
 

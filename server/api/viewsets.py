@@ -19,7 +19,6 @@ from .serializers import (
     TweetSerializer,
     EntrySerializer,
     MUserSerializer,
-    BbsSerializer,
     ReplySerializer,
     RoomSerializer,
     MessageSerializer,
@@ -37,9 +36,6 @@ from .models import (
     Band,
     MemberShip,
     Entry,
-    Bbs,
-    Tag,
-    Category,
     Room,
     Message,
     mUser_Room,
@@ -267,48 +263,6 @@ class mUserViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({'status': 'success', 'result': True}, status=status.HTTP_200_OK)
         else:
             return Response({'status': 'success', 'result': False}, status=status.HTTP_200_OK)
-
-
-# --------------------------
-# BBS系は後で削除予定
-# --------------------------
-class BbsViewSet(BaseModelViewSet):
-
-    permission_classes = (permissions.AllowAny,)
-    queryset = Bbs.objects.all()
-    serializer_class = BbsSerializer
-
-    def list(self, request, *args, **kwargs):
-
-        self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-
-    def create(self, request, *args, **kwargs):
-
-        logger.debug('viewsetのcreate')
-        logger.debug(request.user)
-        request.data.update({
-            'writer_pk': str(request.user.pk)
-        })
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(data=request.data)
-
-        if serializer.is_valid():
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-
-            # とりあえずの処置
-            queryset = Bbs.objects.filter(writer=request.user)
-            logger.debug(queryset)
-            return Response(self.get_serializer(queryset, many=True).data, status=status.HTTP_201_CREATED, headers=headers)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RoomViewSet(BaseModelViewSet):
