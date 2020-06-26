@@ -336,6 +336,20 @@ class Entry(models.Model):
         (2, _('Famale')),
     )
     sex = models.IntegerField(choices=SEX_CHOICES, null=True, blank=True)
+
+    # 募集年齢を複数選択可能にするには？
+    # リスト形式でDBで持つようにする？
+    #     - 新たにライブラリを入れれば可能。
+    # もしくは、新たにテーブルを作成する
+#     age = models.IntegerField(choices=AGE_CHOICES, null=True, blank=True)
+    age = models.ManyToManyField('api.Age', blank=True)
+    is_public = models.BooleanField(_('Public Flag'), default=False)
+
+    def __str__(self):
+        return self.title
+
+
+class Age(models.Model):
     AGE_CHOICES = (
         (0, _('指定なし')),
         (1, _('~19')),
@@ -348,15 +362,11 @@ class Entry(models.Model):
         (8, _('80~89')),
         (9, _('90~99')),
     )
-    # 募集年齢を複数選択可能にするには？
-    # リスト形式でDBで持つようにする？
-    #     - 新たにライブラリを入れれば可能。
-    # もしくは、新たにテーブルを作成する
     age = models.IntegerField(choices=AGE_CHOICES, null=True, blank=True)
-    is_public = models.BooleanField(_('Public Flag'), default=False)
 
     def __str__(self):
-        return self.title
+        return self.get_age_display()
+
 
 # --------------------------
 # BBS系は後で削除予定

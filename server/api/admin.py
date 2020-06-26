@@ -17,6 +17,7 @@ from .models import (
     Room,
     Message,
     mUser_Room,
+    Age,
 )
 
 admin.site.register(mUser)
@@ -37,3 +38,4 @@ admin.site.register(Category)
 admin.site.register(Room)
 admin.site.register(Message)
 admin.site.register(mUser_Room)
+admin.site.register(Age)

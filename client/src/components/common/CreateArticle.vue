@@ -101,6 +101,7 @@
 									item-value='value'
 									label='Age'
 									dense
+									multiple
 								></v-select>
 								</v-col>
 

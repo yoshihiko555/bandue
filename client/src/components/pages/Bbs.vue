@@ -116,8 +116,8 @@
 												</v-col>
 												<v-col cols='6'>
 													<v-card-subtitle class="font-weight-black">募集年齢</v-card-subtitle>
-													<v-card-text>
-														{{ article.age_disp }}
+													<v-card-text v-for='(age, i) in article.age_disp' :key='i'>
+														<span>{{ age }}</span>
 													</v-card-text>
 												</v-col>
 											</v-row>

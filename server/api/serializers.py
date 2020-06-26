@@ -17,6 +17,7 @@ from .models import (
     Room,
     Message,
     mUser_Room,
+    Age,
 )
 from rest_framework.renderers import JSONRenderer
 
@@ -99,7 +100,7 @@ class ProfileSubSerializer(serializers.ModelSerializer):
 
 class TweetSerializer(serializers.ModelSerializer):
 
-    author = serializers.CharField(source='author.username')
+    author = serializers.ReadOnlyField(source='author.username')
     author_pk = serializers.CharField(required=False)
     hashTag = serializers.SerializerMethodField()
     liked = serializers.SerializerMethodField()
@@ -111,6 +112,7 @@ class TweetSerializer(serializers.ModelSerializer):
     isRetweeted = serializers.SerializerMethodField()
     retweet = serializers.SerializerMethodField()
     retweet_count = serializers.SerializerMethodField()
+    retweet_user = serializers.ReadOnlyField()
 
 
     def __init__(self, *args, **kwargs):
@@ -281,6 +283,7 @@ class EntrySerializer(serializers.ModelSerializer):
     direction_disp = serializers.SerializerMethodField()
     sex_disp = serializers.SerializerMethodField()
     age_disp = serializers.SerializerMethodField()
+    age = serializers.ListField(write_only=True, child=serializers.IntegerField())
 
     class Meta:
         model = Entry
@@ -323,9 +326,15 @@ class EntrySerializer(serializers.ModelSerializer):
         return obj.get_sex_display()
 
     def get_age_disp(self, obj):
-        return obj.get_age_display()
+        age = obj.age
+        logger.info('----年齢一覧取得----')
+        logger.info(obj.age.all())
+        if len(obj.age.all()) != 0:
+            age_list = [age.get_age_display() for age in obj.age.all()]
+        return age_list
 
     def create(self, validated_data):
+        logger.info(validated_data['age']),
         entry = Entry.objects.create(
             author = mUser.objects.get(pk=validated_data['author_pk']),
             title = validated_data['title'],
@@ -338,8 +347,13 @@ class EntrySerializer(serializers.ModelSerializer):
             part = validated_data['part'],
             genre = validated_data['genre'],
             sex = validated_data['sex'],
-            age = validated_data['age'],
+#             age = validated_data['age'],
         )
+        if len(validated_data['age']) != 0:
+            age_list = [Age.objects.get(age=age) for age in validated_data['age']]
+            for age in age_list:
+                entry.age.add(age)
+
         return entry
 
 
