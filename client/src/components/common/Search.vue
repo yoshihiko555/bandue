@@ -1,15 +1,55 @@
 <template>
-	<v-text-field
-		prepend-inner-icon='mdi-magnify'
+	<v-card
+		flat
 	>
-	</v-text-field>
+		<v-text-field
+			prepend-inner-icon='mdi-magnify'
+			v-model='searchText'
+		>
+		</v-text-field>
+		<component :is='currentView' :search-text=searchText></component>
+	</v-card>
 </template>
 
 <script>
+import News from '@/components/common/News'
+import SearchResult from '@/components/common/SearchResult'
+
 export default {
 	name: 'Search',
+	components: {
+		News,
+		SearchResult,
+	},
 	data: () => ({
+		currentView: 'News',
+		searchText: ''
+	}),
+	computed: {
 
-	})
+	},
+	watch: {
+		searchText: function(val) {
+			if (val.length > 0) {
+				this.currentView = 'SearchResult'
+			} else {
+				this.currentView = 'News'
+			}
+		}
+	},
+	created () {
+
+	},
+	mounted: function () {
+
+	},
+	methods: {
+		showSearchResult () {
+			console.log('showSearchResult')
+			console.log(this.currentView)
+			this.currentView = 'SearchResult'
+			console.log(this.currentView)
+		}
+	}
 }
 </script>

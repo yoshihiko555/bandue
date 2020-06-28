@@ -72,11 +72,10 @@ class ProfileSerializer(serializers.ModelSerializer):
         return len(self.get_followers(obj)) if self.get_followers(obj) != None else 0
 
     def get_tweet(self, obj):
-        return TweetSerializer(obj.author.all(), many=True).data
-
+        return TweetSerializer(Tweet.objects.filter(author=obj), many=True).data
 
     def get_entry(self, obj):
-        return EntrySerializer(obj.author.all(), many=True).data
+        return EntrySerializer(Entry.objects.filter(author=obj), many=True).data
 
 
 class ProfileSubSerializer(serializers.ModelSerializer):

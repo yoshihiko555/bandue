@@ -28,7 +28,7 @@ class TweetFilter(django_filter.FilterSet):
         super().__init__(*args, **kwargs)
 
     tweetListFlg = django_filter.NumberFilter(method='tweet_filter')
-    q = django_filter.CharFilter(field_name='content', method='content_filter')
+    searchText = django_filter.CharFilter(field_name='content', method='content_filter')
     deleted = django_filter.BooleanFilter(field_name='deleted', method='deleted_filter')
 
 
@@ -132,7 +132,7 @@ class TweetFilter(django_filter.FilterSet):
 
 class MUserFilter(django_filter.FilterSet):
 
-    q = django_filter.CharFilter(field_name='username', method='username_filter')
+    searchText = django_filter.CharFilter(field_name='username', method='username_filter')
 
     class Meta:
         model = mUser
