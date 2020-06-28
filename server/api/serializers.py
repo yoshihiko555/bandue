@@ -36,7 +36,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     followees_count = serializers.SerializerMethodField()
     followers_count = serializers.SerializerMethodField()
     tweet = serializers.SerializerMethodField()
-    entry = serializers.SerializerMethodField()
+    # entry = serializers.SerializerMethodField()
 
     class Meta:
         model = mUser
@@ -46,7 +46,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'email',
             'address',
             'created_at',
-            'thumbnail',
+            'header',
             'introduction',
             'icon',
             'followees',
@@ -54,7 +54,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'followees_count',
             'followers_count',
             'tweet',
-            'entry'
+            # 'entry'
         ]
 
     def get_followees(self, obj):
@@ -63,7 +63,6 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def get_followers(self, obj):
         return ProfileSubSerializer(mUser.objects.filter(followees=obj), many=True).data
-
 
     def get_followees_count(self, obj):
         return obj.followees.count()
@@ -74,9 +73,8 @@ class ProfileSerializer(serializers.ModelSerializer):
     def get_tweet(self, obj):
         return TweetSerializer(obj.author.all(), many=True).data
 
-
-    def get_entry(self, obj):
-        return EntrySerializer(obj.author.all(), many=True).data
+    # def get_entry(self, obj):
+    #     return EntrySerializer(obj.author.all(), many=True).data
 
 
 class ProfileSubSerializer(serializers.ModelSerializer):
@@ -110,6 +108,7 @@ class TweetSerializer(serializers.ModelSerializer):
     retweet = serializers.SerializerMethodField()
     retweet_count = serializers.SerializerMethodField()
     retweet_user = serializers.ReadOnlyField()
+    userIcon = serializers.SerializerMethodField()
 
 
     def __init__(self, *args, **kwargs):
@@ -138,6 +137,7 @@ class TweetSerializer(serializers.ModelSerializer):
             'retweet',
             'retweet_user',
             'retweet_count',
+            'userIcon',
         ]
 
 
@@ -200,6 +200,10 @@ class TweetSerializer(serializers.ModelSerializer):
         if obj.isRetweet == True:
             return len(Tweet.objects.filter(retweet=obj.retweet))
         return len(Tweet.objects.filter(retweet=obj))
+
+
+    def get_userIcon(self, obj):
+        return '/media/' + str(obj.author.icon)
 
 
     def create(self, validated_data):
