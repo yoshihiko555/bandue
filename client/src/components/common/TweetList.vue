@@ -7,6 +7,9 @@
 				@click.self.native='showTweetDetail(tweet)'
 			>
 				<v-card-title>
+					<v-avatar>
+						<v-img :src='tweet.userIcon'></v-img>
+					</v-avatar>
 					<router-link
 						@click.native='reload()'
 						:to='{ name : "Profile", params : { username: tweet.author}}'
@@ -221,6 +224,8 @@
 
 <style lang='scss'>
 	.tweet_wrap {
+		border-radius: 0 !important;
+		border-bottom: solid 1px #ccc !important;
 		cursor: pointer;
 		&::after {
 			content: '';

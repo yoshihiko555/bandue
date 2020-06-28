@@ -108,7 +108,6 @@
 			},
 			delete_image () {
 				this.file = null
-				this.file = null
 				this.previewSrc = ''
 				this.$refs.input.lazyValue = ''
 				this.showImage = false

@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from rest_framework_jwt.settings import api_settings
 from rest_framework import status, viewsets, filters
 from rest_framework.views import APIView
+from rest_framework.parsers import FileUploadParser
 from .serializers import (
     ProfileSerializer,
     TweetSerializer,
@@ -72,7 +73,19 @@ class ProfileUpdateView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (permissions.AllowAny,)
     queryset = mUser.objects.all()
     serializer_class = ProfileSerializer
+    parser_class = (FileUploadParser)
 
+    def update(self, request, pk=None):
+        logger.info('-------更新--------')
+        logger.info(request.data)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data)
+        logger.info(serializer.is_valid())
+        logger.info(serializer.errors)
+        if serializer.is_valid():
+            self.perform_update(serializer)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class SignUpView(generics.CreateAPIView):
 

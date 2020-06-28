@@ -111,7 +111,6 @@ class Const {
 		'Setting':	5,
 		'Signout':	6,
 	}
-
 }
 
 export { Const }

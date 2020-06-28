@@ -1,7 +1,7 @@
 <template>
 	<v-app>
 		<Header/>
-		<div  id='profile_wrap' class="main">
+		<div id='profile_wrap' class="main">
 			<v-container fluid>
 				<v-row>
 					<v-col cols='3'>
@@ -12,18 +12,30 @@
 						<v-card
 							outlined
 						>
-							<v-card-text>
-								{{ profileData.username }}
-								<span v-if='!isMe'>
-									<follow :username='username'></follow>
-								</span>
-							</v-card-text>
-							<v-card-text>
-								{{ profileData.introduction }}
-							</v-card-text>
-							<v-card-text>
-								{{ profileData.created_at }}
-							</v-card-text>
+							<div class="profile_header_wrap">
+								<v-img v-if='profileData.header === null' height='200' src='@/static/img/default_header.jpg'></v-img>
+								<v-img v-else height='200' :src=header></v-img>
+							</div>
+
+							<div class="profile_content_wrap">
+								<v-avatar class='profile_icon'>
+									<v-img v-if='profileData.icon === null' src='@/static/img/default_icon.jpeg'></v-img>
+									<v-img v-else :src=icon></v-img>
+								</v-avatar>
+
+								<v-card-text class="pt-6 text-h5">
+									{{ profileData.username }}
+									<span v-if='!isMe'>
+										<follow :username='username'></follow>
+									</span>
+								</v-card-text>
+								<v-card-text>
+									{{ profileData.introduction }}
+								</v-card-text>
+								<v-card-text class="text-caption">
+									{{ profileData.created_at }}
+								</v-card-text>
+							</div>
 
 							<div v-if='view == 0'>
 								<v-card-text>
@@ -171,7 +183,9 @@
 				'Media',
 				'Likes',
 				'BBS'
-			]
+			],
+			icon: '',
+			header: '',
 		}),
 		created () {
 			const currentPath = this.$route.path
@@ -188,6 +202,8 @@
 			.then(res => {
 				res.data.created_at = res.data.created_at.substr(0, 10)
 				this.profileData = res.data
+				this.icon = this.profileData.icon
+				this.header = this.profileData.header
 				console.log(res)
 			})
 			.catch(e => {
@@ -206,21 +222,23 @@
 </script>
 
 <style lang='scss'>
-	.tweetlist_tab_wrap {
-		border-bottom: solid 1px #ccc !important;
-	}
+	#profile_wrap {
+		.profile_content_wrap {
+			position: relative;
 
-	.tweet_wrap {
-		border-radius: 0 !important;
-		border-bottom: solid 1px #ccc !important;
-	}
+			.profile_icon {
+				position: absolute;
+				top: -20%;
+				left: 5%;
+			}
+		}
 
-	.followeeslist_tab_wrap {
-		border-bottom: solid 1px #ccc !important;
-	}
+		.tweetlist_tab_wrap {
+			border-bottom: solid 1px #ccc !important;
+		}
 
-	.followees_wrap {
-		border-radius: 0 !important;
-		border-bottom: solid 1px #ccc !important;
+		.followeeslist_tab_wrap {
+			border-bottom: solid 1px #ccc !important;
+		}
 	}
 </style>

@@ -11,6 +11,9 @@ logger = logging.getLogger(__name__)
 def content_file_name(instance, filename):
     return 'upload/{0}/{1}/'.format(instance.author, filename)
 
+def profile_file_name(instance, filename):
+    return 'upload/{0}/{1}/'.format(instance.username, filename)
+
 
 class UserManager(BaseUserManager):
 
@@ -65,7 +68,7 @@ class mUser(AbstractBaseUser, PermissionsMixin):
         )
     )
 
-    thumbnail = models.ImageField(_('Thumbnail'), upload_to=content_file_name, blank=True, null=True)
+    header = models.ImageField(_('Header'), upload_to=profile_file_name, blank=True, null=True)
 
     is_staff = models.BooleanField(
         _('Staff Status'),
@@ -94,7 +97,7 @@ class mUser(AbstractBaseUser, PermissionsMixin):
 
     introduction = models.TextField(_('Introduction'), blank=True, null=True)
 
-    icon = models.ImageField(_('Icon'), upload_to=content_file_name, blank=True, null=True)
+    icon = models.ImageField(_('Icon'), upload_to=profile_file_name, blank=True, null=True)
 
     followees = models.ManyToManyField('self', blank=True, symmetrical=False)
 
