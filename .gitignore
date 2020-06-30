@@ -5,6 +5,7 @@ webpak-stats.json
 db.sqlite3
 migrations
 upload/
+.env
 
 # local env files
 .env.local

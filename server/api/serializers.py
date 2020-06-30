@@ -36,7 +36,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     followees_count = serializers.SerializerMethodField()
     followers_count = serializers.SerializerMethodField()
     tweet = serializers.SerializerMethodField()
-    # entry = serializers.SerializerMethodField()
+    entry = serializers.SerializerMethodField()
 
     class Meta:
         model = mUser
@@ -54,7 +54,7 @@ class ProfileSerializer(serializers.ModelSerializer):
             'followees_count',
             'followers_count',
             'tweet',
-            # 'entry'
+            'entry'
         ]
 
     def get_followees(self, obj):
@@ -64,14 +64,18 @@ class ProfileSerializer(serializers.ModelSerializer):
     def get_followers(self, obj):
         return ProfileSubSerializer(mUser.objects.filter(followees=obj), many=True).data
 
+
     def get_followees_count(self, obj):
         return obj.followees.count()
+
 
     def get_followers_count(self, obj):
         return len(self.get_followers(obj)) if self.get_followers(obj) != None else 0
 
+
     def get_tweet(self, obj):
         return TweetSerializer(Tweet.objects.filter(author=obj), many=True).data
+
 
     def get_entry(self, obj):
         return EntrySerializer(Entry.objects.filter(author=obj), many=True).data
@@ -87,7 +91,7 @@ class ProfileSubSerializer(serializers.ModelSerializer):
             'email',
             'address',
             'created_at',
-            'thumbnail',
+            'header',
             'introduction',
             'icon',
         ]
