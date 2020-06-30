@@ -87,7 +87,7 @@ class ProfileSubSerializer(serializers.ModelSerializer):
             'email',
             'address',
             'created_at',
-            'thumbnail',
+            'header',
             'introduction',
             'icon',
         ]

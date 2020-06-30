@@ -23,7 +23,6 @@ from .serializers import (
     ReplySerializer,
     RoomSerializer,
     MessageSerializer,
-    SearchSerializer,
 )
 from .models import (
     mUser,
