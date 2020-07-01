@@ -30,6 +30,14 @@ logger = logging.getLogger(__name__)
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    """
+    プロフィールのシリアライザー
+
+        Fields
+        -------------------------------------
+        followees : フォローしているユーザー一覧
+        followers : フォローされているユーザー一覧
+    """
 
     followees = serializers.SerializerMethodField()
     followers = serializers.SerializerMethodField()
@@ -98,6 +106,15 @@ class ProfileSubSerializer(serializers.ModelSerializer):
 
 
 class TweetSerializer(serializers.ModelSerializer):
+    """
+    ツイートのシリアライザー
+
+        Fields
+        --------------------------------------------------
+        isLiked : 表示したユーザーが既にいいねしているかどうか
+        isRetweet : リツイートかどうか
+        isRetweeted : 表示したユーザーが既にリツイートしているかどうか
+    """
 
     author = serializers.ReadOnlyField(source='author.username')
     author_pk = serializers.CharField(required=False)
@@ -163,9 +180,13 @@ class TweetSerializer(serializers.ModelSerializer):
         # とりあえずの実装。ORMの理解が深まり次第リファクタリング予定
         isLiked = False
         if self.login_user != None:
+            # logger.debug('=============get_isLiked===============')
+            # logger.debug(self.login_user)
             target_tweet = obj.retweet if obj.isRetweet else obj
             for u in target_tweet.liked.all():
+                # logger.debug(u.username)
                 if u.username == self.login_user:
+                    # logger.debug('ライクしてる')
                     isLiked = True
                     break
         return isLiked

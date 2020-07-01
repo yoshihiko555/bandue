@@ -79,6 +79,10 @@
 			</v-card>
 		</div>
 
+		<div v-if='nextPage != null && tweetLoading'>
+			<Loading></Loading>
+		</div>
+
 		<!-- モーダル設定 -->
 		<TweetEdit
 			@closeModal='closeModal'
@@ -100,6 +104,7 @@
 	import TweetDetail from '@/components/common/TweetDetail'
 	import Retweet from '@/components/common/Retweet'
 	import Like from '@/components/common/Like'
+	import Loading from '@/components/common/Loading'
 	import { Common } from '@/static/js/common'
 
 	const Com = new Common()
@@ -121,6 +126,7 @@
 			TweetDetail,
 			Retweet,
 			Like,
+			Loading,
 		},
 		data: () => ({
 			tweetList: [],
@@ -139,9 +145,14 @@
 			tweetDetailDialog: false,
 			selectTweet: {},
 			tweet: {},
+			nextPage: null,
+			scrollY: 0,
+			scrollMax: 0,
+			tweetLoading: true,
 		}),
 		created () {
 			this.$eventHub.$on('create-tweet', this.tweetUpdate)
+			window.addEventListener('scroll', this.handleScroll)
 		},
 		mounted: function () {
 			console.log('ツイートリストフラグ:', this.tweetListFlg)
@@ -156,12 +167,15 @@
 				}
 			})
 			.then(res => {
-				for (var i in res.data) {
-					var updatedAt = res.data[i].updated_at.substr(0, 10)
-					res.data[i].updated_at = updatedAt
+				console.log(res.data.next)
+				for (var i in res.data.results) {
+					var updatedAt = res.data.results[i].updated_at.substr(0, 10)
+					res.data.results[i].updated_at = updatedAt
 				}
-				this.tweetList = res.data
+				this.tweetList = res.data.results
 				console.log('ツイート一覧',this.tweetList)
+				this.nextPage = res.data.next
+				this.tweetLoading = false
 			})
 			.catch(e => {
 				console.log(e)
@@ -170,11 +184,10 @@
 		methods: {
 			tweetUpdate (res) {
 				console.log('tweet更新')
-				for (var i in res.data) {
-					var updatedAt = res.data[i].updated_at.substr(0, 10)
-					res.data[i].updated_at = updatedAt
-				}
-				this.tweetList = res.data
+				console.log(res.data)
+				var updatedAt = res.data.updated_at.substr(0, 10)
+				res.data.updated_at = updatedAt
+				this.tweetList.unshift(res.data)
 				console.log(this.tweetList)
 			},
 			reload () {
@@ -216,8 +229,45 @@
 			showTweetDetail (tweet) {
 				this.tweetDetailDialog = true
 				this.selectTweet = tweet
-			}
+			},
+			next () {
+				if (this.nextPage !== null) {
+					console.log('ツイートリストフラグ:', this.tweetListFlg)
+					console.log('ユーザーネーム:', this.username)
+					console.log('ログインユーザー:', this.$store.state.loginUser)
+					const loginUser = this.$store.state.loginUser
+					const targetUser = (this.username !== undefined) ? this.username : loginUser
+					this.$axios.get(this.nextPage)
+					.then(res => {
+						console.log(res.data.next)
 
+						for (var i in res.data.results) {
+							var updatedAt = res.data.results[i].updated_at.substr(0, 10)
+							res.data.results[i].updated_at = updatedAt
+							this.tweetList.push(res.data.results[i])
+						}
+						console.log('ツイート一覧',this.tweetList)
+
+						this.nextPage = res.data.next
+						this.scrollMax = document.body.scrollHeight - window.innerHeight
+						this.tweetLoading = false
+					})
+					.catch(e => {
+						console.log(e)
+					})
+				}
+			},
+			handleScroll () {
+				this.scrollY = window.scrollY
+				this.scrollMax = document.body.scrollHeight - window.innerHeight
+
+				if (this.scrollY / this.scrollMax >= 0.99 && !this.tweetLoading) {
+					if (this.nextPage != null) {
+						this.tweetLoading = true
+						this.next()
+					}
+				}
+			},
 		}
 	}
 </script>

@@ -3,6 +3,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 def analyzeMethod(func):
+    """
+    メソッドを解析するデコレーター
+        メソッドのargs, kwargs, result, 実行時間をログ上に表示する
+    """
     def inner(*args, **kwargs):
         logger.debug('=====================================================================')
         logger.debug('========================This is AnalyzeMethod========================')

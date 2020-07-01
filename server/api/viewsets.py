@@ -52,16 +52,38 @@ from .mixins import (
 )
 
 from .utils import (
-    analyzeMethod
+    analyzeMethod,
 )
 
 
 class BaseModelViewSet(viewsets.ModelViewSet, GetLoginUserMixin):
+    """
+    ModelViewSetのBaseクラス
+        ModelViewSetでloginUserを取得する事が多いので
+        GetLoginUserMixinを継承し、このクラスの継承先で使用
+    """
 
     pass
 
 
 class TweetViewSet(BaseModelViewSet):
+    """
+    ツイート関連のViewSet
+
+        Methods
+        ---------------------------------------
+        list : ページ毎にツイートを返す
+
+        create : ツイートする時
+
+        update : ツイートを編集する時
+
+        delete : ツイートを削除する時
+
+        liked : いいねボタン押下時
+
+        retweet : リツイートボタン押下時
+    """
 
     permission_classes = (permissions.AllowAny,)
     queryset = Tweet.objects.all()
@@ -95,11 +117,7 @@ class TweetViewSet(BaseModelViewSet):
         if serializer.is_valid():
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
-
-            # とりあえずの処置
-            queryset = Tweet.objects.filter(author=request.user)
-            logger.debug(queryset)
-            return Response(self.get_serializer(queryset, many=True).data, status=status.HTTP_201_CREATED, headers=headers)
+            return Response(self.get_serializer(serializer.instance).data, status=status.HTTP_201_CREATED, headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -209,6 +227,17 @@ class ReplyViewSet(BaseModelViewSet):
 
 
 class mUserViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ユーザー関連のViewSet
+
+        Methods
+        ---------------------------
+        isFollow : フォローしているか
+
+        follow : フォローする時
+
+        unfollow : フォロー解除
+    """
 
     permission_classes = (permissions.AllowAny,)
     queryset = mUser.objects.all()

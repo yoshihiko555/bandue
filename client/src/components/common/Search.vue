@@ -44,12 +44,7 @@ export default {
 
 	},
 	methods: {
-		showSearchResult () {
-			console.log('showSearchResult')
-			console.log(this.currentView)
-			this.currentView = 'SearchResult'
-			console.log(this.currentView)
-		}
+		
 	}
 }
 </script>

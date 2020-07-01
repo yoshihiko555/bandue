@@ -72,7 +72,8 @@
       "no-trailing-spaces": "off",
       "comma-spacing": "off",
       "padded-blocks": "off",
-      "prefer-const": "off"
+      "prefer-const": "off",
+      "no-unused-components": "off"
     }
   },
   "browserslist": [

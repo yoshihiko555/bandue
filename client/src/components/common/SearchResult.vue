@@ -35,45 +35,56 @@
                   flat
                   class='tweet_wrap'
                 >
-                <v-card-title>
-                  <span
-                    class='tweet_author z10'
-                  >{{ tweet.author }}</span>
-                  <span class='ml-8' style='font-size:50%;'>{{ tweet.updated_at }}</span>
-                  <span v-if='tweet.isRetweeted'>
-                    <v-icon
-                      class='mr-1 retweet'
-                      color='green lighten-1'
-                    >mdi-repeat</v-icon>
-                    リツイート済み
-                  </span>
-                </v-card-title>
+                  <v-card-title>
+                    <span
+                      class='tweet_author z10'
+                    >{{ tweet.author }}</span>
+                    <span class='ml-8' style='font-size:50%;'>{{ tweet.updated_at }}</span>
+                    <span v-if='tweet.isRetweeted'>
+                      <v-icon
+                        class='mr-1 retweet'
+                        color='green lighten-1'
+                      >mdi-repeat</v-icon>
+                      リツイート済み
+                    </span>
+                  </v-card-title>
 
-                <!-- 内容 -->
-                <v-card-text>
-                  {{ tweet.content }}
-                </v-card-text>
+                  <!-- 内容 -->
+                  <v-card-text>
+                    {{ tweet.content }}
+                  </v-card-text>
 
-                <div>
-        					<img :src='tweet.images' width="100">
-        				</div>
-        				<v-card-actions>
-        					<v-list-item>
-        						<v-list-item-content v-for='tag in tweet.hashTag' :key='tag.title'>
-        							<v-list-item-title>{{ tag.title }}</v-list-item-title>
-        						</v-list-item-content>
+                  <div>
+          					<img :src='tweet.images' width="100">
+          				</div>
+          				<v-card-actions>
+          					<v-list-item>
+          						<v-list-item-content v-for='tag in tweet.hashTag' :key='tag.title'>
+          							<v-list-item-title>{{ tag.title }}</v-list-item-title>
+          						</v-list-item-content>
 
-        						<v-row
-        							align='center'
-        							justify='end'
-        						>
-        							<retweet :tweet=tweet :index=index></retweet>
-        							<like :tweet=tweet :index=index></like>
-        						</v-row>
-        					</v-list-item>
-        				</v-card-actions>
-
+          						<v-row
+          							align='center'
+          							justify='end'
+          						>
+          							<retweet :tweet=tweet :index=index></retweet>
+          							<like :tweet=tweet :index=index></like>
+          						</v-row>
+          					</v-list-item>
+          				</v-card-actions>
                 </v-card>
+              </div>
+              <div v-if='nextPage != null'>
+
+                <div v-if='!loadingMore'>
+                  <v-btn
+                    class='load_more'
+                    @click=next
+                  >ツイートを更に読み込む</v-btn>
+                </div>
+                <div v-else>
+                  <Loading></Loading>
+                </div>
               </div>
             </div>
 
@@ -93,7 +104,6 @@
 
           <div v-else>
             <div v-if='userList.length > 0'>
-
               <div v-for='(user, index) in userList' :key='`user.username-${index}`'>
                 <v-card
                   flat
@@ -111,6 +121,17 @@
                     {{ user.introduction }}
                   </v-card-text>
                 </v-card>
+              </div>
+              <div v-if='nextPage != null'>
+                <div v-if='!loadingMore'>
+                  <v-btn
+                    class='load_more'
+                    @click=next
+                  >ユーザーを更に読み込む</v-btn>
+                </div>
+                <div v-else>
+                  <Loading></Loading>
+                </div>
               </div>
             </div>
             <div v-else>
@@ -165,6 +186,8 @@ export default {
     userList: [],
     searchFlg: 0,
     loading: true,
+    nextPage: null,
+    loadingMore: false
   }),
   watch: {
 
@@ -194,37 +217,65 @@ export default {
       })
       .then(res => {
         if (this.searchFlg !== 2) {
-          for (var i in res.data) {
-            var updatedAt = res.data[i].updated_at.substr(0, 10)
-            res.data[i].updated_at = updatedAt
+          for (var i in res.data.results) {
+            var updatedAt = res.data.results[i].updated_at.substr(0, 10)
+            res.data.results[i].updated_at = updatedAt
           }
-          this.tweetList = res.data
+          this.tweetList = res.data.results
           console.log('ツイート一覧', this.tweetList)
-          this.loading = false
         } else {
-          this.userList = res.data
-          console.log('ユーザー一覧', this.userList)
-          this.loading = false
+          this.userList = res.data.results
+          console.log('ユーザー一覧', this.userList.results)
         }
+        this.nextPage = res.data.next
+        this.loading = false
       })
       .catch(e => {
         console.log(e)
         this.loading = false
       })
     },
-
+    next () {
+    if (this.nextPage !== null) {
+      this.loadingMore = true
+      this.$axios.get(this.nextPage)
+      .then(res => {
+        if (this.searchFlg !== 2) {
+          for (var i in res.data.results) {
+            var updatedAt = res.data.results[i].updated_at.substr(0, 10)
+            res.data.results[i].updated_at = updatedAt
+            this.tweetList.push(res.data.results[i])
+          }
+          console.log('ツイート一覧', this.tweetList)
+        } else {
+          this.userList.push(res.data.results)
+          console.log('ユーザー一覧', this.userList.results)
+        }
+        this.nextPage = res.data.next
+        this.loadingMore = false
+      })
+      .catch(e => {
+        console.log(e)
+      })
+    }
+    }
   }
 }
 
 </script>
 
 <style lang='scss'>
-  .tweet_wrap {
-    cursor: pointer;
+  .search_result_wrap {
+    .tweet_wrap {
+      cursor: pointer;
+      .tweet_author {
+        position: relative;
+      }
+    }
 
-    .tweet_author {
-      position: relative;
-
+    .load_more {
+      display: block;
+      margin: 20px auto;
     }
   }
 </style>

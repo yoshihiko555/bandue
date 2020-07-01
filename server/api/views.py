@@ -52,7 +52,7 @@ from .mixins import (
 )
 
 from .utils import (
-    analyzeMethod
+    analyzeMethod,
 )
 
 
@@ -118,6 +118,19 @@ class SignUpView(generics.CreateAPIView):
 
 
 class SearchView(generics.ListAPIView, GetLoginUserMixin):
+    """
+    検索結果を返すView
+    searchFlgで検索結果で使うqueryset, serializer, filter_classを分けている。
+        将来的にはフラグじゃださいから変える予定
+
+        Parameters
+        --------------------------------
+        searchFlg
+            0 => トレンド（話題のツイート）
+            1 => 新着ツイート
+            2 => ユーザー
+            3 => 画像ありツイート
+    """
 
     permission_classes = (permissions.AllowAny,)
     search_query = {
