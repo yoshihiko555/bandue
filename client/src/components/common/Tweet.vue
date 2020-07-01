@@ -5,6 +5,7 @@
 				<v-card
 					class='mx-auto'
 					max-width='400'
+                    :dark='this.$store.state.settings.isDark'
 				>
 					<v-card-title>
 						<img src='@/static/img/Logo_Icon.png' alt="logo" width="40">
@@ -41,7 +42,8 @@
 						</v-file-input>
 						<div class="text-right">
 							<v-btn
-								class='teal lighten-4 ma-3'
+								class='ma-3'
+                                color='teal lighten-4'
 								@click='tweet'
 							>つぶやく</v-btn>
 						</div>

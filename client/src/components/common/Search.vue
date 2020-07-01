@@ -1,6 +1,7 @@
 <template>
 	<v-card
 		flat
+        :dark='this.$store.state.settings.isDark'
 	>
 		<v-text-field
 			prepend-inner-icon='mdi-magnify'

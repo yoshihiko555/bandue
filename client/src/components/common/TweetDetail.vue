@@ -1,5 +1,5 @@
 <template>
-	<v-dialog v-model='tweetDetailDialog' persistent max-width='600px'>
+	<v-dialog v-model='tweetDetailDialog' persistent max-width='600px' :dark='this.$store.state.settings.isDark'>
 		<v-card>
 			<v-card-title>
 				<router-link

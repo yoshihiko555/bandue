@@ -11,6 +11,7 @@
 					<v-col cols='6'>
 						<v-card
 							outlined
+                            :dark='this.$store.state.settings.isDark'
 						>
 							<div class="profile_header_wrap">
 								<v-img v-if='profileData.header === null' height='200' src='@/static/img/default_header.jpg'></v-img>

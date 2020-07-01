@@ -1,5 +1,5 @@
 <template>
-	<v-dialog v-model='tweetEditDialog' persistent max-width='600px'>
+	<v-dialog v-model='tweetEditDialog' persistent max-width='600px' :dark='this.$store.state.settings.isDark'>
 		<v-card>
 			<v-card-title>
 				<span class='title font-weight-light'>編集</span>

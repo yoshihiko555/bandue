@@ -2,7 +2,7 @@
 	<v-container fluid>
 		<v-row>
 			<v-col cols='12'>
-				<v-list>
+				<v-list :dark='this.$store.state.settings.isDark'>
 					<v-list-item-group
 						v-model='sidebarItem'
 						color='primary'

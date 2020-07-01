@@ -72,7 +72,7 @@
 			})
 			.then(res => {
 				console.log('記事一覧', res.data)
-				this.articleList = res.data
+				this.articleList = res.data.results
 			})
 			.catch(e => {
 				console.log(e)
@@ -102,7 +102,7 @@
 				})
 				.then(res => {
 					console.log(res)
-					this.articleList = res.data
+					this.articleList = res.data.results
 				})
 				.catch(e => {
 					console.log(e)

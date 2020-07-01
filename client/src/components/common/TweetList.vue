@@ -106,7 +106,8 @@
 	import Retweet from '@/components/common/Retweet'
 	import Like from '@/components/common/Like'
 	import Loading from '@/components/common/Loading'
-	import { Common } from '@/static/js/common'
+    import { Common } from '@/static/js/common'
+    import { mapState } from 'vuex'
 
 	const Com = new Common()
 
@@ -149,12 +150,12 @@
 			nextPage: null,
 			scrollY: 0,
 			scrollMax: 0,
-			tweetLoading: true,
+            tweetLoading: true,
 		}),
 		created () {
 			this.$eventHub.$on('create-tweet', this.tweetUpdate)
-			window.addEventListener('scroll', this.handleScroll)
-		},
+            window.addEventListener('scroll', this.handleScroll)
+        },
 		mounted: function () {
 			console.log('ツイートリストフラグ:', this.tweetListFlg)
 			console.log('ユーザーネーム:', this.username)

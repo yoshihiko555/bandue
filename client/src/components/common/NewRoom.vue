@@ -2,6 +2,7 @@
 	<v-dialog
 		v-model='dialog'
 		width=300
+        :dark='this.$store.state.settings.isDark'
 	>
 		<template #activator='{ on }'>
 			<v-btn icon @click='getUsers' v-on='on'>

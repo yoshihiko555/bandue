@@ -34,6 +34,26 @@ const auth = {
     }
 }
 
+const settings = {
+    namespaced: true,
+    state: {
+        isDark: false,
+    },
+    getters: {
+        getIsDark: state => state.isDark
+    },
+    mutations: {
+        setIsDark: function (state, payload) {
+            state.isDark = !state.isDark
+        }
+    },
+    actions: {
+        updateIsDark: function (ctx, kwargs) {
+            this.commit('settings/setIsDark')
+        }
+    }
+}
+
 export const store = new Vuex.Store({
   state: initialState,
   getters: {
@@ -75,7 +95,8 @@ export const store = new Vuex.Store({
       }
   },
   modules: {
-      auth
+      auth,
+      settings,
   },
   // 認証データの保存先をセッションに設定
   plugins: [VuexPersistedstate({storage: window.sessionStorage})]

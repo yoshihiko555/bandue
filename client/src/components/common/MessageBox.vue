@@ -7,6 +7,7 @@
 						v-if='isShowMsg'
 						outlined
 						tile
+                        :dark='this.$store.state.settings.isDark'
 					>
 						<v-card-title v-text='roomName'></v-card-title>
 						<v-divider></v-divider>
@@ -32,6 +33,7 @@
 						v-if='!isShowMsg'
 						outlined
 						tile
+                        :dark='this.$store.state.settings.isDark'
 					>
 						<v-card-title>メッセージを選択してください</v-card-title>
 					</v-card>

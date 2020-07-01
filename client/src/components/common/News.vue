@@ -2,10 +2,12 @@
     <div class='news_wrap'>
         <div v-for='(article, i) in article' :key='i'>
             <v-card>
-                <v-img :src=article.urlToImage></v-img>
-                <v-card-title>{{ article.title }}</v-card-title>
+                <a :href='article.url' target="blank">
+                    <v-img v-show='article.urlToImage !== null' :src="article.urlToImage" alt='article.title'></v-img>
+                </a>
+                <v-card-title>{{ article.title | truncate(30)}}</v-card-title>
                 <v-card-text>
-                    {{ article.content }}
+                    {{ article.description | truncate(60) }}
                 </v-card-text>
             </v-card>
         </div>
@@ -22,12 +24,16 @@
         mounted () {
             axios({
                 url: 'http://newsapi.org/v2/top-headlines?' +
-                     'country=us&' +
+                     'country=jp&' +
                      'apiKey=' + process.env.VUE_APP_NEWS_API,
                 method: 'GET',
             })
             .then(res => {
                 console.log(res)
+                // ImageのNull対策
+                for (var data of res.data.articles) {
+                    data.urlToImage = data.urlToImage || ''
+                }
                 this.article = res.data.articles
             })
             .catch(e => {

@@ -9,7 +9,7 @@
 					</v-col>
 
 					<v-col cols='3'>
-						<v-list dense>
+						<v-list dense :dark='this.$store.state.settings.isDark'>
 							<v-subheader>設定</v-subheader>
 							<v-list-item-group v-model='settingModel' color='primary' value="true">
 								<v-list-item
