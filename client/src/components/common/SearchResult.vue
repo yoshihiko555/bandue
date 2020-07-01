@@ -36,9 +36,15 @@
                   class='tweet_wrap'
                 >
                   <v-card-title>
-                    <span
+                    <v-avatar>
+                      <v-img v-if='tweet.userIcon !== "/media/"' :src='tweet.userIcon'></v-img>
+                      <v-img v-else src='@/static/img/default_icon.jpeg'></v-img>
+                    </v-avatar>
+                    <router-link
+                      @click.native='reload()'
+                      :to='{ name : "Profile", params : { username: tweet.author }}'
                       class='tweet_author z10'
-                    >{{ tweet.author }}</span>
+                    >{{ tweet.author }}</router-link>
                     <span class='ml-8' style='font-size:50%;'>{{ tweet.updated_at }}</span>
                     <span v-if='tweet.isRetweeted'>
                       <v-icon
@@ -108,17 +114,27 @@
                 <v-card
                   flat
                   class='user_wrap'
+                  height='200px'
                 >
-                  <v-card-title>
-                    <span
+                  <v-card-title
+                    class='username_wrap'
+                  >
+                    <v-avatar>
+                      <v-img v-if='user.icon !== null' :src='user.icon'></v-img>
+                      <v-img v-else src='@/static/img/default_icon.jpeg'></v-img>
+                    </v-avatar>
+                    <router-link
+                      @click.native='reload()'
+                      :to='{ name : "Profile", params : { username: user.username}}'
                       class='username z10'
-                    >{{ user.username }}</span>
-                    <span class='ml-8'>
-                      <follow :username='user.username'></follow>
+                    >{{ user.username | truncate(10, '..') }}</router-link>
+                    <v-spacer></v-spacer>
+                    <span class='follow_btn ml-8'>
+                      <follow :username='user.username' :height='"40px"' :width='"120px"'></follow>
                     </span>
                   </v-card-title>
                   <v-card-text>
-                    {{ user.introduction }}
+                    {{ user.introduction | truncate(60) }}
                   </v-card-text>
                 </v-card>
               </div>
@@ -159,6 +175,9 @@ import Retweet from '@/components/common/Retweet'
 import Like from '@/components/common/Like'
 import Follow from '@/components/common/Follow'
 import Loading from '@/components/common/Loading'
+import { Common } from '@/static/js/common'
+
+const Com = new Common()
 
 export default {
   name: 'SearchResult',
@@ -236,28 +255,31 @@ export default {
       })
     },
     next () {
-    if (this.nextPage !== null) {
-      this.loadingMore = true
-      this.$axios.get(this.nextPage)
-      .then(res => {
-        if (this.searchFlg !== 2) {
-          for (var i in res.data.results) {
-            var updatedAt = res.data.results[i].updated_at.substr(0, 10)
-            res.data.results[i].updated_at = updatedAt
-            this.tweetList.push(res.data.results[i])
+      if (this.nextPage !== null) {
+        this.loadingMore = true
+        this.$axios.get(this.nextPage)
+        .then(res => {
+          if (this.searchFlg !== 2) {
+            for (var i in res.data.results) {
+              var updatedAt = res.data.results[i].updated_at.substr(0, 10)
+              res.data.results[i].updated_at = updatedAt
+              this.tweetList.push(res.data.results[i])
+            }
+            console.log('ツイート一覧', this.tweetList)
+          } else {
+            this.userList.push(res.data.results)
+            console.log('ユーザー一覧', this.userList.results)
           }
-          console.log('ツイート一覧', this.tweetList)
-        } else {
-          this.userList.push(res.data.results)
-          console.log('ユーザー一覧', this.userList.results)
-        }
-        this.nextPage = res.data.next
-        this.loadingMore = false
-      })
-      .catch(e => {
-        console.log(e)
-      })
-    }
+          this.nextPage = res.data.next
+          this.loadingMore = false
+        })
+        .catch(e => {
+          console.log(e)
+        })
+      }
+    },
+    reload () {
+      Com.reload(this.$router)
     }
   }
 }
@@ -266,10 +288,27 @@ export default {
 
 <style lang='scss'>
   .search_result_wrap {
+    height: 690px;
+    overflow: auto;
+
     .tweet_wrap {
       cursor: pointer;
       .tweet_author {
         position: relative;
+      }
+    }
+
+    .user_wrap {
+
+      .username_wrap {
+
+        .username {
+          text-decoration: none;
+          color: black;
+        }
+
+        .follow_btn {
+        }
       }
     }
 

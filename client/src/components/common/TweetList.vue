@@ -8,7 +8,8 @@
 			>
 				<v-card-title>
 					<v-avatar>
-						<v-img :src='tweet.userIcon'></v-img>
+						<v-img v-if='tweet.userIcon !== "/media/"' :src='tweet.userIcon'></v-img>
+						<v-img v-else src='@/static/img/default_icon.jpeg'></v-img>
 					</v-avatar>
 					<router-link
 						@click.native='reload()'

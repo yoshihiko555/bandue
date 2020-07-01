@@ -13,6 +13,7 @@ import vuetify from '@/plugins/vuetify'
 import VueSession from 'vue-session'
 import eventHub from '@/plugins/eventHub'
 import http from '@/plugins/http'
+import truncate from '@/filters/truncate'
 require('@/static/scss/main.scss')
 
 Vue.config.productionTip = false

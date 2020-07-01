@@ -1,18 +1,24 @@
 <template>
-    <v-btn v-if='isFollow'
-        class='teal lighten-4 ma-3'
-        @click='follow'
-    >フォローを外す</v-btn>
-    <v-btn v-else
-        class='teal lighten-4 ma-3'
-        @click='follow'
-    >フォローする</v-btn>
+  <v-btn v-if='isFollow'
+      class='blue lighten-4 ma-3'
+      color='white'
+      :height=height
+      :width=width
+      @click='follow'
+  >フォローを外す</v-btn>
+  <v-btn v-else
+      class='blue lighten-4 ma-3'
+      color='white'
+      :height=height
+      :width=width
+      @click='follow'
+  >フォローする</v-btn>
 </template>
 
 <script>
     const IS_FOLLOW = 1
     export default {
-        props: ['username'],
+        props: ['username', 'height', 'width'],
         data: () => ({
             isFollow: false
         }),
@@ -68,3 +74,7 @@
         }
     }
 </script>
+
+<style lang='scss'>
+
+</scss>
