@@ -12,7 +12,6 @@
 						<v-tabs
 							v-model='bbsTabModel'
 							grow
-                            :dark='this.$store.state.settings.isDark'
 							class='bbslist_tab_wrap'
 						>
 							<v-tab

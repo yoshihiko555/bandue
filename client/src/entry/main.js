@@ -18,13 +18,11 @@ require('@/static/scss/main.scss')
 
 Vue.config.productionTip = false
 Vue.prototype.$store = store
+// Vue.prototype.$vuetify = vuetify
 
 Vue.use(VueSession)
 Vue.use(eventHub)
 Vue.use(http)
-
-// TODO:あとで以下のstoreを使って認証管理を行う
-// window.state = store.state
 
 Vue.component('is-auth', IsAuth)
 Vue.component('explore', Explore)
@@ -41,5 +39,17 @@ new Vue({
   vuetify,
   created () {
       sessionStorage.setItem('initialState', JSON.stringify(initialState))
+      this.$vuetify.theme.isDark = this.$store.state.settings.isDark
+  },
+  computed: {
+	  isDark () {
+		  return this.$store.getters['settings/getIsDark']
+	  }
+  },
+  watch: {
+	  isDark (val, old) {
+		  this.$vuetify.theme.isDark = val
+	  }
   }
+
 }).$mount('#main')

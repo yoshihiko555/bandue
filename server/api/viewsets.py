@@ -226,7 +226,7 @@ class ReplyViewSet(BaseModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class mUserViewSet(viewsets.ReadOnlyModelViewSet):
+class mUserViewSet(viewsets.ModelViewSet):
     """
     ユーザー関連のViewSet
 

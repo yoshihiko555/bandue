@@ -19,6 +19,8 @@ from .models import (
 from rest_framework.renderers import JSONRenderer
 
 import logging
+from django.templatetags.i18n import language
+from idlelib.idle_test.test_colorizer import source
 
 logging.basicConfig(
     level = logging.DEBUG,
@@ -474,3 +476,18 @@ class MessageSerializer(serializers.ModelSerializer):
     def get_isMe(self, obj):
         isMe = str(obj.sender.username) == str(self.login_user)
         return isMe
+
+
+class MSettingSerializer(serializers.ModelSerializer):
+
+    username = serializers.ReadOnlyField(source='target.username')
+
+    class Meta:
+        model = mSetting
+        fields = [
+            'target',
+            'username',
+            'tweet_limit_level',
+            'language',
+            'is_dark'
+        ]

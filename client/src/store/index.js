@@ -44,12 +44,12 @@ const settings = {
     },
     mutations: {
         setIsDark: function (state, payload) {
-            state.isDark = !state.isDark
+            state.isDark = payload
         }
     },
     actions: {
         updateIsDark: function (ctx, kwargs) {
-            this.commit('settings/setIsDark')
+            this.commit('settings/setIsDark', kwargs)
         }
     }
 }

@@ -2,7 +2,7 @@
 	<v-container fluid>
 		<v-row>
 			<v-col cols='12'>
-				<v-list :dark='this.$store.state.settings.isDark'>
+				<v-list>
 					<v-list-item-group
 						v-model='sidebarItem'
 						color='primary'
@@ -32,8 +32,6 @@
 						</v-list-item>
 					</v-list-item-group>
 				</v-list>
-
-				<v-btn @click='cntUp'>Messagge Up</v-btn>
 			</v-col>
 		</v-row>
 

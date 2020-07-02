@@ -5,7 +5,6 @@
 				<v-card
 					class='mx-auto'
 					max-width='400'
-                    :dark='this.$store.state.settings.isDark'
 				>
 					<v-card-title>
 						<img src='@/static/img/Logo_Icon.png' alt="logo" width="40">

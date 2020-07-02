@@ -23,6 +23,7 @@ from .serializers import (
     ReplySerializer,
     RoomSerializer,
     MessageSerializer,
+    MSettingSerializer,
 )
 from .models import (
     mUser,
@@ -41,6 +42,7 @@ from .models import (
     mUser_Room,
 )
 from .permissions import IsMyselfOrReadOnly
+from django.contrib.admin.utils import lookup_field
 
 logger = logging.getLogger(__name__)
 from .filters import (
@@ -172,3 +174,11 @@ class SearchView(generics.ListAPIView, GetLoginUserMixin):
         self.queryset = self.search_query[searchFlg]['queryset']
         self.serializer_class = self.search_query[searchFlg]['serializer_class']
         self.filter_class = self.search_query[searchFlg]['filter_class']
+
+class SettingView(generics.RetrieveUpdateAPIView, GetLoginUserMixin):
+    permission_classes = (permissions.AllowAny,)
+    queryset = mSetting.objects.all()
+    serializer_class = MSettingSerializer
+
+#     def retrieve(self, request, pk=None):
+#         self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None

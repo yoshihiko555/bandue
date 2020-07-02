@@ -30,6 +30,10 @@ class UserManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
 
+        mSetting.objects.create(
+            target=user
+        )
+
         return user
 
     def create_user(self, username, email, password=None, **extra_fields):
@@ -100,6 +104,8 @@ class mUser(AbstractBaseUser, PermissionsMixin):
     icon = models.ImageField(_('Icon'), upload_to=profile_file_name, blank=True, null=True)
 
     followees = models.ManyToManyField('self', blank=True, symmetrical=False)
+
+    readed_entry = models.ManyToManyField('api.Entry', blank=True)
 
     objects = UserManager()
 
@@ -181,9 +187,10 @@ class mSetting(models.Model):
         ('FR', _('French')),
         ('GE', _('German')),
     )
-    tweet_limit_level = models.IntegerField(choices=TWEET_LIMIT_LEVEL_CHOICES)
-    language = models.CharField(max_length=20, choices=LANGUAGE_CHOICES)
+    tweet_limit_level = models.IntegerField(choices=TWEET_LIMIT_LEVEL_CHOICES, default=1)
+    language = models.CharField(max_length=20, choices=LANGUAGE_CHOICES, default='EN')
     target = models.ForeignKey(mUser, on_delete=models.CASCADE)
+    is_dark = models.BooleanField(_('IsDark'), default=False)
 
     def __str__(self):
         return self.target.username

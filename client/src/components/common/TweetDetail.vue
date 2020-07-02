@@ -1,5 +1,5 @@
 <template>
-	<v-dialog v-model='tweetDetailDialog' persistent max-width='600px' :dark='this.$store.state.settings.isDark'>
+	<v-dialog v-model='tweetDetailDialog' persistent max-width='600px'>
 		<v-card>
 			<v-card-title>
 				<router-link
@@ -17,7 +17,7 @@
 				<v-list-item-content v-for='tag in tweet.hashTag' :key='tag.title'>
 					<v-list-item-title>{{ tag.title }}</v-list-item-title>
 				</v-list-item-content>
-				
+
 				<v-btn icon>
 					<v-icon v-if='!tweet.isRetweeted'
 						color='black lighten-5'

@@ -9,14 +9,6 @@
                     <v-switch v-model='isDark' @change='togleDarkMode'></v-switch>
                 </v-col>
             </v-row>
-
-            <v-row>
-                <v-card :dark='this.$store.state.settings.isDark'>
-                    <v-card-title>TITLE</v-card-title>
-                    <v-card-text>CONTENT</v-card-text>
-
-                </v-card>
-            </v-row>
         </v-container>
 	</div>
 </template>
@@ -28,14 +20,24 @@
         data: () => ({
             isDark: false,
         }),
-        
-		mounted: function () {
 
+		mounted: function () {
+			this.$axios({
+				method: 'GET',
+				url: '/api/setting/'
+				// url: '/api/setting/' + this.$store.state.loginUser
+			})
+			.then(res => {
+				console.log(res)
+			})
+			.catch(e => {
+				console.log(e)
+			})
 		},
 
 		methods: {
             togleDarkMode () {
-                this.$store.dispatch('settings/updateIsDark')
+                this.$store.dispatch('settings/updateIsDark', this.isDark)
             }
         }
 	}
