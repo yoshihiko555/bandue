@@ -39,7 +39,6 @@ from .models import (
     Entry,
     Room,
     Message,
-    mUser_Room,
 )
 from .permissions import IsMyselfOrReadOnly
 from django.contrib.admin.utils import lookup_field
@@ -179,6 +178,4 @@ class SettingView(generics.RetrieveUpdateAPIView, GetLoginUserMixin):
     permission_classes = (permissions.AllowAny,)
     queryset = mSetting.objects.all()
     serializer_class = MSettingSerializer
-
-#     def retrieve(self, request, pk=None):
-#         self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
+    # lookup_field = 'target__username'

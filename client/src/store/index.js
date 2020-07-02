@@ -48,6 +48,20 @@ const settings = {
         }
     },
     actions: {
+        getMSetting: function (ctx, kwargs) {
+            Vue.prototype.$axios({
+                url: '/api/profile/' + kwargs + '/',
+                method: 'GET'
+            })
+            .then(res => {
+                this.dispatch('settings/updateIsDark', res.data.setting.isDark)
+                router.push('/')
+                Com.reload(router)
+            })
+            .catch(e => {
+                console.log(e)
+            })
+        },
         updateIsDark: function (ctx, kwargs) {
             this.commit('settings/setIsDark', kwargs)
         }
@@ -85,8 +99,7 @@ export const store = new Vuex.Store({
               console.log(res)
               this.commit('auth/setAuthFailure', false)
               this.commit('setToken', { res: res.data, req: res.requestData })
-              router.push('/')
-              Com.reload(router)
+              this.dispatch('settings/getMSetting', res.requestData.username)
           })
           .catch(e => {
               console.log(e)

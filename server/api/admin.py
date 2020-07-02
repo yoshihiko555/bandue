@@ -13,7 +13,6 @@ from .models import (
     Entry,
     Room,
     Message,
-    mUser_Room,
     Age,
 )
 
@@ -31,5 +30,4 @@ admin.site.register(MemberShip)
 admin.site.register(Entry)
 admin.site.register(Room)
 admin.site.register(Message)
-admin.site.register(mUser_Room)
 admin.site.register(Age)

@@ -6,7 +6,7 @@
                     Dark Mode
                 </v-col>
                 <v-col cols='4'>
-                    <v-switch v-model='isDark' @change='togleDarkMode'></v-switch>
+                    <v-switch v-model='settingData.isDark' @change='togleDarkMode'></v-switch>
                 </v-col>
             </v-row>
         </v-container>
@@ -18,26 +18,37 @@
 	export default {
 		name: 'SystemSetting',
         data: () => ({
-            isDark: false,
+            settingData: {
+                isDark: false,
+            },
         }),
 
 		mounted: function () {
-			this.$axios({
-				method: 'GET',
-				url: '/api/setting/'
-				// url: '/api/setting/' + this.$store.state.loginUser
-			})
+			const loginUser = this.$store.state.loginUser
+			this.$axios.get('/api/profile/' + loginUser + '/')
 			.then(res => {
-				console.log(res)
+                console.log(res)
+                this.settingData = res.data.setting
 			})
 			.catch(e => {
-				console.log(e)
+				console.log(e.response)
 			})
 		},
 
 		methods: {
             togleDarkMode () {
-                this.$store.dispatch('settings/updateIsDark', this.isDark)
+                this.$axios({
+                    url: '/api/setting/' + this.settingData.id + '/',
+                    method: 'PUT',
+                    data: this.settingData
+                })
+                .then(res => {
+                    console.log(res)
+                    this.$store.dispatch('settings/updateIsDark', this.settingData.isDark)
+                })
+                .catch(e => {
+                    console.log(e)
+                })
             }
         }
 	}

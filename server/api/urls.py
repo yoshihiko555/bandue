@@ -18,6 +18,6 @@ urlpatterns = [
     path('signup/', views.SignUpView.as_view(), name='signup'),
     path('', include(router.urls)),
     path('search/', views.SearchView.as_view(), name='search'),
-#     path('setting/<str:username>/', views.SettingView.as_view(), name='setting'),
-    path('setting/', views.SettingView.as_view(), name='setting'),
+    path('setting/<int:pk>/', views.SettingView.as_view(), name='setting'),
+    # path('setting/<str:username>/', views.SettingView.as_view(), name='setting'),
 ]

@@ -189,8 +189,15 @@ class mSetting(models.Model):
     )
     tweet_limit_level = models.IntegerField(choices=TWEET_LIMIT_LEVEL_CHOICES, default=1)
     language = models.CharField(max_length=20, choices=LANGUAGE_CHOICES, default='EN')
-    target = models.ForeignKey(mUser, on_delete=models.CASCADE)
-    is_dark = models.BooleanField(_('IsDark'), default=False)
+    target = models.OneToOneField(mUser, on_delete=models.CASCADE)
+    isDark = models.BooleanField(_('IsDark'), default=False)
+
+    @property
+    def target__username(self):
+        return self.target.username
+
+    def __unicode__(self):
+        return self.target.username
 
     def __str__(self):
         return self.target.username
@@ -346,12 +353,6 @@ class Entry(models.Model):
         (2, _('Famale')),
     )
     sex = models.IntegerField(choices=SEX_CHOICES, null=True, blank=True)
-
-    # 募集年齢を複数選択可能にするには？
-    # リスト形式でDBで持つようにする？
-    #     - 新たにライブラリを入れれば可能。
-    # もしくは、新たにテーブルを作成する
-#     age = models.IntegerField(choices=AGE_CHOICES, null=True, blank=True)
     age = models.ManyToManyField('api.Age', blank=True)
     is_public = models.BooleanField(_('Public Flag'), default=False)
 
@@ -378,7 +379,6 @@ class Age(models.Model):
         return self.get_age_display()
 
 
-
 class Room(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
@@ -400,10 +400,3 @@ class Message(models.Model):
 
     def __str__(self):
         return self.content
-
-
-# 多分使わない(後で削除予定)
-class mUser_Room(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    user_id = models.ForeignKey(mUser, related_name='user_id', on_delete=models.CASCADE)
-    room_id = models.ForeignKey(Room, related_name='room_id', on_delete=models.CASCADE)

@@ -37,7 +37,6 @@ from .models import (
     Entry,
     Room,
     Message,
-    mUser_Room,
 )
 from .permissions import IsMyselfOrReadOnly
 

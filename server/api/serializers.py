@@ -13,7 +13,6 @@ from .models import (
     Entry,
     Room,
     Message,
-    mUser_Room,
     Age,
 )
 from rest_framework.renderers import JSONRenderer
@@ -47,6 +46,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     followers_count = serializers.SerializerMethodField()
     tweet = serializers.SerializerMethodField()
     entry = serializers.SerializerMethodField()
+    setting = serializers.SerializerMethodField()
 
     class Meta:
         model = mUser
@@ -64,7 +64,8 @@ class ProfileSerializer(serializers.ModelSerializer):
             'followees_count',
             'followers_count',
             'tweet',
-            'entry'
+            'entry',
+            'setting',
         ]
 
     def get_followees(self, obj):
@@ -89,6 +90,12 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def get_entry(self, obj):
         return EntrySerializer(Entry.objects.filter(author=obj), many=True).data
+
+    
+    def get_setting(self, obj):
+        setting = mSetting.objects.get(target=obj)
+        logger.info(setting.target__username)
+        return MSettingSerializer(mSetting.objects.get(target=obj)).data
 
 
 class ProfileSubSerializer(serializers.ModelSerializer):
@@ -480,14 +487,12 @@ class MessageSerializer(serializers.ModelSerializer):
 
 class MSettingSerializer(serializers.ModelSerializer):
 
-    username = serializers.ReadOnlyField(source='target.username')
-
     class Meta:
         model = mSetting
         fields = [
+            'id',
             'target',
-            'username',
             'tweet_limit_level',
             'language',
-            'is_dark'
+            'isDark'
         ]
