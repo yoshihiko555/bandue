@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   conda install -c conda-forge djangorestframework-jwt && \
   conda install -c conda-forge django-cors-headers && \
   conda install -c conda-forge django-webpack-loader && \
+  conda install -c anaconda python-memcached && \
   python -m pip install -U channels && \
   pip install channels_redis && \
   npm install -g yarn && \

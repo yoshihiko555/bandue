@@ -27,3 +27,19 @@ def analyzeMethod(func):
         logger.debug('=====================================================================')
         return func(*args, **kwargs)
     return inner
+
+
+def chunked(queryset, chunk_size=1000):
+    """
+    メモリに載りきらないような大量なデータを扱う時に、
+    QuerySetを分割して実行するメソッド
+    """
+
+    start = 0
+    while True:
+        chunk = queryset[start: start + chunk_size]
+        for obj in chunk:
+            yield obj
+        if len(chunk) < chunk_size:
+            raise StopIteration
+        start += chunk_size

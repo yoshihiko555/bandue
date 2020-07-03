@@ -1,18 +1,20 @@
 <template>
-  <v-btn v-if='isFollow'
-      class='blue lighten-4 ma-3'
-      color='white'
-      :height=height
-      :width=width
-      @click='follow'
-  >フォローを外す</v-btn>
-  <v-btn v-else
-      class='blue lighten-4 ma-3'
-      color='white'
-      :height=height
-      :width=width
-      @click='follow'
-  >フォローする</v-btn>
+  <span v-if='isFollow != null'>
+    <v-btn v-if='isFollow'
+        class='blue lighten-4 ma-3'
+        color='white'
+        :height=height
+        :width=width
+        @click='follow'
+    >フォローを外す</v-btn>
+    <v-btn v-else
+        class='blue lighten-4 ma-3'
+        color='white'
+        :height=height
+        :width=width
+        @click='follow'
+    >フォローする</v-btn>
+  </span>
 </template>
 
 <script>
@@ -20,7 +22,7 @@
     export default {
         props: ['username', 'height', 'width'],
         data: () => ({
-            isFollow: false
+            isFollow: null
         }),
         created () {
             console.log(this.username)
@@ -40,6 +42,7 @@
                         this.isFollow = true
                         console.log('既にフォローしてる')
                     } else {
+                        this.isFollow = false
                         console.log('まだフォローしてない')
                     }
                 }

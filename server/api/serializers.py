@@ -30,6 +30,38 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+
+
+class ProfileSubSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = mUser
+        fields = [
+            'id',
+            'username',
+            'email',
+            'address',
+            'created_at',
+            'header',
+            'introduction',
+            'icon',
+        ]
+
+
+
+class HashTagSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = HashTag
+        fields = [
+            'id',
+            'title',
+            'created_at',
+            'slug',
+        ]
+
+
+
 class ProfileSerializer(serializers.ModelSerializer):
     """
     プロフィールのシリアライザー
@@ -40,9 +72,9 @@ class ProfileSerializer(serializers.ModelSerializer):
         followers : フォローされているユーザー一覧
     """
 
-    followees = serializers.SerializerMethodField()
+    followees = ProfileSubSerializer(many=True)
     followers = serializers.SerializerMethodField()
-    followees_count = serializers.SerializerMethodField()
+    followees_count = serializers.IntegerField(source='followees.count')
     followers_count = serializers.SerializerMethodField()
     tweet = serializers.SerializerMethodField()
     entry = serializers.SerializerMethodField()
@@ -68,50 +100,24 @@ class ProfileSerializer(serializers.ModelSerializer):
             'setting',
         ]
 
-    def get_followees(self, obj):
-        return ProfileSubSerializer(obj.followees.all(), many=True).data
-
 
     def get_followers(self, obj):
         return ProfileSubSerializer(mUser.objects.filter(followees=obj), many=True).data
 
-
-    def get_followees_count(self, obj):
-        return obj.followees.count()
-
-
     def get_followers_count(self, obj):
         return len(self.get_followers(obj)) if self.get_followers(obj) != None else 0
-
 
     def get_tweet(self, obj):
         return TweetSerializer(Tweet.objects.filter(author=obj), many=True).data
 
-
     def get_entry(self, obj):
         return EntrySerializer(Entry.objects.filter(author=obj), many=True).data
 
-    
+
     def get_setting(self, obj):
         setting = mSetting.objects.get(target=obj)
         logger.info(setting.target__username)
         return MSettingSerializer(mSetting.objects.get(target=obj)).data
-
-
-class ProfileSubSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = mUser
-        fields = [
-            'id',
-            'username',
-            'email',
-            'address',
-            'created_at',
-            'header',
-            'introduction',
-            'icon',
-        ]
 
 
 class TweetSerializer(serializers.ModelSerializer):
@@ -131,8 +137,8 @@ class TweetSerializer(serializers.ModelSerializer):
     liked = serializers.SerializerMethodField()
     liked_count = serializers.SerializerMethodField()
     isLiked = serializers.SerializerMethodField()
-    reply = serializers.SerializerMethodField()
     isReplied = serializers.SerializerMethodField()
+    reply = serializers.SerializerMethodField()
     reply_count = serializers.SerializerMethodField()
     isRetweeted = serializers.SerializerMethodField()
     retweet = serializers.SerializerMethodField()
@@ -170,14 +176,11 @@ class TweetSerializer(serializers.ModelSerializer):
             'userIcon',
         ]
 
-
     def get_hashTag(self, obj):
         return HashTagSerializer(obj.hashTag.all(), many=True).data
 
-
     def get_liked(self, obj):
         return ProfileSubSerializer(obj.liked.all(), many=True).data
-
 
     def get_liked_count(self, obj):
         if obj.isRetweet == True:
@@ -186,23 +189,11 @@ class TweetSerializer(serializers.ModelSerializer):
 
 
     def get_isLiked(self, obj):
-        # とりあえずの実装。ORMの理解が深まり次第リファクタリング予定
         isLiked = False
         if self.login_user != None:
-            # logger.debug('=============get_isLiked===============')
-            # logger.debug(self.login_user)
             target_tweet = obj.retweet if obj.isRetweet else obj
-            for u in target_tweet.liked.all():
-                # logger.debug(u.username)
-                if u.username == self.login_user:
-                    # logger.debug('ライクしてる')
-                    isLiked = True
-                    break
+            isLiked = target_tweet.liked.filter(username=self.login_user).exists()
         return isLiked
-
-
-    def get_reply(self, obj):
-        return ReplySerializer(obj.reply_set.all(), many=True).data
 
 
     def get_isReplied(self, obj):
@@ -210,20 +201,28 @@ class TweetSerializer(serializers.ModelSerializer):
         return isReplied
 
 
-    def get_reply_count(self, obj):
-        return len(obj.reply_set.all())
-
-
     def get_isRetweeted(self, obj):
-        # とりあえずの実装。ORMの理解が深まり次第リファクタリング予定
+
+        # TODO 計算量問題
         isRetweeted = False
         if self.login_user != None:
             target_tweet = obj.retweet if obj.isRetweet else obj
+
             for retweet in Tweet.objects.filter(retweet=target_tweet):
                 if retweet.retweet_user == self.login_user:
                     isRetweeted = True
                     break
+
+            # isRetweeted = target_tweet.retweet.filter(retweet_user=self.login_user).exists()
+
         return isRetweeted
+
+    def get_reply(self, obj):
+        return ReplySerializer(obj.reply_set.all(), many=True).data
+
+
+    def get_reply_count(self, obj):
+        return obj.reply_set.all().count()
 
 
     def get_retweet(self, obj):
@@ -275,17 +274,6 @@ class ReplySerializer(serializers.ModelSerializer):
         content = validated_data['content']
         return Reply.objects.create(author=user, target=target, content=content)
 
-
-class HashTagSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = HashTag
-        fields = [
-            'id',
-            'title',
-            'created_at',
-            'slug',
-        ]
 
 # カスタムフィールド参考用
 class SelectSerializer(serializers.Field):
