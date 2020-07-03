@@ -14,6 +14,7 @@ from .models import (
     Entry,
     Room,
     Message,
+    ReadManagement,
 )
 import logging
 logger = logging.getLogger(__name__)

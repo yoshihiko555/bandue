@@ -183,7 +183,7 @@
 				part: '',
 				genre: '',
 				sex: 0,
-				age: 0,
+				age: [0],
 			},
 			entryType: Con.ENTRY_TYPE,
 			prefecture: Con.PREFECTURE,
@@ -215,7 +215,7 @@
 					this.$eventHub.$emit('create-article', res)
 				})
 				.catch(e => {
-					console.log(e)
+					console.log(e.response)
 				})
 			},
 		}

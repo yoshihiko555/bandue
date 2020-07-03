@@ -14,12 +14,14 @@ from .models import (
     Room,
     Message,
     Age,
+    ReadManagement,
 )
 from rest_framework.renderers import JSONRenderer
 
 import logging
 from django.templatetags.i18n import language
 from idlelib.idle_test.test_colorizer import source
+from django.db.models import Q
 
 logging.basicConfig(
     level = logging.DEBUG,
@@ -91,7 +93,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     def get_entry(self, obj):
         return EntrySerializer(Entry.objects.filter(author=obj), many=True).data
 
-    
+
     def get_setting(self, obj):
         setting = mSetting.objects.get(target=obj)
         logger.info(setting.target__username)
@@ -318,7 +320,12 @@ class EntrySerializer(serializers.ModelSerializer):
     direction_disp = serializers.SerializerMethodField()
     sex_disp = serializers.SerializerMethodField()
     age_disp = serializers.SerializerMethodField()
-    age = serializers.ListField(write_only=True, child=serializers.IntegerField())
+    age = serializers.ListField(write_only=True, required=False, child=serializers.IntegerField())
+    is_read = serializers.SerializerMethodField()
+
+    def __init__(self, *args, **kwargs):
+        self.login_user = kwargs['context']['view'].get_login_user() if 'context' in kwargs else None
+        super().__init__(*args, **kwargs)
 
     class Meta:
         model = Entry
@@ -343,6 +350,7 @@ class EntrySerializer(serializers.ModelSerializer):
             'sex_disp',
             'age',
             'age_disp',
+            'is_read',
         ]
 
     def get_type_disp(self, obj):
@@ -368,8 +376,12 @@ class EntrySerializer(serializers.ModelSerializer):
             age_list = [age.get_age_display() for age in obj.age.all()]
         return age_list
 
+    def get_is_read(self, obj):
+        target = mUser.objects.get(username=self.login_user)
+        read_manage_cnt = ReadManagement.objects.filter(Q(entry=obj) & Q(target=target)).count()
+        return False if read_manage_cnt == 0 else True # 既読されていたらTrueを返却
+
     def create(self, validated_data):
-        logger.info(validated_data['age']),
         entry = Entry.objects.create(
             author = mUser.objects.get(pk=validated_data['author_pk']),
             title = validated_data['title'],
@@ -382,7 +394,6 @@ class EntrySerializer(serializers.ModelSerializer):
             part = validated_data['part'],
             genre = validated_data['genre'],
             sex = validated_data['sex'],
-#             age = validated_data['age'],
         )
         if len(validated_data['age']) != 0:
             age_list = [Age.objects.get(age=age) for age in validated_data['age']]

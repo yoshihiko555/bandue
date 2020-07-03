@@ -37,8 +37,11 @@ from .models import (
     Entry,
     Room,
     Message,
+    ReadManagement,
 )
 from .permissions import IsMyselfOrReadOnly
+from django.template.context_processors import request
+from django.core.serializers import serialize
 
 logger = logging.getLogger(__name__)
 from .filters import (
@@ -61,7 +64,6 @@ class BaseModelViewSet(viewsets.ModelViewSet, GetLoginUserMixin):
         ModelViewSetでloginUserを取得する事が多いので
         GetLoginUserMixinを継承し、このクラスの継承先で使用
     """
-
     pass
 
 
@@ -336,6 +338,17 @@ class EntryViewSet(BaseModelViewSet):
     queryset = Entry.objects.all()
     serializer_class = EntrySerializer
 
+    def list(self, request, *args, **kwargs):
+        self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        logger.info(serializer.data)
+        return Response(serializer.data)
+
     def create(self, request, *args, **kwargs):
         request.data.update({
             'author_pk': str(request.user.pk)
@@ -359,3 +372,20 @@ class EntryViewSet(BaseModelViewSet):
         except Http404:
             pass
         return Response(serializer.data)
+
+    @action(methods=['post'], detail=False)
+    def isRead(self, request):
+        logger.info('既読したーー')
+        logger.info(request.data)
+        user = mUser.objects.get(username=request.user.username)
+        entry = Entry.objects.get(id=request.data['id'])
+        read_manage_cnt = ReadManagement.objects.filter(Q(entry=entry) & Q(target=user)).count()
+        if read_manage_cnt == 0:
+            # 新規既読ならレコード追加
+            ReadManagement.objects.create(
+                target=user,
+                entry=entry,
+                is_read=True,
+            )
+
+        return Response(status=status.HTTP_200_OK)

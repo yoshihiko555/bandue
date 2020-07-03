@@ -32,7 +32,11 @@ Enter the command in the following procedure
 
 3. Server Start-up  
 `$ docker exec -it bandue bash`  
-`$ cd server && python manage.py runserver 0.0.0.0:8000`  
+`$ cd server`  
+`$ python manage.py makemigrations api`  
+`$ python manage.py migrate`  
+`$ python manage.py loaddata fixture-age.json`  
+`$ python manage.py runserver 0.0.0.0:8000`  
 
 4. Client Start-up  
 `$ docker exec -it bandue bash`  

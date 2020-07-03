@@ -39,6 +39,7 @@ from .models import (
     Entry,
     Room,
     Message,
+    ReadManagement,
 )
 from .permissions import IsMyselfOrReadOnly
 from django.contrib.admin.utils import lookup_field

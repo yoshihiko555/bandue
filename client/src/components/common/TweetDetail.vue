@@ -71,7 +71,7 @@
 
 <style lang='scss'>
 	.tweet_author {
-		color: #333 !important;
+		color: $default-color !important;
 		text-decoration: none;
 		position: relative;
 

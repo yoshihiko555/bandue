@@ -5,6 +5,7 @@ from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.utils.translation import ugettext_lazy as _
 from django.utils import timezone
 import os, uuid, logging
+from django.template.defaultfilters import default
 
 logger = logging.getLogger(__name__)
 
@@ -400,3 +401,12 @@ class Message(models.Model):
 
     def __str__(self):
         return self.content
+
+class ReadManagement(models.Model):
+
+    target = models.ForeignKey(mUser, on_delete=models.CASCADE)
+    entry = models.ForeignKey(Entry, on_delete=models.CASCADE)
+    is_read = models.BooleanField(_('Is Read'), default=True)
+
+    def __str__(self):
+        return self.entry.title

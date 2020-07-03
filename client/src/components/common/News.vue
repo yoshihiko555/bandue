@@ -5,7 +5,10 @@
                 <a :href='article.url' target="blank">
                     <v-img v-show='article.urlToImage !== null' :src="article.urlToImage" alt='article.title'></v-img>
                 </a>
-                <v-card-title>{{ article.title | truncate(30)}}</v-card-title>
+
+                <a :href='article.url' target='blank'>
+                	<v-card-title>{{ article.title | truncate(30)}}</v-card-title>
+                </a>
                 <v-card-text>
                     {{ article.description | truncate(60) }}
                 </v-card-text>
@@ -47,5 +50,10 @@
     .news_wrap {
         height: 690px;
         overflow: auto;
+
+        a {
+        	text-decoration: none;
+    		color: $default-color !important;
+        }
     }
 </style>

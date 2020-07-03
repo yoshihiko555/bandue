@@ -36,7 +36,7 @@
 			font-size: 22px;
 
 			a {
-				color: #333;
+				color: $default-color;
 				text-decoration: blink;
 			}
 		}

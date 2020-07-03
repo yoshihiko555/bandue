@@ -35,7 +35,7 @@
 										:key='i'
 										class='article_wrap'
 										color='orange'
-										@click='open'
+										@click='open(article)'
 									>
 
 										<v-expansion-panel-header>
@@ -193,9 +193,20 @@
 				this.articleList = res.data.results
 			},
 
-			open () {
+			open (article) {
 				// 既読機能用メソッド
 				console.log('open')
+				this.$axios({
+					url: 'api/entry/isRead/',
+					method: 'POST',
+					data: article,
+				})
+				.then(res => {
+					console.log(res)
+				})
+				.catch(e => {
+					console.log(e)
+				})
 			},
 
 			tag () {
