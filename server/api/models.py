@@ -127,6 +127,9 @@ class mUser(AbstractBaseUser, PermissionsMixin):
     def email_user(self, subject, message, from_email=None, **kwargs):
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
+    def get_follower_count(self):
+        return mUser.objects.filter(followees=self).count()
+
 
 class HashTag(models.Model):
 

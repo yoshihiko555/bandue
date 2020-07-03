@@ -56,19 +56,15 @@ class TweetFilter(django_filter.FilterSet):
 
         h_list = []
         q_list = []
-        qs = [i.strip() for i in value.split(',')]
+        qs = list({i.strip() for i in value.split(',')})
         for q in qs:
             if q[0] == '#':
-                h_list.append(Q(hashTag__title=q))
+                h_list.append('Q(hashTag__title=q)')
             else:
-                q_list.append(Q(content__contains=q))
-        query = q_list.pop()
-        for item in q_list:
-            query &= item
-        for item in h_list:
-            query |= item
+                q_list.append('Q(content__contains=q)')
+        query_str = '&'.join(q_list) + '|'.join(h_list)
 
-        q = Tweet.objects.filter(query)
+        q = Tweet.objects.filter(eval(query_str))
 
         # TODO トレンド順
         if self.searchFlg == '0':
@@ -170,6 +166,6 @@ class MUserFilter(django_filter.FilterSet):
 
     def username_filter(self, queryset, name, value):
 
-        # TODO フォロワー多い順とかに並べとく
-        q_list = [Q(username__contains=i.strip()) for i in value.split(',')]
+        # 同じ検索ワード, ハッシュタグは省く
+        q_list = list({Q(username__contains=i.strip()) for i in value.split(',') if i.strip()[0] != '#'})
         return mUser.objects.filter(*q_list).exclude(username=self.login_user)

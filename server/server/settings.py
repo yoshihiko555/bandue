@@ -33,6 +33,7 @@ if DEBUG:
         level = logging.DEBUG,
         format = '''%(levelname)s %(asctime)s %(pathname)s:%(funcName)s:%(lineno)s
         %(message)s''')
+
 else:
     logging.basicConfig(
         level = logging.DEBUG,
@@ -72,7 +73,7 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES' : [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
     ],
     # JWTでの認証設定
     'DEFAULT_AUTHENTICATION_CLASSES' : [
@@ -84,6 +85,21 @@ REST_FRAMEWORK = {
         'django_filters.rest_framework.DjangoFilterBackend',
     ],
     'DEFAULT_PAGINATION_CLASS': 'api.paginations.StandardResultSetPagination',
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+        'user': '5/sec',
+    }
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:11211',
+    }
 }
 
 # JWT認証設定

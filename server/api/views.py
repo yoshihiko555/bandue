@@ -57,6 +57,14 @@ from .utils import (
     analyzeMethod,
 )
 
+from .paginations import (
+    StandardListResultSetPagination
+)
+
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
+
 
 class IndexView(generic.TemplateView):
 
@@ -71,7 +79,7 @@ class ProfileDetailView(generics.RetrieveAPIView):
 
 
 class ProfileUpdateView(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticated,)
     queryset = mUser.objects.all()
     serializer_class = ProfileSerializer
     parser_class = (FileUploadParser)
@@ -135,33 +143,41 @@ class SearchView(generics.ListAPIView, GetLoginUserMixin):
     """
 
     permission_classes = (permissions.AllowAny,)
+    TREND = '0'
+    NEW = '1'
+    USER = '2'
+    MEDIA = '3'
     search_query = {
-        '0': {
+        TREND: {
             'queryset': Tweet.objects.all(),
             'serializer_class': TweetSerializer,
             'filter_class': TweetFilter,
         },
-        '1': {
+        NEW: {
             'queryset': Tweet.objects.all(),
             'serializer_class': TweetSerializer,
             'filter_class': TweetFilter,
         },
-        '2': {
+        USER: {
             'queryset': mUser.objects.all(),
             'serializer_class': ProfileSerializer,
             'filter_class': MUserFilter,
         },
-        '3': {
+        MEDIA: {
             'queryset': Tweet.objects.all(),
             'serializer_class': TweetSerializer,
             'filter_class': TweetFilter,
         },
     }
 
+    @analyzeMethod
+    @method_decorator(cache_page(60*20))
+    @method_decorator(vary_on_cookie)
     def list(self, request, *args, **kwargs):
         self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
         searchFlg = request.query_params['searchFlg']
         self.setSearchQuery(searchFlg, *args, **kwargs)
+
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -169,11 +185,34 @@ class SearchView(generics.ListAPIView, GetLoginUserMixin):
             return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+        # if searchFlg != self.USER:
+        #     queryset = self.filter_queryset(self.get_queryset())
+        #     page = self.paginate_queryset(queryset)
+        #     if page is not None:
+        #         serializer = self.get_serializer(page, many=True)
+        #         return self.get_paginated_response(serializer.data)
+        #     serializer = self.get_serializer(queryset, many=True)
+        #     return Response(serializer.data)
+        # else:
+        #     queryset = self.get_queryset()
+        #     filterd_queryset_list = self.username_filter(queryset, request)
+        #     pagination_class = StandardListResultSetPagination()
+        #     page = pagination_class.paginate_queryset(filterd_queryset_list, request)
+        #     serializer = self.get_serializer(page, many=True)
+        #     return pagination_class.get_paginated_response(serializer.data)
 
     def setSearchQuery(self, searchFlg, *args, **kwargs):
         self.queryset = self.search_query[searchFlg]['queryset']
         self.serializer_class = self.search_query[searchFlg]['serializer_class']
         self.filter_class = self.search_query[searchFlg]['filter_class']
+
+        # フォロワー多い順で並べたけど遅いからボツ
+        # def username_filter(self, queryset, request):
+        #     searchText = request.query_params['searchText']
+        #     q_list = [Q(username__contains=i.strip()) for i in searchText.split(',')]
+        #     return sorted(mUser.objects.filter(*q_list).exclude(username=self.login_user), key = lambda u: u.get_follower_count())[::-1]
+
+
 
 class SettingView(generics.RetrieveUpdateAPIView, GetLoginUserMixin):
     permission_classes = (permissions.AllowAny,)

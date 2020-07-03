@@ -25,7 +25,7 @@
 
 								<v-card-text class="pt-6 text-h5">
 									{{ profileData.username }}
-									<span v-if='!isMe'>
+									<span v-if='!isMe && !loading'>
 										<follow :username='username'></follow>
 									</span>
 								</v-card-text>
@@ -186,6 +186,7 @@
 			],
 			icon: '',
 			header: '',
+			loading: null
 		}),
 		created () {
 			const currentPath = this.$route.path
@@ -198,6 +199,7 @@
 			}
 		},
 		mounted: function () {
+			this.loading = true
 			this.$axios.get('/api/profile/' + this.username)
 			.then(res => {
 				res.data.created_at = res.data.created_at.substr(0, 10)
@@ -205,6 +207,7 @@
 				this.icon = this.profileData.icon
 				this.header = this.profileData.header
 				console.log(res)
+				this.loading = false
 			})
 			.catch(e => {
 				console.log(e)
