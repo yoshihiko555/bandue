@@ -175,6 +175,7 @@ import Retweet from '@/components/common/Retweet'
 import Like from '@/components/common/Like'
 import Follow from '@/components/common/Follow'
 import Loading from '@/components/common/Loading'
+import _ from 'lodash'
 import { Common } from '@/static/js/common'
 
 const Com = new Common()
@@ -216,25 +217,32 @@ export default {
       () => [this.searchFlg, this.searchText], (val) => {
         console.log('searchFlg, searchText => ' + val)
         this.search(...val)
+        this.loading = true
       }
     )
   },
   mounted: function () {
     this.search(this.searchFlg, this.searchText)
+    this.loading = true
   },
   methods: {
     tabChange (tab, i) {
       this.searchFlg = i
     },
-    search (searchFlg, searchText) {
-      this.loading = true
+    search: _.debounce(function search(searchFlg, searchText) {
+      // 空白削除し、カンマ区切りの文字列で送る
+      var trimedText = this.trim(searchText)
+      var trimedTextList = [...new Set(trimedText.split(/\s+/))]
+      var searchWord = trimedTextList.join(',')
+      console.log('検索文字列 : ' + searchWord)
       this.$axios.get('api/search/', {
         params: {
           searchFlg: searchFlg,
-          searchText: searchText
+          searchText: searchWord
         }
       })
       .then(res => {
+        console.log(res.data)
         if (this.searchFlg !== 2) {
           for (var i in res.data.results) {
             var updatedAt = res.data.results[i].updated_at.substr(0, 10)
@@ -244,7 +252,7 @@ export default {
           console.log('ツイート一覧', this.tweetList)
         } else {
           this.userList = res.data.results
-          console.log('ユーザー一覧', this.userList.results)
+          console.log('ユーザー一覧', this.userList)
         }
         this.nextPage = res.data.next
         this.loading = false
@@ -253,6 +261,9 @@ export default {
         console.log(e)
         this.loading = false
       })
+    }, 200),
+    trim (word) {
+      return String(word).replace(/^\s+|\s+$/g, '')
     },
     next () {
       if (this.nextPage !== null) {

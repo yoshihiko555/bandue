@@ -38,7 +38,9 @@ from .models import (
     Room,
     Message,
 )
-from .permissions import IsMyselfOrReadOnly
+from .permissions import (
+    IsMyselfOrReadOnly
+)
 
 logger = logging.getLogger(__name__)
 from .filters import (
@@ -53,6 +55,10 @@ from .mixins import (
 from .utils import (
     analyzeMethod,
 )
+
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 
 
 class BaseModelViewSet(viewsets.ModelViewSet, GetLoginUserMixin):
@@ -84,7 +90,7 @@ class TweetViewSet(BaseModelViewSet):
         retweet : リツイートボタン押下時
     """
 
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     queryset = Tweet.objects.all()
     serializer_class = TweetSerializer
     filter_class = TweetFilter
@@ -117,6 +123,8 @@ class TweetViewSet(BaseModelViewSet):
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
             return Response(self.get_serializer(serializer.instance).data, status=status.HTTP_201_CREATED, headers=headers)
+
+        logger.debug(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -152,6 +160,7 @@ class TweetViewSet(BaseModelViewSet):
         tweet = Tweet.objects.get(pk=request.data['target_tweet_id'])
         target_tweet = tweet.retweet if tweet.isRetweet == True else tweet
         return self.set_tweet_liked_info(target_tweet, login_user)
+
 
     def set_tweet_liked_info(self, tweet, login_user):
         try:
@@ -203,7 +212,7 @@ class TweetViewSet(BaseModelViewSet):
 
 class ReplyViewSet(BaseModelViewSet):
 
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     queryset = Reply.objects.all()
     serializer_class = ReplySerializer
 
@@ -238,33 +247,39 @@ class mUserViewSet(viewsets.ModelViewSet):
         unfollow : フォロー解除
     """
 
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     queryset = mUser.objects.all()
     serializer_class = MUserSerializer
+
+
+    @method_decorator(cache_page(60*60*2))
+    @method_decorator(vary_on_cookie)
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = ProfileSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = ProfileSerializer(queryset, many=True)
+        return Response(serializer.data)
+
 
     @action(methods=['post'], detail=False)
     def isFollow(self, request):
         login_user = request.user
         target_user = request.data['target_user']
-        isFollow = 0
-        for followed_user in login_user.followees.all():
-            if followed_user.username == target_user:
-                isFollow = 1
-                break
+        isFollow = 1 if login_user.followees.filter(username=target_user).exists() else 0
         return Response({'status': 'success', 'isFollow': isFollow}, status=status.HTTP_200_OK)
 
 
     @action(methods=['post'], detail=False)
     def follow(self, request):
 
-        logger.debug(str(request.user) + 'が' + request.data['target_user'] + 'をフォロー')
-
         login_user = request.user
         followed_username = request.data['target_user']
         followed_user = mUser.objects.get(username=followed_username)
         login_user.followees.add(followed_user)
-        logger.debug('成功')
-        logger.debug(login_user.followees.all())
+        logger.debug(str(request.user) + 'が' + request.data['target_user'] + 'をフォロー')
         return Response({'status': 'success', 'isFollow': 1}, status=status.HTTP_200_OK)
 
 
@@ -280,6 +295,7 @@ class mUserViewSet(viewsets.ModelViewSet):
         logger.debug('成功')
         logger.debug(login_user.followees.all())
         return Response({'status': 'success', 'isFollow': 0}, status=status.HTTP_200_OK)
+
 
     @action(methods=['GET'], detail=False)
     def checkUserDuplication(self, request):

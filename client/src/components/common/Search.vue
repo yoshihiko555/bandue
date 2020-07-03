@@ -5,6 +5,7 @@
 		<v-text-field
 			prepend-inner-icon='mdi-magnify'
 			v-model='searchText'
+			maxlength='100'
 		>
 		</v-text-field>
 		<component :is='currentView' :search-text=searchText></component>
