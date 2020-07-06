@@ -384,6 +384,9 @@ class TweetSerializer(DynamicFieldsModelSerializer):
         created_at = obj.created_at
         diff = now - created_at
 
+        if diff.days >= 30:
+            return (now - timedelta(days=diff.days)).strftime('%Y/%m/%d')
+
         if diff.days != 0:
             return str(diff.days) + '日'
 

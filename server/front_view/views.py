@@ -83,3 +83,6 @@ class BbsView(TemplateView):
 
 class InfoView(TemplateView):
     template_name = 'pages/info.html'
+
+class PageNotFoundView(TemplateView):
+    template_name = 'pages/404.html'

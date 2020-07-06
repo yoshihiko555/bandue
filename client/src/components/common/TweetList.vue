@@ -208,6 +208,7 @@
 			})
 			.catch(e => {
 				console.log(e)
+				this.initLoading = false
 			})
 		},
 		methods: {

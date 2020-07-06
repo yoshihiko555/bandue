@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+
+{% block title %}404{% endblock %}
+
+{% block content %}
+<div id="main">
+	<page-not-found/>
+</div>
+{% render_bundle 'main' %}
+{% endblock %}

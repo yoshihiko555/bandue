@@ -21,6 +21,9 @@ from .models import (
 import logging
 logger = logging.getLogger(__name__)
 
+from django.shortcuts import get_object_or_404
+
+
 
 class TweetFilter(django_filter.FilterSet):
     """
@@ -91,7 +94,9 @@ class TweetFilter(django_filter.FilterSet):
         logger.debug('=====TWEET_FILTER=====')
         res = queryset
         if self.target_user != None:
-            target_user = mUser.objects.get(username=self.target_user)
+
+            # target_user = mUser.objects.get(username=self.target_user)
+            target_user = get_object_or_404(mUser, username=self.target_user)
 
             # リプライツイート除いた一覧
             if value == 0:

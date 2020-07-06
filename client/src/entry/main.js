@@ -7,6 +7,7 @@ import Message from '@/components/pages/Message.vue'
 import Info from '@/components/pages/Info.vue'
 import Profile from '@/components/pages/Profile.vue'
 import Setting from '@/components/pages/Setting.vue'
+import PageNotFound from '@/components/pages/PageNotFound.vue'
 import router from '@/router'
 import { store, initialState } from '@/store'
 import vuetify from '@/plugins/vuetify'
@@ -32,6 +33,7 @@ Vue.component('message', Message)
 Vue.component('info', Info)
 Vue.component('profile', Profile)
 Vue.component('setting', Setting)
+Vue.component('page-not-found', PageNotFound)
 
 new Vue({
   router,

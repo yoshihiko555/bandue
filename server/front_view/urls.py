@@ -14,5 +14,6 @@ urlpatterns = [
     path('setting/', views.SettingView.as_view(), name='setting'),
     path('bbs/', views.BbsView.as_view(), name='bbs'),
     path('info/', views.InfoView.as_view(), name='info'),
+    path('404/', views.PageNotFoundView.as_view(), name='page_not_found'),
     path('<str:username>/', views.ProfileView.as_view(), name='profile'),
 ]

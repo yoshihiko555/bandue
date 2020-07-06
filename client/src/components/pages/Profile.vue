@@ -1,7 +1,7 @@
 <template>
 	<v-app>
 		<Header/>
-		<div id='profile_wrap' class="main">
+		<div id='profile_wrap' class="main" v-if='init == false'>
 			<v-container fluid>
 				<v-row>
 					<v-col cols='3'>
@@ -160,6 +160,10 @@
 	import TweetList from '@/components/common/TweetList'
 	import Follow from '@/components/common/Follow'
 
+	import { Common } from '@/static/js/common'
+
+	const Com = new Common()
+
 	export default {
 		name: 'Profile',
 		components: {
@@ -186,7 +190,8 @@
 			],
 			icon: '',
 			header: '',
-			loading: null
+			loading: null,
+			init: true,
 		}),
 		created () {
 			const currentPath = this.$route.path
@@ -208,9 +213,11 @@
 				this.header = this.profileData.header
 				console.log(res)
 				this.loading = false
+				this.init = false
 			})
 			.catch(e => {
 				console.log(e)
+				this.showErrorPage(e)
 			})
 		},
 
@@ -219,6 +226,21 @@
 				console.log(cnt)
 				this.followeesTabModel = cnt
 				this.view = cnt
+			},
+
+			showErrorPage(e) {
+				console.log('showErrorPage')
+				var response = e.response
+				var statusCode = response.status
+
+				if (statusCode === 404) {
+					this.$router.push('/404')
+					this.reload()
+				}
+			},
+
+			reload() {
+				Com.reload(this.$router)
 			}
 		}
 	}
