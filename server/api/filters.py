@@ -15,6 +15,8 @@ from .models import (
     Room,
     Message,
     ReadManagement,
+    FollowRelationShip,
+    RetweetRelationShip,
 )
 import logging
 logger = logging.getLogger(__name__)
@@ -64,7 +66,7 @@ class TweetFilter(django_filter.FilterSet):
                 q_list.append('Q(content__contains=q)')
         query_str = '&'.join(q_list) + '|'.join(h_list)
 
-        q = Tweet.objects.filter(eval(query_str))
+        q = Tweet.objects.filter(eval(query_str)).exclude()
 
         # TODO トレンド順
         if self.searchFlg == '0':
@@ -94,33 +96,39 @@ class TweetFilter(django_filter.FilterSet):
             # リプライツイート除いた一覧
             if value == 0:
 
-                t_list = Tweet.objects.filter(author=target_user)
+                t_list = Tweet.objects.filter( \
+                    author=target_user).exclude(Q(isRetweet=True) & \
+                        Q(author=target_user) & Q(retweet_username=self.target_user))
                 res = t_list.exclude(reply__isnull=False).order_by('-created_at')
 
             # リプライツイート含めた一覧
             elif value == 1:
 
-                t_list = Tweet.objects.filter(author=target_user)
-                res = t_list.order_by('-created_at')
+                res = target_user.author.all().exclude(Q(isRetweet=True) & \
+                    Q(author=target_user) & Q(retweet_username=self.target_user)).order_by('-created_at')
 
             # 画像含めた一覧
             elif value == 2:
-                res = Tweet.objects.filter(author=target_user).exclude(images__isnull=False).order_by('-created_at')
+                res = target_user.author.all().exclude( \
+                    Q(images__isnull=False) | Q(author=target_user) & \
+                        Q(retweet_username=self.target_user)).order_by('-created_at')
 
-            # TODO=>なんかおかしい いいねしたツイート一覧
+            # いいねしたツイート一覧
             elif value == 3:
-                res = Tweet.objects.filter(liked=target_user).order_by('-created_at')
+                res = target_user.liked.all().order_by('-created_at')
 
-            # TODO=>パフォーマンス ユーザー&フォローユーザーツイート一覧
+            # ユーザー&フォローユーザーツイート一覧
             elif value == 4:
+                my_tweets = target_user.author.all().exclude()
 
-                tweet_list = Tweet.objects.filter(author=target_user)
-                query_list = []
-                for i in target_user.followees.all():
-                    query_list.append("Tweet.objects.filter(author=mUser.objects.get(username='" + i.username + "'))")
-                for i in range(len(query_list)):
-                    tweet_list = tweet_list.union(eval(query_list[i]))
-                res = tweet_list.order_by('-created_at')
+                followees_tweets = Tweet.objects.filter( \
+                    author__in=target_user.followees.all()).exclude(isRetweet=True)
+
+                followees_retweets = Tweet.objects.filter( \
+                    pk__in=RetweetRelationShip.objects.filter( \
+                        retweet_user__in=target_user.followees.all()))
+
+                res = my_tweets.union(followees_tweets).union(followees_retweets).order_by('-created_at')
 
         logger.debug('--TWEET_FILTER_RESULT--')
         logger.debug(res)

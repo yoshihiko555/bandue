@@ -104,7 +104,13 @@ class mUser(AbstractBaseUser, PermissionsMixin):
 
     icon = models.ImageField(_('Icon'), upload_to=profile_file_name, blank=True, null=True)
 
-    followees = models.ManyToManyField('self', blank=True, symmetrical=False)
+    followees = models.ManyToManyField(
+        'self',
+        blank=True,
+        symmetrical=False,
+        through='FollowRelationShip',
+        through_fields=('followee', 'follower')
+    )
 
     readed_entry = models.ManyToManyField('api.Entry', blank=True)
 
@@ -131,6 +137,21 @@ class mUser(AbstractBaseUser, PermissionsMixin):
         return mUser.objects.filter(followees=self).count()
 
 
+class FollowRelationShip(models.Model):
+
+    followee = models.ForeignKey(
+        'api.mUser',
+        on_delete=models.CASCADE,
+        related_name='followee'
+    )
+    follower = models.ForeignKey(
+        'api.mUser',
+        on_delete=models.CASCADE,
+        related_name='follower'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class HashTag(models.Model):
 
     title = models.CharField(_('Title'), max_length=30)
@@ -146,7 +167,13 @@ class Tweet(models.Model):
 
     author = models.ForeignKey(mUser, on_delete=models.CASCADE, related_name='author')
     content = models.TextField(_('Content'))
-    liked = models.ManyToManyField(mUser, blank=True, related_name='liked')
+    liked = models.ManyToManyField(
+        mUser,
+        blank=True,
+        through='LikedRelationShip',
+        related_name='liked'
+    )
+
     hashTag = models.ManyToManyField(HashTag, blank=True)
     images = models.ImageField(_('Images'), upload_to=content_file_name, blank=True, null=True)
     created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
@@ -156,14 +183,53 @@ class Tweet(models.Model):
     # リツイートかのフラグ
     isRetweet = models.BooleanField(_('This is retweet whether or not'), default=False)
 
-    # リツイート
-    retweet = models.ForeignKey('self', on_delete=models.SET_NULL, blank=True, null=True)
+    retweet_username = models.CharField(_('Retweet Username'), max_length=30, blank=True, null=True)
 
-    # リツイートしたユーザー一覧
-    retweet_user = models.CharField(_('Retweet User Name'), max_length=70)
+    retweets = models.ManyToManyField(
+        'self',
+        blank=True,
+        symmetrical=False,
+        through='RetweetRelationShip',
+        through_fields=('target_tweet', 'retweet')
+    )
 
     def __str__(self):
         return self.content
+
+
+class RetweetRelationShip(models.Model):
+
+    target_tweet = models.ForeignKey(
+        'api.Tweet',
+        on_delete=models.CASCADE,
+        related_name='target_tweet'
+    )
+    retweet = models.ForeignKey(
+        'api.Tweet',
+        on_delete=models.CASCADE,
+        related_name='retweet'
+    )
+    retweet_user = models.ForeignKey(
+        'api.mUser',
+        on_delete=models.CASCADE,
+        related_name='retweet_user'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class LikedRelationShip(models.Model):
+
+    liked_tweet = models.ForeignKey(
+        'api.Tweet',
+        on_delete=models.CASCADE,
+        related_name='liked_tweet'
+    )
+    liked_user = models.ForeignKey(
+        'api.mUser',
+        on_delete=models.CASCADE,
+        related_name='liked_user'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Reply(models.Model):

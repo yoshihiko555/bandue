@@ -24,8 +24,33 @@
 						>mdi-repeat</v-icon>
 						リツイート済み
 					</span>
+					<span
+						v-else-if='tweet.followees_in_retweet_users.length != 0'
+						class='followees_in_retweet_users'
+					>
+						<v-icon
+							class='mr-1 retweet'
+							color='green lighten-1'
+						>mdi-repeat</v-icon>
+						{{ tweet.followees_in_retweet_users[0].username }} さんがリツイート
+					</span>
+					<span
+						v-else-if='tweet.followees_in_retweet_users.length == 0
+						 && tweet.followees_in_liked.length != 0'
+						class='followees_in_liked'
+					>
+						<v-icon v-if='!tweet.isLiked'
+								color='red lighten-3'
+								ref='tweet_isLiked'
+						>mdi-heart</v-icon>
+						{{ tweet.followees_in_liked[0].username }} さんがいいねしました
+					</span>
 
 					<v-spacer></v-spacer>
+
+					<span class='created_time'>
+						{{ tweet.created_time }}
+					</span>
 
 					<!-- Tweet編集ボタン -->
 					<v-menu bottom left class='z10'>
@@ -80,7 +105,7 @@
 			</v-card>
 		</div>
 
-		<div v-if='nextPage != null && tweetLoading'>
+		<div v-if='nextPage != null && tweetLoading || initLoading === true'>
 			<Loading></Loading>
 		</div>
 
@@ -150,7 +175,8 @@
 			nextPage: null,
 			scrollY: 0,
 			scrollMax: 0,
-            tweetLoading: true,
+			initLoading: true,
+      tweetLoading: true,
 		}),
 		created () {
 			this.$eventHub.$on('create-tweet', this.tweetUpdate)
@@ -178,6 +204,7 @@
 				console.log('ツイート一覧',this.tweetList)
 				this.nextPage = res.data.next
 				this.tweetLoading = false
+				if (this.initLoading === true) this.initLoading = false
 			})
 			.catch(e => {
 				console.log(e)
@@ -312,6 +339,10 @@
 					transform: scale(1, 1);
 				}
 			}
+		}
+
+		.created_time {
+			font-size: 14px;
 		}
 	}
 

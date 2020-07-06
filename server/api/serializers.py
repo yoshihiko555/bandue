@@ -15,10 +15,18 @@ from .models import (
     Message,
     Age,
     ReadManagement,
+    FollowRelationShip,
+    RetweetRelationShip,
 )
 from rest_framework.renderers import JSONRenderer
 
 import logging
+from datetime import (
+    timezone,
+    datetime,
+    timedelta
+)
+import pytz
 from django.templatetags.i18n import language
 from idlelib.idle_test.test_colorizer import source
 from django.db.models import Q
@@ -32,9 +40,23 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+class DynamicFieldsModelSerializer(serializers.ModelSerializer):
+
+    def __init__(self, *args, **kwargs):
+
+        fields = kwargs.pop('fields', None)
+
+        super(DynamicFieldsModelSerializer, self).__init__(*args, **kwargs)
+
+        if fields is not None:
+
+            allowed = set(fields)
+            existing = set(self.fields)
+            for field_name in existing - allowed:
+                self.fields.pop(field_name)
 
 
-class ProfileSubSerializer(serializers.ModelSerializer):
+class ProfileSubSerializer(DynamicFieldsModelSerializer):
 
     class Meta:
         model = mUser
@@ -64,7 +86,7 @@ class HashTagSerializer(serializers.ModelSerializer):
 
 
 
-class ProfileSerializer(serializers.ModelSerializer):
+class ProfileSerializer(DynamicFieldsModelSerializer):
     """
     プロフィールのシリアライザー
 
@@ -117,12 +139,15 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
     def get_setting(self, obj):
-        setting = mSetting.objects.get(target=obj)
-        logger.info(setting.target__username)
-        return MSettingSerializer(mSetting.objects.get(target=obj)).data
+        try:
+            setting = mSetting.objects.get(target=obj)
+            logger.info(setting.target__username)
+            return MSettingSerializer(mSetting.objects.get(target=obj)).data
+        except mSetting.DoesNotExist:
+            return None
 
 
-class TweetSerializer(serializers.ModelSerializer):
+class TweetSerializer(DynamicFieldsModelSerializer):
     """
     ツイートのシリアライザー
 
@@ -145,7 +170,11 @@ class TweetSerializer(serializers.ModelSerializer):
     isRetweeted = serializers.SerializerMethodField()
     retweet = serializers.SerializerMethodField()
     retweet_count = serializers.SerializerMethodField()
-    retweet_user = serializers.ReadOnlyField()
+    retweet_user = serializers.SerializerMethodField()
+    retweet_users = serializers.SerializerMethodField()
+    followees_in_retweet_users = serializers.SerializerMethodField()
+    followees_in_liked = serializers.SerializerMethodField()
+    created_time = serializers.SerializerMethodField()
     userIcon = serializers.SerializerMethodField()
 
 
@@ -162,11 +191,11 @@ class TweetSerializer(serializers.ModelSerializer):
             'content',
             'liked',
             'liked_count',
+            'isLiked',
             'hashTag',
             'images',
             'created_at',
             'updated_at',
-            'isLiked',
             'reply',
             'isReplied',
             'reply_count',
@@ -174,28 +203,47 @@ class TweetSerializer(serializers.ModelSerializer):
             'isRetweeted',
             'retweet',
             'retweet_user',
+            'retweet_users',
             'retweet_count',
             'userIcon',
+            'followees_in_retweet_users',
+            'followees_in_liked',
+            'created_time',
         ]
 
     def get_hashTag(self, obj):
+
         return HashTagSerializer(obj.hashTag.all(), many=True).data
 
+
     def get_liked(self, obj):
+
         return ProfileSubSerializer(obj.liked.all(), many=True).data
 
+
     def get_liked_count(self, obj):
-        if obj.isRetweet == True:
-            return obj.retweet.liked.count()
-        return obj.liked.count()
+
+        if obj.isRetweet == False:
+            return obj.liked.count()
+
+        try:
+            return RetweetRelationShip.objects.get(retweet=obj).target_tweet.liked.all().count()
+        except:
+            return None
 
 
     def get_isLiked(self, obj):
-        isLiked = False
-        if self.login_user != None:
-            target_tweet = obj.retweet if obj.isRetweet else obj
-            isLiked = target_tweet.liked.filter(username=self.login_user).exists()
-        return isLiked
+
+        if self.login_user == None:
+            return False
+
+        target_tweet = obj
+        if obj.isRetweet == True:
+            try:
+                target_tweet = RetweetRelationShip.objects.get(retweet=obj).target_tweet
+            except RetweetRelationShip.DoesNotExist:
+                pass
+        return target_tweet.liked.filter(username=self.login_user).exists()
 
 
     def get_isReplied(self, obj):
@@ -205,19 +253,21 @@ class TweetSerializer(serializers.ModelSerializer):
 
     def get_isRetweeted(self, obj):
 
-        # TODO 計算量問題
-        isRetweeted = False
-        if self.login_user != None:
-            target_tweet = obj.retweet if obj.isRetweet else obj
+        if self.login_user == None:
+            return False
 
-            for retweet in Tweet.objects.filter(retweet=target_tweet):
-                if retweet.retweet_user == self.login_user:
-                    isRetweeted = True
-                    break
+        if obj.isRetweet == True:
+            try:
+                target_tweet = RetweetRelationShip.objects.get(retweet=obj).target_tweet
+                pk_list = RetweetRelationShip.objects.filter(target_tweet=target_tweet).values('retweet_user')
+                return mUser.objects.filter(pk__in=pk_list).filter(username=self.login_user).exists()
+            except RetweetRelationShip.DoesNotExist:
+                return False
+            except RetweetRelationShip.MultipleObjectsReturned:
+                return False
 
-            # isRetweeted = target_tweet.retweet.filter(retweet_user=self.login_user).exists()
-
-        return isRetweeted
+        pk_list = RetweetRelationShip.objects.filter(target_tweet=obj).values('retweet_user')
+        return mUser.objects.filter(pk__in=pk_list).filter(username=self.login_user).exists()
 
     def get_reply(self, obj):
         return ReplySerializer(obj.reply_set.all(), many=True).data
@@ -228,13 +278,115 @@ class TweetSerializer(serializers.ModelSerializer):
 
 
     def get_retweet(self, obj):
-        return TweetSerializer(Tweet.objects.filter(retweet=obj), many=True).data
+        pk_list = RetweetRelationShip.objects.filter(target_tweet=obj).values('retweet')
+        return TweetSerializer(Tweet.objects.filter(pk__in=pk_list), many=True).data
 
 
     def get_retweet_count(self, obj):
-        if obj.isRetweet == True:
-            return len(Tweet.objects.filter(retweet=obj.retweet))
-        return len(Tweet.objects.filter(retweet=obj))
+
+        if obj.isRetweet == False:
+            return RetweetRelationShip.objects.filter(target_tweet=obj).count()
+
+        try:
+            return RetweetRelationShip.objects.get(retweet=obj).target_tweet.retweets.all().count()
+        except RetweetRelationShip.DoesNotExist:
+            return None
+
+
+    def get_retweet_user(self, obj):
+        if obj.isRetweet == False:
+            return None
+
+        try:
+            return ProfileSubSerializer(RetweetRelationShip.objects.get(retweet=obj).retweet_user).data
+        except RetweetRelationShip.DoesNotExist:
+            return None
+        except RetweetRelationShip.MultipleObjectsReturned:
+            return None
+
+
+    def get_retweet_users(self, obj):
+        if obj.isRetweet == False:
+            pk_list = RetweetRelationShip.objects.filter(target_tweet=obj).values('retweet_user')
+            return ProfileSubSerializer(mUser.objects.filter(pk__in=pk_list), many=True).data
+
+        try:
+            target_tweet = RetweetRelationShip.objects.get(retweet=obj).target_tweet
+            pk_list = RetweetRelationShip.objects.filter(target_tweet=target_tweet).values('retweet_user')
+            return ProfileSubSerializer(mUser.objects.filter(pk__in=pk_list), many=True).data
+        except RetweetRelationShip.DoesNotExist:
+            return None
+        except RetweetRelationShip.MultipleObjectsReturned:
+            return None
+
+
+    def get_followees_in_retweet_users(self, obj):
+
+        if self.login_user == None:
+            return None
+
+        try:
+            loginUser = mUser.objects.get(username=self.login_user)
+        except mUser.DoesNotExist:
+            return None
+
+        if obj.isRetweet == False:
+            pk_list = RetweetRelationShip.objects.filter(target_tweet=obj).values('retweet_user')
+            followees = mUser.objects.filter(pk__in=pk_list).filter(pk__in=loginUser.followees.all().values('pk'))
+            return ProfileSubSerializer(followees, many=True, fields=['username']).data
+        try:
+            target_tweet = RetweetRelationShip.objects.get(retweet=obj).target_tweet
+        except RetweetRelationShip.DoesNotExist:
+            return None
+        except RetweetRelationShip.MultipleObjectsReturned:
+            return None
+
+        pk_list = RetweetRelationShip.objects.filter(target_tweet=target_tweet).values('retweet_user')
+        followees = mUser.objects.filter(pk__in=pk_list).filter(pk__in=loginUser.followees.all().values('pk'))
+        return ProfileSubSerializer(followees, many=True, fields=['username']).data
+
+
+
+    def get_followees_in_liked(self, obj):
+
+        if self.login_user == None:
+            return None
+
+        try:
+            loginUser = mUser.objects.get(username=self.login_user)
+        except mUser.DoesNotExist:
+            return None
+
+        if obj.isRetweet == False:
+            followees = obj.liked.all().filter(pk__in=loginUser.followees.all().values('pk'))
+            return ProfileSubSerializer(followees, many=True, fields=['username']).data
+        try:
+            target_tweet = RetweetRelationShip.objects.get(retweet=obj).target_tweet
+        except RetweetRelationShip.DoesNotExist:
+            return None
+        except RetweetRelationShip.MultipleObjectsReturned:
+            return None
+
+        followees = target_tweet.liked.all().filter(pk__in=loginUser.followees.all().values('pk'))
+        return ProfileSubSerializer(followees, many=True, fields=['username']).data
+
+    def get_created_time(self, obj):
+
+        timezone = pytz.timezone('Asia/Tokyo')
+        now = datetime.now(tz=timezone)
+        created_at = obj.created_at
+        diff = now - created_at
+
+        if diff.days != 0:
+            return str(diff.days) + '日'
+
+        if diff.seconds // 60 == 0:
+            return str(diff.seconds) + '秒'
+
+        if diff.seconds // 60 // 60 == 0:
+            return str(diff.seconds // 60) + '分'
+
+        return str(diff.seconds // 60 // 60) + '時間'
 
 
     def get_userIcon(self, obj):

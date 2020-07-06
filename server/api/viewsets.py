@@ -38,6 +38,8 @@ from .models import (
     Room,
     Message,
     ReadManagement,
+    FollowRelationShip,
+    RetweetRelationShip,
 )
 from .permissions import IsMyselfOrReadOnly
 from django.template.context_processors import request
@@ -158,7 +160,14 @@ class TweetViewSet(BaseModelViewSet):
         logger.debug('likedメソッド')
         login_user = request.user
         tweet = Tweet.objects.get(pk=request.data['target_tweet_id'])
-        target_tweet = tweet.retweet if tweet.isRetweet == True else tweet
+        target_tweet = tweet
+        if tweet.isRetweet == True:
+            try:
+                target_tweet = RetweetRelationShip.objects.get(retweet=tweet).target_tweet
+            except Tweet.DoesNotExist:
+                logger.debug('target_tweet取得できてない')
+                pass
+
         return self.set_tweet_liked_info(target_tweet, login_user)
 
 
@@ -182,30 +191,39 @@ class TweetViewSet(BaseModelViewSet):
 
 
     def set_tweet_relation(self, login_user, tweet):
-        tweet = tweet.retweet if tweet.isRetweet == True else tweet
-        return self.set_tweet_relation_info(login_user, tweet)
 
+        target_tweet = tweet
+        if tweet.isRetweet == True:
+            try:
+                target_tweet = RetweetRelationShip.objects.get(retweet=tweet).target_tweet
+            except Tweet.DoesNotExist:
+                logger.debug('target_tweet取得できてない')
+                pass
 
-    def set_tweet_relation_info(self, login_user, tweet):
-
-
-        for retweet in Tweet.objects.filter(retweet=tweet):
-            if retweet.retweet_user == login_user.username:
-                logger.debug('紐づくリツイートが存在するため削除')
+        isExists = mUser.objects.filter(pk__in=RetweetRelationShip.objects.filter(target_tweet=target_tweet).values('retweet_user')).filter(username=login_user.username).exists()
+        if isExists:
+            try:
+                retweet = RetweetRelationShip.objects.get(target_tweet=target_tweet, retweet_user=login_user).retweet
                 retweet.delete()
                 return Response({'status': 'success'}, status=status.HTTP_200_OK)
+            except RetweetRelationShip.DoesNotExist:
+                return Response({'status': 'success'}, status=status.HTTP_400_BAD_REQUEST)
 
         logger.debug('リツイートを新規作成')
         retweet = Tweet.objects.create(
-            author=tweet.author,
-            content=tweet.content,
-            images=tweet.images,
+            author=target_tweet.author,
+            content=target_tweet.content,
+            images=target_tweet.images,
             isRetweet=True,
-            retweet=tweet,
-            retweet_user=login_user.username
+            retweet_username=login_user.username
         )
         retweet.liked.add(*list(tweet.liked.all()))
         retweet.hashTag.add(*list(tweet.hashTag.all()))
+        RetweetRelationShip.objects.create(
+            target_tweet=target_tweet,
+            retweet=retweet,
+            retweet_user=login_user
+        )
         return Response({'status': 'success'}, status=status.HTTP_201_CREATED)
 
 

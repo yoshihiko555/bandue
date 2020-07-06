@@ -40,6 +40,8 @@ from .models import (
     Room,
     Message,
     ReadManagement,
+    FollowRelationShip,
+    RetweetRelationShip
 )
 from .permissions import IsMyselfOrReadOnly
 from django.contrib.admin.utils import lookup_field
@@ -171,20 +173,69 @@ class SearchView(generics.ListAPIView, GetLoginUserMixin):
     }
 
     @analyzeMethod
-    @method_decorator(cache_page(60*20))
-    @method_decorator(vary_on_cookie)
     def list(self, request, *args, **kwargs):
         self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
         searchFlg = request.query_params['searchFlg']
         self.setSearchQuery(searchFlg, *args, **kwargs)
 
         queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+
+        if searchFlg != self.USER:
+            page = self.paginate_queryset(queryset)
+            fields = [
+                'id',
+                'author',
+                'author_pk',
+                'content',
+                'liked_count',
+                'isLiked',
+                'hashTag',
+                'created_at',
+                'updated_at',
+                'created_time',
+                'reply_count',
+                'isRetweet',
+                'isRetweeted',
+                'retweet_count',
+            ]
+            if searchFlg == self.MEDIA:
+                fields.append('images')
+            if page is not None:
+                serializer = self.get_serializer(
+                    page,
+                    many=True,
+                    fields=fields
+                )
+                return self.get_paginated_response(serializer.data)
+            serializer = self.get_serializer(
+                queryset,
+                many=True,
+                fields=fields
+            )
+            return Response(serializer.data)
+        else:
+            page = self.paginate_queryset(queryset)
+            fields = [
+                'id',
+                'username',
+                'header',
+                'introduction',
+                'icon',
+            ]
+            if page is not None:
+                serializer = self.get_serializer(
+                    page,
+                    many=True,
+                    fields=fields
+                )
+                return self.get_paginated_response(serializer.data)
+            serializer = self.get_serializer(
+                queryset,
+                many=True,
+                fields=fields
+            )
+            return Response(serializer.data)
+
         # if searchFlg != self.USER:
         #     queryset = self.filter_queryset(self.get_queryset())
         #     page = self.paginate_queryset(queryset)
