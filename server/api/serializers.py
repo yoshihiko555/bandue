@@ -61,7 +61,7 @@ class ProfileSubSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = mUser
         fields = [
-            'id',
+            'pk',
             'username',
             'email',
             'address',
@@ -96,6 +96,9 @@ class ProfileSerializer(DynamicFieldsModelSerializer):
         followers : フォローされているユーザー一覧
     """
 
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True, required=False)
+
     followees = ProfileSubSerializer(many=True)
     followers = serializers.SerializerMethodField()
     followees_count = serializers.IntegerField(source='followees.count')
@@ -107,9 +110,10 @@ class ProfileSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = mUser
         fields = [
-            'id',
+            'pk',
             'username',
             'email',
+            'password',
             'address',
             'created_at',
             'header',
@@ -145,6 +149,9 @@ class ProfileSerializer(DynamicFieldsModelSerializer):
             return MSettingSerializer(mSetting.objects.get(target=obj)).data
         except mSetting.DoesNotExist:
             return None
+
+    def create(self, validated_data):
+        return mUser.objects.create_user(username=validated_data['username'], email=validated_data['email'], password=validated_data['password'])
 
 
 class TweetSerializer(DynamicFieldsModelSerializer):
@@ -185,7 +192,7 @@ class TweetSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = Tweet
         fields = [
-            'id',
+            'pk',
             'author',
             'author_pk',
             'content',
@@ -323,12 +330,12 @@ class TweetSerializer(DynamicFieldsModelSerializer):
     def get_followees_in_retweet_users(self, obj):
 
         if self.login_user == None:
-            return None
+            return []
 
         try:
             loginUser = mUser.objects.get(username=self.login_user)
         except mUser.DoesNotExist:
-            return None
+            return []
 
         if obj.isRetweet == False:
             pk_list = RetweetRelationShip.objects.filter(target_tweet=obj).values('retweet_user')
@@ -337,9 +344,9 @@ class TweetSerializer(DynamicFieldsModelSerializer):
         try:
             target_tweet = RetweetRelationShip.objects.get(retweet=obj).target_tweet
         except RetweetRelationShip.DoesNotExist:
-            return None
+            return []
         except RetweetRelationShip.MultipleObjectsReturned:
-            return None
+            return []
 
         pk_list = RetweetRelationShip.objects.filter(target_tweet=target_tweet).values('retweet_user')
         followees = mUser.objects.filter(pk__in=pk_list).filter(pk__in=loginUser.followees.all().values('pk'))
@@ -350,12 +357,12 @@ class TweetSerializer(DynamicFieldsModelSerializer):
     def get_followees_in_liked(self, obj):
 
         if self.login_user == None:
-            return None
+            return []
 
         try:
             loginUser = mUser.objects.get(username=self.login_user)
         except mUser.DoesNotExist:
-            return None
+            return []
 
         if obj.isRetweet == False:
             followees = obj.liked.all().filter(pk__in=loginUser.followees.all().values('pk'))
@@ -363,9 +370,9 @@ class TweetSerializer(DynamicFieldsModelSerializer):
         try:
             target_tweet = RetweetRelationShip.objects.get(retweet=obj).target_tweet
         except RetweetRelationShip.DoesNotExist:
-            return None
+            return []
         except RetweetRelationShip.MultipleObjectsReturned:
-            return None
+            return []
 
         followees = target_tweet.liked.all().filter(pk__in=loginUser.followees.all().values('pk'))
         return ProfileSubSerializer(followees, many=True, fields=['username']).data
@@ -414,7 +421,7 @@ class ReplySerializer(serializers.ModelSerializer):
     class Meta:
         model = Reply
         fields = [
-            'id',
+            'pk',
             'author',
             'author_pk',
             'target',
@@ -541,24 +548,6 @@ class EntrySerializer(serializers.ModelSerializer):
                 entry.age.add(age)
 
         return entry
-
-
-class MUserSerializer(serializers.ModelSerializer):
-
-    email = serializers.EmailField()
-    password = serializers.CharField(write_only=True, required=False)
-
-    class Meta:
-        model = mUser
-        fields = [
-            'pk',
-            'username',
-            'email',
-            'password',
-        ]
-
-    def create(self, validated_data):
-        return mUser.objects.create_user(username=validated_data['username'], email=validated_data['email'], password=validated_data['password'])
 
 
 class RoomSerializer(serializers.ModelSerializer):

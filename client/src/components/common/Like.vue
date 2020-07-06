@@ -37,30 +37,29 @@
 
         },
         methods: {
-            liked (tweet, index) {
+          liked (tweet, index) {
+    				if (tweet.isLiked) {
+    					tweet.liked_count--
+    				} else {
+    					tweet.liked_count++
+    				}
+            tweet.isLiked = !tweet.isLiked
 
-				if (tweet.isLiked) {
-					tweet.liked_count--
-				} else {
-					tweet.liked_count++
-				}
-                tweet.isLiked = !tweet.isLiked
-
-				const targetUrl = 'liked'
-				this.$axios({
-					method: 'POST',
-					url: '/api/tweet/' + targetUrl + '/',
-					data: {
-						target_tweet_id : tweet.id
-					},
-				})
-				.then(res => {
-					console.log(res)
-				})
-				.catch(e => {
-					console.log(e)
-				})
-			},
+    				const targetUrl = 'liked'
+    				this.$axios({
+    					method: 'POST',
+    					url: '/api/tweet/' + targetUrl + '/',
+    					data: {
+    						target_tweet_pk : tweet.pk
+    					},
+    				})
+    				.then(res => {
+    					console.log(res)
+    				})
+    				.catch(e => {
+    					console.log(e)
+    				})
+    			},
         }
 
     }

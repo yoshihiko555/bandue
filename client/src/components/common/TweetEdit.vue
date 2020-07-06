@@ -56,7 +56,7 @@
 			tweetEdit () {
 				this.$axios({
 					method: 'PUT',
-					url: '/api/tweet/' + this.tweet.id + '/',
+					url: '/api/tweet/' + this.tweet.pk + '/',
 					data: {
 						content : this.tweet.content
 					},

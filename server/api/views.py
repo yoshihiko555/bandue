@@ -19,7 +19,6 @@ from .serializers import (
     ProfileSerializer,
     TweetSerializer,
     EntrySerializer,
-    MUserSerializer,
     ReplySerializer,
     RoomSerializer,
     MessageSerializer,
@@ -74,10 +73,30 @@ class IndexView(generic.TemplateView):
 
 
 class ProfileDetailView(generics.RetrieveAPIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     queryset = mUser.objects.all()
     serializer_class = ProfileSerializer
     lookup_field = 'username'
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        fields = [
+            'pk',
+            'username',
+            'created_at',
+            'header',
+            'introduction',
+            'icon',
+            'followees',
+            'followers',
+            'followees_count',
+            'followers_count',
+            'tweet',
+            'entry',
+            'setting',
+        ]
+        serializer = self.get_serializer(instance, fields=fields)
+        return Response(serializer.data)
 
 
 class ProfileUpdateView(generics.RetrieveUpdateDestroyAPIView):
@@ -102,12 +121,20 @@ class SignUpView(generics.CreateAPIView):
 
     permission_classes = (permissions.AllowAny,)
     queryset = mUser.objects.all()
-    serializer_class = MUserSerializer
+    serializer_class = ProfileSerializer
 
     @transaction.atomic
     def post(self, request, format=None):
 
-        serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(
+            data=request.data,
+            fields=[
+                'pk',
+                'username',
+                'email',
+                'password'
+            ]
+        )
         if serializer.is_valid():
             serializer.save()
             user = mUser.objects.get(id=serializer.data['pk'])
@@ -183,7 +210,7 @@ class SearchView(generics.ListAPIView, GetLoginUserMixin):
         if searchFlg != self.USER:
             page = self.paginate_queryset(queryset)
             fields = [
-                'id',
+                'pk',
                 'author',
                 'author_pk',
                 'content',
@@ -216,7 +243,7 @@ class SearchView(generics.ListAPIView, GetLoginUserMixin):
         else:
             page = self.paginate_queryset(queryset)
             fields = [
-                'id',
+                'pk',
                 'username',
                 'header',
                 'introduction',

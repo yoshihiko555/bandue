@@ -245,7 +245,7 @@
 			showDeleteDialog (tweet) {
 				this.$axios({
 					method: 'DELETE',
-					url: '/api/tweet/' + tweet.id + '/',
+					url: '/api/tweet/' + tweet.pk + '/',
 				})
 				.then(res => {
 					console.log(res)

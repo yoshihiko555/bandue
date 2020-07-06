@@ -68,7 +68,7 @@
                     method: 'POST',
                     url: '/api/tweet/' + targetUrl + '/',
                     data: {
-                        target_tweet_id : tweet.id
+                        target_tweet_pk : tweet.pk
                     },
                 })
                 .then(res => {

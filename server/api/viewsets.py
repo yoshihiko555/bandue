@@ -18,7 +18,6 @@ from .serializers import (
     ProfileSerializer,
     TweetSerializer,
     EntrySerializer,
-    MUserSerializer,
     ReplySerializer,
     RoomSerializer,
     MessageSerializer,
@@ -158,8 +157,9 @@ class TweetViewSet(BaseModelViewSet):
     def liked(self, request):
 
         logger.debug('likedメソッド')
+        logger.debug(request.data)
         login_user = request.user
-        tweet = Tweet.objects.get(pk=request.data['target_tweet_id'])
+        tweet = Tweet.objects.get(pk=request.data['target_tweet_pk'])
         target_tweet = tweet
         if tweet.isRetweet == True:
             try:
@@ -186,7 +186,7 @@ class TweetViewSet(BaseModelViewSet):
     def retweet(self, request):
         logger.debug('retweetメソッド')
         login_user = request.user
-        tweet = Tweet.objects.get(pk=request.data['target_tweet_id'])
+        tweet = Tweet.objects.get(pk=request.data['target_tweet_pk'])
         return self.set_tweet_relation(login_user, tweet)
 
 
@@ -267,7 +267,7 @@ class mUserViewSet(viewsets.ModelViewSet):
 
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     queryset = mUser.objects.all()
-    serializer_class = MUserSerializer
+    serializer_class = ProfileSerializer
 
 
     @method_decorator(cache_page(60*60*2))
@@ -275,10 +275,16 @@ class mUserViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
+        fields = [
+            'pk',
+            'username',
+            'email',
+            'address',
+        ]
         if page is not None:
-            serializer = ProfileSerializer(page, many=True)
+            serializer = ProfileSerializer(page, many=True, fields=fields)
             return self.get_paginated_response(serializer.data)
-        serializer = ProfileSerializer(queryset, many=True)
+        serializer = ProfileSerializer(queryset, many=True, fields=fields)
         return Response(serializer.data)
 
 
