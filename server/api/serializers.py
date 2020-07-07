@@ -520,13 +520,14 @@ class EntrySerializer(serializers.ModelSerializer):
 
     def get_age_disp(self, obj):
         age = obj.age
-        logger.info('----年齢一覧取得----')
-        logger.info(obj.age.all())
         if len(obj.age.all()) != 0:
             age_list = [age.get_age_display() for age in obj.age.all()]
         return age_list
 
     def get_is_read(self, obj):
+        if self.login_user == None:
+            return False
+
         target = mUser.objects.get(username=self.login_user)
         read_manage_cnt = ReadManagement.objects.filter(Q(entry=obj) & Q(target=target)).count()
         return False if read_manage_cnt == 0 else True # 既読されていたらTrueを返却

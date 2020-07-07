@@ -211,13 +211,30 @@
 				})
 				.then(res => {
 					console.log(res.data)
-					this.dialog = false
+                    this.dialog = false
+                    this.initArticleData()
 					this.$eventHub.$emit('create-article', res)
 				})
 				.catch(e => {
 					console.log(e.response)
 				})
-			},
+            },
+            
+            initArticleData () {
+                this.articleData = {
+                    title: '',
+                    content: '',
+                    type: 'NO',
+                    prefecture: 0,
+                    area: '',
+                    day_week: 'NO',
+                    direction: 'NO',
+                    part: '',
+                    genre: '',
+                    sex: 0,
+                    age: [0],
+                }
+            }
 		}
 	}
 </script>

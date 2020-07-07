@@ -182,3 +182,31 @@ class MUserFilter(django_filter.FilterSet):
         # 同じ検索ワード, ハッシュタグは省く
         q_list = list({Q(username__contains=i.strip()) for i in value.split(',') if i.strip()[0] != '#'})
         return mUser.objects.filter(*q_list).exclude(username=self.login_user)
+
+
+class EntryFilter(django_filter.FilterSet):
+    """
+    記事一覧を絞るフィルタークラス
+    """
+
+    entryListFlg = django_filter.NumberFilter(method='entry_filter')
+    
+    class Meta:
+        model = Entry
+        fields = ['title']
+
+    def entry_filter(self, queryset, name, value):
+        logger.info('------Entry Filter------')
+        res = queryset
+
+        if value == 0:
+            # 人気記事一覧
+            res = Entry.objects.filter(is_public=False).order_by('-read_count')
+        elif value == 1:
+            # 新着記事一覧
+            res = Entry.objects.filter(is_public=False).order_by('-created_at')
+
+        logger.info(res)
+
+        return res
+

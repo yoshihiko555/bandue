@@ -48,6 +48,7 @@ logger = logging.getLogger(__name__)
 from .filters import (
     TweetFilter,
     MUserFilter,
+    EntryFilter,
 )
 
 from .mixins import (
@@ -375,6 +376,7 @@ class EntryViewSet(BaseModelViewSet):
     permission_classes = (permissions.AllowAny,)
     queryset = Entry.objects.all()
     serializer_class = EntrySerializer
+    filter_class = EntryFilter
 
     def list(self, request, *args, **kwargs):
         self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
@@ -384,7 +386,6 @@ class EntryViewSet(BaseModelViewSet):
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(queryset, many=True)
-        logger.info(serializer.data)
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
@@ -398,7 +399,7 @@ class EntryViewSet(BaseModelViewSet):
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
 
-            return Response(self.get_serializer(queryset, many=True).data, status=status.HTTP_201_CREATED, headers=headers)
+            return Response(self.get_serializer(serializer.instance).data, status=status.HTTP_201_CREATED, headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, pk=None):
@@ -418,6 +419,8 @@ class EntryViewSet(BaseModelViewSet):
         user = mUser.objects.get(username=request.user.username)
         entry = Entry.objects.get(id=request.data['id'])
         read_manage_cnt = ReadManagement.objects.filter(Q(entry=entry) & Q(target=user)).count()
+        entry.read_count = read_manage_cnt
+        entry.save()
         if read_manage_cnt == 0:
             # 新規既読ならレコード追加
             ReadManagement.objects.create(
@@ -425,5 +428,13 @@ class EntryViewSet(BaseModelViewSet):
                 entry=entry,
                 is_read=True,
             )
+            # 記事の既読数を１に設定
+            entry.read_count = 1
+            entry.save()
+        
+        else:
+            # 現在の既読数を中間テーブルから取得して設定
+            entry.read_count = read_manage_cnt
+            entry.save()
 
         return Response(status=status.HTTP_200_OK)

@@ -18,6 +18,7 @@
 								v-for='(tab, i) in BbsTabList'
 								:key='i'
 								:href='`#tab-${i}`'
+                                @click='tabChange(i)'
 							>
 								{{ tab }}
 							</v-tab>
@@ -40,11 +41,14 @@
 
 										<v-expansion-panel-header>
 											<v-row>
-												<v-col cols='8'>
+												<v-col cols='7'>
 													<span class='font-weight-black'>{{ article.title }}</span>
 												</v-col>
-												<v-col cols='4'>
+												<v-col cols='3'>
 													<span class="font-weight-thin">{{ article.author }}</span>
+												</v-col>
+												<v-col cols='2'>
+													<v-chip v-show='article.is_read' label>既読</v-chip>
 												</v-col>
 											</v-row>
 										</v-expansion-panel-header>
@@ -168,7 +172,8 @@
 				'人気記事',
 				'新着記事'
 			],
-			articleList: []
+            articleList: [],
+            entryListFlg: 0,
 		}),
 		created () {
 			this.$eventHub.$on('create-article', this.articleUpdate)
@@ -176,10 +181,13 @@
 		mounted: function () {
 			this.$axios({
 				method: 'GET',
-				url: '/api/entry/'
+                url: '/api/entry/',
+                params: {
+                    entryListFlg: this.entryListFlg
+                }
 			})
 			.then(res => {
-				console.log('記事一覧', res.data)
+				console.log('記事一覧', res)
 				this.articleList = res.data.results
 			})
 			.catch(e => {
@@ -189,34 +197,44 @@
 
 		methods: {
 			articleUpdate (res) {
-				console.log('記事更新')
-				this.articleList = res.data.results
-			},
+                console.log('記事更新', res.data)
+				this.articleList.push(res.data)
+            },
+            
+            tabChange(i) {
+                console.log('タブ変更')
+                this.entryListFlg = i
+                this.$axios({
+                    url:'/api/entry/',
+                    methods: 'GET',
+                    params: {
+                        entryListFlg: this.entryListFlg
+                    }
+                })
+                .then(res => {
+                    console.log(res)
+                    this.articleList = res.data.results
+                })
+                .catch(e => {
+                    console.log(e)
+                })
+            },
 
 			open (article) {
-				// 既読機能用メソッド
-				console.log('open')
 				this.$axios({
 					url: 'api/entry/isRead/',
 					method: 'POST',
 					data: article,
 				})
 				.then(res => {
-					console.log(res)
+                    console.log(res)
+                    article.is_read = true
 				})
 				.catch(e => {
 					console.log(e)
 				})
-			},
-
-			tag () {
-				console.log('タグをクリック')
-			},
-
-			category () {
-				console.log('カテゴリーをクリック')
-			},
-
+            },
+            
 			reload () {
 				Com.reload(this.$router)
 			},

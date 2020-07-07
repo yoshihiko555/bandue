@@ -425,6 +425,9 @@ class Entry(models.Model):
     sex = models.IntegerField(choices=SEX_CHOICES, null=True, blank=True)
     age = models.ManyToManyField('api.Age', blank=True)
     is_public = models.BooleanField(_('Public Flag'), default=False)
+    read_count = models.IntegerField(_('Read Count'), blank=True, null=True, default=0)
+    created_at = models.DateTimeField(_('Created At'), default=timezone.now)
+    updated_at = models.DateTimeField(_('Upadate Date'), auto_now=True)
 
     def __str__(self):
         return self.title
