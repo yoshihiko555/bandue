@@ -519,10 +519,11 @@ class EntrySerializer(serializers.ModelSerializer):
         return obj.get_sex_display()
 
     def get_age_disp(self, obj):
-        age = obj.age
         if len(obj.age.all()) != 0:
             age_list = [age.get_age_display() for age in obj.age.all()]
-        return age_list
+            return age_list
+        else:
+            return None
 
     def get_is_read(self, obj):
         if self.login_user == None:

@@ -64,7 +64,10 @@
 		},
 		data: () => ({
 			rooms: {},
-		}),
+        }),
+        created () {
+			this.$eventHub.$on('create-room', this.roomsUpdate)
+		},
 		mounted: function () {
 			const loginUser = this.$store.state.loginUser
 			this.$axios({
@@ -85,7 +88,11 @@
 		methods: {
 			showRoom (id, roomName) {
 				this.$refs.messageBox.showMessage(id, roomName)
-			}
+            },
+            roomsUpdate (res) {
+                console.log(res)
+                this.rooms = res.data
+            }
 		}
 	}
 </script>

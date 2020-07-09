@@ -75,7 +75,8 @@
 				})
 				.then(res => {
 					console.log(res)
-					this.dialog = false
+                    this.dialog = false
+                    this.$eventHub.$emit('create-room', res)
 				})
 				.catch(e => {
 					console.log(e)
