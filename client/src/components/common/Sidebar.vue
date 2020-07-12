@@ -105,8 +105,22 @@
 			],
 		}),
 
-		mounted: function () {
+		created () {
+			this.$eventHub.$on('cntUpInfo', this.cntUpInfo)
+			this.$eventHub.$on('cntDownInfo', this.cntDownInfo)
+			this.$eventHub.$on('cntZeroInfo', this.cntZeroInfo)
+		},
 
+		mounted: function () {
+			this.$axios.get('/api/info/getInfoCnt/')
+			.then(res => {
+				console.log(res)
+				this.items[Con.SIDEBAR_INDEX.Info].info_content = res.data.info_count
+				this.items[Con.SIDEBAR_INDEX.Message].info_content = res.data.msg_count
+			})
+			.catch(e => {
+				console.log(e)
+			})
 		},
 
 		methods: {
@@ -138,10 +152,15 @@
 			reload () {
 				Com.reload(this.$router)
 			},
-			// メッセージ数UPテスト用
-			cntUp () {
-				this.items[Con.SIDEBAR_INDEX.Message].info_content++
-			}
+			cntUpInfo(menu) {
+				this.items[Con.SIDEBAR_INDEX[menu]].info_content++
+			},
+			cntDownInfo(menu) {
+				this.items[Con.SIDEBAR_INDEX[menu]].info_content--
+			},
+			cntZeroInfo(menu) {
+				this.items[Con.SIDEBAR_INDEX[menu]].info_content = 0
+			},
 		}
 	}
 </script>

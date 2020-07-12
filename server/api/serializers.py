@@ -17,6 +17,7 @@ from .models import (
     ReadManagement,
     FollowRelationShip,
     RetweetRelationShip,
+    Notification,
 )
 from rest_framework.renderers import JSONRenderer
 
@@ -144,8 +145,8 @@ class ProfileSerializer(DynamicFieldsModelSerializer):
 
     def get_setting(self, obj):
         try:
-            setting = mSetting.objects.get(target=obj)
-            logger.info(setting.target__username)
+            # setting = mSetting.objects.get(target=obj)
+            # logger.info(setting.target__username)
             return MSettingSerializer(mSetting.objects.get(target=obj)).data
         except mSetting.DoesNotExist:
             return None
@@ -640,3 +641,112 @@ class MSettingSerializer(serializers.ModelSerializer):
             'language',
             'isDark'
         ]
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+
+    event = serializers.SerializerMethodField()
+    created_time = serializers.SerializerMethodField()
+    receive_user = serializers.SerializerMethodField()
+    send_user = serializers.SerializerMethodField()
+    target_tweet_info = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Notification
+        fields = [
+            'pk',
+            'event',
+            'receive_user',
+            'send_user',
+            'target_tweet_info',
+            'infomation',
+            'created_at',
+            'created_time',
+            'readed',
+        ]
+
+
+    def get_event(self, obj):
+        return obj.get_event_display()
+
+
+    def get_receive_user(self, obj):
+        return ProfileSubSerializer(obj.receive_user).data
+
+
+    def get_send_user(self, obj):
+        return ProfileSubSerializer(obj.send_user).data
+
+
+    def get_target_tweet_info(self, obj):
+        if obj.target_tweet_info == None:
+            return None
+
+        fields = [
+            'pk',
+            'author',
+            'author_pk',
+            'content',
+        ]
+        return TweetSerializer(obj.target_tweet_info, fields=fields).data
+
+
+    def get_created_time(self, obj):
+
+        timezone = pytz.timezone('Asia/Tokyo')
+        now = datetime.now(tz=timezone)
+        created_at = obj.created_at
+        diff = now - created_at
+
+        if diff.days >= 30:
+            return (now - timedelta(days=diff.days)).strftime('%Y/%m/%d')
+
+        if diff.days != 0:
+            return str(diff.days) + '日'
+
+        if diff.seconds // 60 == 0:
+            return str(diff.seconds) + '秒'
+
+        if diff.seconds // 60 // 60 == 0:
+            return str(diff.seconds // 60) + '分'
+
+        return str(diff.seconds // 60 // 60) + '時間'
+
+
+class NotificationCountSerializer(serializers.ModelSerializer):
+
+    info_count = serializers.SerializerMethodField()
+    msg_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Notification
+        fields = [
+            'info_count',
+            'msg_count'
+        ]
+
+    def __init__(self, *args, **kwargs):
+        self.login_user = kwargs['context']['view'].get_login_user()
+        super().__init__(*args, **kwargs)
+
+    def get_info_count(self, obj):
+        event_list = [0, 1, 2, 3]
+        return self.get_infomation_count(obj, event_list)
+
+    def get_msg_count(self, obj):
+        event_list = [4]
+        return self.get_infomation_count(obj, event_list)
+
+
+    def get_infomation_count(self, obj, event_list):
+        if self.login_user == None:
+            return 0
+        try:
+            login_user = mUser.objects.get(username=self.login_user)
+            return Notification.objects.filter(
+                event__in=event_list,
+                receive_user=login_user,
+                readed=False).count()
+        except mUser.DoesNotExist:
+            logger.error('mUserが存在しません')
+            return 0

@@ -9,6 +9,7 @@ router.register('reply', viewsets.ReplyViewSet)
 router.register('room', viewsets.RoomViewSet)
 router.register('message', viewsets.MessageViewSet)
 router.register('entry', viewsets.EntryViewSet)
+router.register('info', viewsets.InfoViewSet)
 
 app_name = 'api'
 urlpatterns = [

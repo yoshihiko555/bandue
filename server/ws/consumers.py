@@ -1,5 +1,6 @@
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.generic.http import AsyncHttpConsumer
 from django.db import connection
 from django.db.utils import OperationalError
 from channels.db import database_sync_to_async
@@ -17,6 +18,7 @@ import time
 import json
 import logging
 logger = logging.getLogger(__name__)
+
 
 class MessageConsumer(AsyncWebsocketConsumer):
     groups = ['broadcast']
@@ -91,5 +93,41 @@ class MessageConsumer(AsyncWebsocketConsumer):
                 sender=sender,
                 receiver=receiver,
             )
+        except Exception as e:
+            raise
+
+
+class NotificationConsumer(AsyncWebsocketConsumer):
+    groups = ['broadcast']
+
+    async def connect(self):
+        logger.debug('【【CONNECT】】')
+        self.accept()
+        try:
+            self.user_group_name = self.scope['url_route']['kwargs']['username']
+            await self.channel_layer.group_add(
+                self.user_group_name,
+                self.channel_name
+            )
+            await self.accept()
+        except Exception as e:
+            raise
+
+    async def disconnect(self, close_code):
+        logger.debug('【【DISCONNECT】】')
+        await self.channel_layer.group_discard(
+            self.user_group_name,
+            self.channel_name
+        )
+        await self.close()
+
+    async def notification(self, event):
+        logger.debug('=====NOTIFICATION=====')
+        try:
+            content = event['content']
+            await self.send(text_data=json.dumps({
+                'type': 'notification',
+                'content': content,
+            }))
         except Exception as e:
             raise

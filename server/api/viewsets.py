@@ -21,6 +21,8 @@ from .serializers import (
     ReplySerializer,
     RoomSerializer,
     MessageSerializer,
+    NotificationSerializer,
+    NotificationCountSerializer
 )
 from .models import (
     mUser,
@@ -39,6 +41,7 @@ from .models import (
     ReadManagement,
     FollowRelationShip,
     RetweetRelationShip,
+    Notification
 )
 from .permissions import IsMyselfOrReadOnly
 from django.template.context_processors import request
@@ -70,7 +73,19 @@ class BaseModelViewSet(viewsets.ModelViewSet, GetLoginUserMixin):
         ModelViewSetでloginUserを取得する事が多いので
         GetLoginUserMixinを継承し、このクラスの継承先で使用
     """
-    pass
+
+    def list(self, request, *args, **kwargs):
+        self.set_login_user(request)
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def set_login_user(self, request):
+        self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
 
 
 class TweetViewSet(BaseModelViewSet):
@@ -99,17 +114,7 @@ class TweetViewSet(BaseModelViewSet):
     parser_class = (FileUploadParser)
 
     def list(self, request, *args, **kwargs):
-
-        self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        serializer = self.get_serializer(queryset, many=True)
-        logger.info(serializer.data)
-        return Response(serializer.data)
-
+        return super().list(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
 
@@ -339,7 +344,7 @@ class RoomViewSet(BaseModelViewSet):
     serializer_class = RoomSerializer
 
     def list(self, request, *args, **kwargs):
-        self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
+        self.set_login_user(request)
         login_user = mUser.objects.get(username=self.login_user)
         rooms = mUser_Room.objects.filter(user_id=login_user.id)
         queryset = self.filter_queryset(self.get_queryset())
@@ -366,7 +371,7 @@ class MessageViewSet(BaseModelViewSet):
 
     def list(self, request, *args, **kwargs):
         logger.info('メッセージ一覧取得')
-        self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
+        self.set_login_user(request)
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
@@ -379,14 +384,7 @@ class EntryViewSet(BaseModelViewSet):
     filter_class = EntryFilter
 
     def list(self, request, *args, **kwargs):
-        self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        return super().list(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         request.data.update({
@@ -431,10 +429,62 @@ class EntryViewSet(BaseModelViewSet):
             # 記事の既読数を１に設定
             entry.read_count = 1
             entry.save()
-        
+
         else:
             # 現在の既読数を中間テーブルから取得して設定
             entry.read_count = read_manage_cnt
             entry.save()
 
         return Response(status=status.HTTP_200_OK)
+
+
+class InfoViewSet(BaseModelViewSet):
+    """
+    通知関連のViewSet
+    """
+
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    queryset = Notification.objects.all().order_by('-created_at')
+
+    def list(self, request, *args, **kwargs):
+        logger.debug('====InfoViewSetのlist====')
+        self.set_login_user(request)
+        self.serializer_class = NotificationSerializer
+        if self.login_user == None:
+            queryset = self.get_queryset()
+        else:
+            queryset = self.get_queryset().filter(
+                receive_user=mUser.objects.get(username=self.login_user)
+            )
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(methods=['get'], detail=False)
+    def getInfoCnt(self, request):
+        self.set_login_user(request)
+        self.serializer_class = NotificationCountSerializer
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset)
+        return Response(serializer.data)
+
+    @action(methods=['get'], detail=False)
+    def readInfo(self, request):
+        self.set_login_user(request)
+        self.serializer_class = NotificationSerializer
+
+        notifications = Notification.objects.filter(
+            receive_user=mUser.objects.get(username=self.login_user),
+            readed=False
+        )
+        infos = []
+        for notification in notifications:
+            notification.readed = True
+            infos.append(notification)
+        Notification.objects.bulk_update(infos, fields=['readed'])
+
+        serializer = self.get_serializer(notifications, many=True)
+        return Response(serializer.data)

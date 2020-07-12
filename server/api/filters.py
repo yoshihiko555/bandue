@@ -69,8 +69,7 @@ class TweetFilter(django_filter.FilterSet):
                 q_list.append('Q(content__contains=q)')
         query_str = '&'.join(q_list) + '|'.join(h_list)
 
-        q = Tweet.objects.filter(eval(query_str)).exclude()
-
+        q = Tweet.objects.filter(eval(query_str))
         # TODO トレンド順
         if self.searchFlg == '0':
             logger.debug('=====================================トレンド============================================')
@@ -190,7 +189,7 @@ class EntryFilter(django_filter.FilterSet):
     """
 
     entryListFlg = django_filter.NumberFilter(method='entry_filter')
-    
+
     class Meta:
         model = Entry
         fields = ['title']
@@ -209,4 +208,3 @@ class EntryFilter(django_filter.FilterSet):
         logger.info(res)
 
         return res
-

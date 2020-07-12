@@ -482,3 +482,37 @@ class ReadManagement(models.Model):
 
     def __str__(self):
         return self.entry.title
+
+
+class Notification(models.Model):
+
+    event_choices = (
+        (0, _('Follow')),
+        (1, _('Retweet')),
+        (2, _('Liked')),
+        (3, _('Reply')),
+    )
+    event = models.IntegerField(choices=event_choices)
+    receive_user = models.ForeignKey(
+        mUser,
+        on_delete=models.CASCADE,
+        related_name='receive_user'
+    )
+    send_user = models.ForeignKey(
+        mUser,
+        on_delete=models.CASCADE,
+        related_name='send_user'
+    )
+    infomation = models.CharField(max_length=100)
+
+    target_tweet_info = models.ForeignKey(
+        Tweet,
+        on_delete=models.CASCADE,
+        related_name='target_tweet_info',
+        blank=True,
+        null=True,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    readed = models.BooleanField(default=False)
+    deleted = models.BooleanField(default=False)

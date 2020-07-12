@@ -54,17 +54,26 @@
 		},
 		data: () => ({
 			isAuth: false,
-		    lodding: true
+	    lodding: true,
+			ws: null,
 		}),
 		mounted: function () {
 		  this.isAuth = this.$store.state.isAuth
-	      this.lodding = false
+      this.lodding = false
 
-	      if (!this.isAuth) {
-	          this.$router.push('/signin')
-	          Com.reload(this.$router)
-	      }
-	    },
+      if (!this.isAuth) {
+          this.$router.push('/signin')
+          Com.reload(this.$router)
+      }
+			const url = 'ws://' + window.location.host + '/ws/user/' + this.$store.state.loginUser + '/'
+			this.ws = new WebSocket(url)
+
+			this.ws.onmessage = e => {
+				var receiveData = JSON.parse(e.data)
+				this.$eventHub.$emit('cntUpInfo', 'Info')
+				console.log('ソケット結果受信', receiveData)
+			}
+    },
 		methods: {
 			reload () {
 				Com.reload(this.$router)
