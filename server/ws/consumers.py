@@ -68,6 +68,8 @@ class MessageConsumer(AsyncWebsocketConsumer):
 
     async def chat_message(self, event):
         try:
+            logger.info(event)
+            logger.info(self)
             content = event['content']
             sender = event['sender']
             receiver = event['receiver']
@@ -76,6 +78,8 @@ class MessageConsumer(AsyncWebsocketConsumer):
                 'content': content,
                 'sender': sender,
                 'receiver': receiver,
+                'id': self.message_id,
+                'deleted': False,
             }))
         except Exception as e:
             raise
@@ -87,12 +91,14 @@ class MessageConsumer(AsyncWebsocketConsumer):
             room = Room.objects.get(id=event['roomId'])
             sender = mUser.objects.get(username=event['sender'])
             receiver = mUser.objects.get(username=event['receiver'])
-            Message.objects.create(
+            msg = Message.objects.create(
                 room=room,
                 content=event['content'],
                 sender=sender,
                 receiver=receiver,
             )
+            msg.save()
+            self.message_id = str(msg.id)
         except Exception as e:
             raise
 

@@ -10,11 +10,40 @@
 					>
 						<v-card-title v-text='roomName'></v-card-title>
 						<v-divider></v-divider>
-						<div id="test" class="message_content_wrap" ref='test'>
-							<div v-for='(item, i) in messages' :key='i'>
-								<v-card-text v-html='item.content' class='message' :class='{ sender: item.isMe, receiver: !item.isMe }'></v-card-text>
-							</div>
-						</div>
+						<v-container id="messages" class="message_wrap" ref='messages'>
+							<v-row v-for='(item, i) in messages' :key='i'>
+                                <v-col cols='12'>
+                                    <v-row v-if='item.deleted' class="message_coutent_wrap" :class='{ sender: item.isMe, receiver: !item.isMe }'>
+                                        <v-card-text class="message deleted" :class='{ sender: item.isMe, receiver: !item.isMe }'>削除されました</v-card-text>
+                                    </v-row>
+
+                                    <v-row v-else class="message_coutent_wrap" :class='{ sender: item.isMe, receiver: !item.isMe }'>
+                                        <v-card-text v-html='item.content' class='message' :class='{ sender: item.isMe, receiver: !item.isMe }'></v-card-text>
+                                        <!-- Message編集ボタン -->
+                                        <v-menu bottom left>
+                                            <template v-slot:activator='{ on }'>
+                                                <v-btn
+                                                    dark
+                                                    icon
+                                                    v-on='on'
+                                                    color='grey'
+                                                    v-show='item.isMe'
+                                                >
+                                                    <v-icon>mdi-dots-vertical</v-icon>
+                                                </v-btn>
+                                            </template>
+
+                                            <v-list>
+                                                <v-list-item @click='updateMessage(item)'>
+                                                    <v-list-item-title>削除</v-list-item-title>
+                                                </v-list-item>
+                                            </v-list>
+                                        </v-menu>
+                                    </v-row>
+                                </v-col>
+
+							</v-row>
+						</v-container>
 
 						<v-textarea
 							ref='content'
@@ -53,6 +82,7 @@
 			roomId: null,
 			sender: null,
 			receiver: null,
+            showMenu: false,
 		}),
 		mounted: function () {
 			this.loginUser = (this.$store.state.isAuth) ? this.$store.state.loginUser : null
@@ -108,58 +138,85 @@
 			},
 
 			scrollEnd () {
-				var ref = this.$refs.test
+				var ref = this.$refs.messages
 				ref.scrollTop = ref.scrollHeight
-			}
+            },
+            
+            updateMessage (msg) {
+                console.log(msg)
+                this.$axios({
+                    url: `/api/message/${msg.id}/message_delete/`,
+                    method: 'PUT',
+                })
+                .then(res => {
+                    console.log(res)
+                    msg.deleted = true
+                })
+                .catch(e => {
+                    console.log(e)
+                })
+            },
 		},
 	}
 </script>
 
 <style lang='scss'>
 #messagebox_wrap{
-	.message_content_wrap {
+	.message_wrap {
 		height: 490px;
 		overflow: auto;
 
-		.message {
-			margin: 5px 10px;
-			padding: 10px;
-			width: inherit;
-			display: inline-block;
-			border-radius: 10px;
-			clear: both;
-			position: relative;
+        .message_coutent_wrap {
+            &.sender {
+                justify-content: flex-end;
+            }
+            &.receiver {
+                justify-content: flex-start;
+            }
 
-			&:after {
-				content: '';
-				position: absolute;
-				top: 50%;
-			}
-		}
-		.sender {
-			margin-left: 30%;
-			float: right;
-			background-color: #80CBC4;
+            .message {
+                margin: 5px 10px;
+                padding: 10px;
+                width: auto;
+                max-width: 50%;
+                border-radius: 10px;
+                clear: both;
+                position: relative;
+                display: inline-block;
 
-			&:after {
-				right: -7px;
-				border-style: solid;
-				border-width: 10px 0 10px 15px;
-				border-color: transparent transparent transparent #80CBC4;
-			}
-		}
-		.receiver {
-			margin-right: 30%;
-			float: left;
-			background-color: #CFD8DC;
+                &:after {
+                    content: '';
+                    position: absolute;
+                    top: 50%;
+                }
+            }
+            .sender {
+                background-color: #80CBC4;
 
-			&:after {
-				left: -7px;
-				border-style: solid;
-				border-width: 10px 15px 10px 0;
-				border-color: transparent #CFD8DC transparent transparent;
-			}
-		}
+                &:after {
+                    right: -7px;
+                    border-style: solid;
+                    border-width: 10px 0 10px 15px;
+                    border-color: transparent transparent transparent #80CBC4;
+                }
+            }
+            .receiver {
+                background-color: #CFD8DC;
+
+                &:after {
+                    left: -7px;
+                    border-style: solid;
+                    border-width: 10px 15px 10px 0;
+                    border-color: transparent #CFD8DC transparent transparent;
+                }
+            }
+            .deleted {
+                background-color: #ccc;
+                &:after {
+                    border: none;
+                }
+            }
+        }
 	}
 
 	.input_message_area {

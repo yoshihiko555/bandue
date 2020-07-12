@@ -345,8 +345,8 @@ class RoomViewSet(BaseModelViewSet):
 
     def list(self, request, *args, **kwargs):
         self.set_login_user(request)
-        login_user = mUser.objects.get(username=self.login_user)
-        rooms = mUser_Room.objects.filter(user_id=login_user.id)
+        # login_user = mUser.objects.get(username=self.login_user)
+        # rooms = mUser_Room.objects.filter(user_id=login_user.id)
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
@@ -375,6 +375,13 @@ class MessageViewSet(BaseModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @action(methods=['PUT'], detail=True)
+    def message_delete(self, request, pk=None):
+        message = Message.objects.get(pk=pk)
+        message.deleted = True
+        message.save()
+        return Response(status=status.HTTP_200_OK)
 
 
 class EntryViewSet(BaseModelViewSet):
@@ -417,8 +424,6 @@ class EntryViewSet(BaseModelViewSet):
         user = mUser.objects.get(username=request.user.username)
         entry = Entry.objects.get(id=request.data['id'])
         read_manage_cnt = ReadManagement.objects.filter(Q(entry=entry) & Q(target=user)).count()
-        entry.read_count = read_manage_cnt
-        entry.save()
         if read_manage_cnt == 0:
             # 新規既読ならレコード追加
             ReadManagement.objects.create(

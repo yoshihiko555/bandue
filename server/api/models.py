@@ -470,9 +470,11 @@ class Message(models.Model):
     readed = models.BooleanField(_('Readed'), default=False)
     deleted = models.BooleanField(_('Deleted'), default=False)
     created_at = models.DateTimeField(_('Created At'), default=timezone.now)
+    updated_at = models.DateTimeField(_('Upadate Date'), auto_now=True)
 
     def __str__(self):
         return self.content
+
 
 class ReadManagement(models.Model):
 

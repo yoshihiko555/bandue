@@ -40,7 +40,7 @@ from .models import (
     Message,
     ReadManagement,
     FollowRelationShip,
-    RetweetRelationShip
+    RetweetRelationShip,
 )
 from .permissions import IsMyselfOrReadOnly
 from django.contrib.admin.utils import lookup_field
@@ -88,8 +88,8 @@ class ProfileDetailView(generics.RetrieveAPIView):
             'header',
             'introduction',
             'icon',
-            # 'followees',
-            # 'followers',
+            'followees',
+            'followers',
             'followees_count',
             'followers_count',
             'tweet',
