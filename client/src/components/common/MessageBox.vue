@@ -17,8 +17,9 @@
                                         <v-card-text class="message deleted" :class='{ sender: item.isMe, receiver: !item.isMe }'>削除されました</v-card-text>
                                     </v-row>
 
-                                    <v-row v-else class="message_coutent_wrap" :class='{ sender: item.isMe, receiver: !item.isMe }'>
+                                    <v-row v-else class="message_coutent_wrap" :class='{ sender: item.isMe, receiver: !item.isMe }' align='center'>
                                         <v-card-text v-html='item.content' class='message' :class='{ sender: item.isMe, receiver: !item.isMe }'></v-card-text>
+                                        <v-card-text v-show='item.isMe && item.readed' class='read' :class='{ sender: item.isMe, receiver: !item.isMe }'>既読</v-card-text>
                                         <!-- Message編集ボタン -->
                                         <v-menu bottom left>
                                             <template v-slot:activator='{ on }'>
@@ -76,7 +77,8 @@
 		data: () => ({
 			loginUser: null,
 			roomName: null,
-			messages: {},
+			messages: [],
+			unreadMessages: [],
 			ws: null,
 			isShowMsg: false,
 			roomId: null,
@@ -102,6 +104,9 @@
 				.then(res => {
 					console.log('メッセージ一覧', res.data)
 					this.messages = res.data
+					for (var msg of res.data) {
+						if (!msg.readed && this.loginUser !== msg.sender) this.unreadMessages.push(msg)
+					}
 					this.isShowMsg = true
 					this.roomName = roomName
 					this.roomId = id
@@ -109,6 +114,19 @@
 					this.receiver = roomName
 					const url = 'ws://' + window.location.host + '/ws/' + id + '/'
 					this.ws = new WebSocket(url)
+				})
+				.then(res => {
+					this.$axios({
+						url: '/api/message/message_read/',
+						method: 'PUT',
+						data: this.unreadMessages,
+					})
+					.then(res => {
+						console.log(res)
+					})
+					.catch(e => {
+						console.log(e)
+					})
 				})
 				.catch(e => {
 					console.log(e)
@@ -141,7 +159,7 @@
 				var ref = this.$refs.messages
 				ref.scrollTop = ref.scrollHeight
             },
-            
+
             updateMessage (msg) {
                 console.log(msg)
                 this.$axios({
@@ -167,6 +185,7 @@
 		overflow: auto;
 
         .message_coutent_wrap {
+        	position: relative;
             &.sender {
                 justify-content: flex-end;
             }
@@ -187,7 +206,7 @@
                 &:after {
                     content: '';
                     position: absolute;
-                    top: 50%;
+                    bottom: 5%;
                 }
             }
             .sender {
@@ -215,6 +234,16 @@
                 &:after {
                     border: none;
                 }
+            }
+            .read {
+				background: none;
+			    width: auto;
+			    padding: 0;
+			    position: absolute;
+			    bottom: -30%;
+			    right: 3%;
+			    font-size: 0.8em;
+			    color: #8d8d8d;
             }
         }
 	}

@@ -383,6 +383,18 @@ class MessageViewSet(BaseModelViewSet):
         message.save()
         return Response(status=status.HTTP_200_OK)
 
+    @action(methods=['PUT'], detail=False)
+    def message_read(self, request):
+        logger.info('既読')
+        messages = []
+        for i in request.data:
+            msg = Message.objects.get(id=i['id'])
+            msg.readed = True
+            messages.append(msg)
+
+        Message.objects.bulk_update(messages, fields=['readed'])
+        return Response(status=status.HTTP_200_OK)
+
 
 class EntryViewSet(BaseModelViewSet):
     permission_classes = (permissions.AllowAny,)
