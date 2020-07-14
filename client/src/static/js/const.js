@@ -111,6 +111,16 @@ class Const {
 		'Setting':	5,
 		'Signout':	6,
 	}
+
+	PROFILE_EVENT = [
+		'Follow',
+	]
+
+	TWEET_EVENT = [
+		'Retweet',
+		'Liked',
+		'Reply',
+	]
 }
 
 export { Const }

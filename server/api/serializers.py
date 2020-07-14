@@ -688,6 +688,12 @@ class NotificationSerializer(serializers.ModelSerializer):
             'author',
             'author_pk',
             'content',
+            'liked_count',
+            'retweet_count',
+            'created_at',
+            'created_time',
+            'isLiked',
+            'isRetweeted'
         ]
         return TweetSerializer(obj.target_tweet_info, fields=fields).data
 

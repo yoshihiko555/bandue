@@ -16,6 +16,8 @@ from .models import (
     FollowRelationShip,
     RetweetRelationShip,
     Notification,
+    pre_bulk_update,
+    post_bulk_update,
 )
 
 from api.serializers import (
@@ -48,7 +50,6 @@ from django.core.signals import (
 
 from django.dispatch import receiver
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -74,7 +75,6 @@ TWEET_EVENT = [
     LIKED,
     REPLY
 ]
-
 
 
 @receiver(m2m_changed, sender=mUser.followees.through)
@@ -104,7 +104,8 @@ def retweet_receiver(sender, instance, created, raw, using, update_fields, **kwa
 
         try:
             isExists = check_exists(RETWEET, receive_user, send_user, target_instance)
-            if not isExists:
+            isMyself = check_myself(receive_user, send_user)
+            if not isExists and not isMyself:
                 send_response(RETWEET, receive_user, send_user, target_instance)
 
         except RetweetRelationShip.DoesNotExist:
@@ -122,12 +123,44 @@ def liked_receiver(sender, instance, action, reverse, model, pk_set, using, **kw
             receive_user = instance.author
             send_user = mUser.objects.get(pk=list(pk_set)[0])
             isExists = check_exists(LIKED, receive_user, send_user, instance)
+            isMyself = check_myself(receive_user, send_user)
 
-            if not isExists:
+            if not isExists and not isMyself:
                 send_response(LIKED, receive_user, send_user, instance)
 
         except mUser.DoesNotExist:
             logger.error('mUserが存在しません。')
+
+# @receiver(post_save, sender=Notification)
+# def notification_receiver(sender, instance, created, raw, using, update_fields, **kwargs):
+#     logger.debug('============Notification_receiver==================')
+#     logger.debug(sender)
+#     logger.debug('readed : ' + str(instance.readed))
+#     logger.debug('created : ' + str(created))
+#     logger.debug(raw)
+#     logger.debug(using)
+#     logger.debug(update_fields)
+#     logger.debug(kwargs)
+#
+#
+# @receiver(pre_save, sender=Notification)
+# def notification_pre_receiver(sender, instance, raw, using, update_fields, **kwargs):
+#     logger.debug('============Notification_PRE_receiver==================')
+#     logger.debug(sender)
+#     logger.debug('pk : ' + str(instance.pk))
+#     logger.debug('readed : ' + str(instance.readed))
+#     logger.debug(Notification.objects.all().last().pk)
+#     logger.debug(Notification.objects.all().last().readed)
+
+
+# @receiver(post_bulk_update, sender=Notification)
+# def notification_receiver(sender, **kwargs):
+#     logger.debug('============Notification_bulk_receiver==================')
+#     logger.debug(kwargs)
+    # instance = kwargs['instance']
+    # update_kwargs = kwargs['update_kwargs']
+    # logger.debug(instance)
+    # logger.debug(update_kwargs)
 
 
 def check_exists(event, receive_user, send_user, *args):
@@ -150,6 +183,14 @@ def check_exists(event, receive_user, send_user, *args):
             send_user=send_user,
             readed=False,
         ).exists()
+
+
+def check_myself(receive_user, send_user):
+    """
+    自分自身に対するアクションじゃないかチェック
+    """
+
+    return receive_user == send_user
 
 
 def send_response(event, receive_user, send_user, *args):

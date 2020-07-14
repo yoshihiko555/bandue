@@ -15,6 +15,21 @@ def content_file_name(instance, filename):
 def profile_file_name(instance, filename):
     return 'upload/{0}/{1}/'.format(instance.username, filename)
 
+from django.db.models.signals import ModelSignal
+
+
+pre_bulk_update = ModelSignal(use_caching=True)
+post_bulk_update = ModelSignal(use_caching=True)
+
+
+class UpdateManager(models.QuerySet):
+
+    def update(self, **kwargs):
+        pre_bulk_update.send(sender=self.model, queryset=self, update_kwargs=kwargs)
+        res = super(UpdateManager, self).update(**kwargs)
+        post_bulk_update.send(sender=self.model, queryset=self, update_kwargs=kwargs)
+        return res
+
 
 class UserManager(BaseUserManager):
 
@@ -461,6 +476,8 @@ class Room(models.Model):
 
 class Message(models.Model):
 
+    objects = UpdateManager.as_manager()
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     room = models.ForeignKey(Room, related_name='room', on_delete=models.CASCADE)
     sender = models.ForeignKey(mUser, related_name='sender', on_delete=models.CASCADE)
@@ -487,6 +504,8 @@ class ReadManagement(models.Model):
 
 
 class Notification(models.Model):
+
+    objects = UpdateManager.as_manager()
 
     event_choices = (
         (0, _('Follow')),

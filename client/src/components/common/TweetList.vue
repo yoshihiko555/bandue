@@ -131,8 +131,8 @@
 	import Retweet from '@/components/common/Retweet'
 	import Like from '@/components/common/Like'
 	import Loading from '@/components/common/Loading'
-    import { Common } from '@/static/js/common'
-    import { mapState } from 'vuex'
+  import { Common } from '@/static/js/common'
+  import { mapState } from 'vuex'
 
 	const Com = new Common()
 

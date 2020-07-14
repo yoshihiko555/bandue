@@ -14,11 +14,11 @@
 								flat
 								class='info_wrap'
 								ref='info_ref'
+								@click='InfoDetail(info, index)'
 							>
 								<v-card-title
 									class='info_title'
 								>
-								{{ info.pk }}
 									<div v-if='info.event === "Liked"'>
 										<v-icon
 											color='red lighten-1'
@@ -53,6 +53,13 @@
 			</v-container>
 		</div>
 		<Footer/>
+
+		<TweetDetail
+			@closeModal='closeModal'
+			:tweetDetailDialog='tweetDetailDialog'
+			:tweet='selectTweet'
+		></TweetDetail>
+
 	</v-app>
 </template>
 
@@ -61,6 +68,12 @@
 	import Footer from '@/components/common/Footer'
 	import Sidebar from '@/components/common/Sidebar'
 	import Search from '@/components/common/Search'
+	import TweetDetail from '@/components/common/TweetDetail'
+	import { Common } from '@/static/js/common'
+	import { Const } from '@/static/js/const'
+
+	const Com = new Common()
+	const Con = new Const()
 
 	export default {
 		name: 'Message',
@@ -68,11 +81,14 @@
 			Header,
 			Footer,
 			Sidebar,
-			Search
+			Search,
+			TweetDetail
 		},
 		data: () => ({
 			infoList: [],
 			readedInfoPk: [],
+			tweetDetailDialog: false,
+			selectTweet: {},
 		}),
 		created () {
 
@@ -99,6 +115,28 @@
 				.catch(e => {
 					console.log(e)
 				})
+			},
+
+			InfoDetail (info, index) {
+				var event = info.event
+				if (Con.PROFILE_EVENT.includes(event)) {
+					var username = info.send_user.username
+					this.$router.push('/profile/' + username)
+					Com.reload(this.$router)
+				} else if (Con.TWEET_EVENT.includes(event)) {
+					this.showTweetDetail(info.target_tweet_info)
+				} else {
+					console.log('それ以外。メッセージとか？')
+				}
+			},
+
+			closeModal () {
+				this.tweetDetailDialog = false
+			},
+
+			showTweetDetail (tweet) {
+				this.tweetDetailDialog = true
+				this.selectTweet = tweet
 			}
 		}
 	}
