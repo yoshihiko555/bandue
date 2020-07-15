@@ -68,6 +68,16 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 
 
+class BaseListAPIView(generics.ListAPIView, GetLoginUserMixin):
+    """
+    getでリクエストが来たらlogin_userをセットしておく。
+    """
+
+    def get(self, request, *args, **kwargs):
+        self.set_login_user(request)
+        return self.list(request, *args, **kwargs)
+
+
 class IndexView(generic.TemplateView):
 
     template_name = 'pages/index.html'
@@ -157,7 +167,7 @@ class SignUpView(generics.CreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class SearchView(generics.ListAPIView, GetLoginUserMixin):
+class SearchView(BaseListAPIView):
     """
     検索結果を返すView
     searchFlgで検索結果で使うqueryset, serializer, filter_classを分けている。
@@ -202,7 +212,6 @@ class SearchView(generics.ListAPIView, GetLoginUserMixin):
 
     @analyzeMethod
     def list(self, request, *args, **kwargs):
-        self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
         searchFlg = request.query_params['searchFlg']
         self.setSearchQuery(searchFlg, *args, **kwargs)
 
