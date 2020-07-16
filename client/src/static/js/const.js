@@ -120,7 +120,11 @@ class Const {
 		'Retweet',
 		'Liked',
 		'Reply',
-	]
+    ]
+    
+    WS_TYPE_CHAT_MESSAGE = 'chat_message'
+
+    WS_TYPE_READ_MESSAGE = 'read_message'
 }
 
 export { Const }

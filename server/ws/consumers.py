@@ -51,7 +51,6 @@ class MessageConsumer(AsyncWebsocketConsumer):
             roomId = text_data_json['roomId']
             content = text_data_json['content']
             sender = text_data_json['sender']
-            receiver = text_data_json['receiver']
             await self.createMessage(text_data_json)
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -60,7 +59,6 @@ class MessageConsumer(AsyncWebsocketConsumer):
                     'roomId': roomId,
                     'content': content,
                     'sender': sender,
-                    'receiver': receiver,
                 }
             )
         except Exception as e:
@@ -68,18 +66,24 @@ class MessageConsumer(AsyncWebsocketConsumer):
 
     async def chat_message(self, event):
         try:
-            logger.info(event)
-            logger.info(self)
             content = event['content']
             sender = event['sender']
-            receiver = event['receiver']
             await self.send(text_data=json.dumps({
                 'type': 'chat_message',
                 'content': content,
                 'sender': sender,
-                'receiver': receiver,
                 'id': self.message_id,
                 'deleted': False,
+            }))
+        except Exception as e:
+            raise
+
+    async def read_message(self, event):
+        try:
+            data = event['data']
+            await self.send(text_data=json.dumps({
+                'type': 'read_message',
+                'data': data,
             }))
         except Exception as e:
             raise
@@ -90,12 +94,10 @@ class MessageConsumer(AsyncWebsocketConsumer):
         try:
             room = Room.objects.get(id=event['roomId'])
             sender = mUser.objects.get(username=event['sender'])
-            receiver = mUser.objects.get(username=event['receiver'])
             msg = Message.objects.create(
                 room=room,
                 content=event['content'],
                 sender=sender,
-                receiver=receiver,
             )
             msg.save()
             self.message_id = str(msg.id)

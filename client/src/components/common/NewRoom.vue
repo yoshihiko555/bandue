@@ -62,7 +62,6 @@
 				})
 			},
 			newRoom (member) {
-				console.log('新規メッセージ作成')
 				console.log('メンバー：' + member)
 				var loginUser = this.$store.state.loginUser
 				this.$axios({

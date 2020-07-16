@@ -24,6 +24,7 @@ from api.serializers import (
     ProfileSerializer,
     TweetSerializer,
     NotificationSerializer,
+    MessageSubSerializer,
 )
 
 
@@ -53,7 +54,7 @@ from django.dispatch import receiver
 logger = logging.getLogger(__name__)
 
 
-from ws.consumers import NotificationConsumer
+from ws.consumers import MessageConsumer, NotificationConsumer
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
@@ -220,4 +221,12 @@ def send_response(event, receive_user, send_user, *args):
     async_to_sync(channel_layer.group_send)(
         receive_user.username,
         {'type': 'notification',  'content': NotificationSerializer(res).data}
+    )
+
+@receiver(post_bulk_update, sender=Message)
+def send_res(sender, **kwargs):
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        str(kwargs['queryset'][0].room.id),
+        {'type': 'read_message',  'data': MessageSubSerializer(kwargs['queryset'], many=True).data}
     )

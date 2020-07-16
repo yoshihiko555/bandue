@@ -597,7 +597,6 @@ class RoomSerializer(serializers.ModelSerializer):
 class MessageSerializer(serializers.ModelSerializer):
 
     sender = serializers.SerializerMethodField()
-    receiver = serializers.SerializerMethodField()
     isMe = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
@@ -610,7 +609,6 @@ class MessageSerializer(serializers.ModelSerializer):
             'id',
             'content',
             'sender',
-            'receiver',
             'image',
             'readed',
             'deleted',
@@ -622,13 +620,21 @@ class MessageSerializer(serializers.ModelSerializer):
         sender_name = obj.sender.username
         return sender_name
 
-    def get_receiver(self, obj):
-        receiver_name = obj.receiver.username
-        return receiver_name
-
     def get_isMe(self, obj):
         isMe = str(obj.sender.username) == str(self.login_user)
         return isMe
+
+
+class MessageSubSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Message
+        fields = [
+            'id',
+            'sender',
+            'readed',
+            'deleted',
+        ]
 
 
 class MSettingSerializer(serializers.ModelSerializer):

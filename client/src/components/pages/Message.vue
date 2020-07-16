@@ -26,10 +26,31 @@
 								v-for='(room, i) in rooms'
 								:key='i'
 								@click='showRoom(room.id, room.room_name)'
+                                v-show='room.users.length !== 0'
 							>
 								<v-list-item-content>
 									<v-list-item-title v-text='room.room_name'></v-list-item-title>
 								</v-list-item-content>
+
+                                <!-- Message編集ボタン -->
+                                <v-menu bottom left>
+                                    <template v-slot:activator='{ on }'>
+                                        <v-btn
+                                            dark
+                                            icon
+                                            v-on='on'
+                                            color='grey'
+                                        >
+                                            <v-icon>mdi-dots-vertical</v-icon>
+                                        </v-btn>
+                                    </template>
+
+                                    <v-list>
+                                        <v-list-item @click='deleteRoom(room)'>
+                                            <v-list-item-title>削除</v-list-item-title>
+                                        </v-list-item>
+                                    </v-list>
+                                </v-menu>
 							</v-list-item>
 						</v-list>
 					</v-col>
@@ -78,7 +99,7 @@
 				},
 			})
 			.then(res => {
-				console.log('ルーム一覧',res.data)
+                console.log('ルーム一覧',res.data)
 				this.rooms = res.data
 			})
 			.catch(e => {
@@ -92,7 +113,20 @@
             roomsUpdate (res) {
                 console.log(res)
                 this.rooms = res.data
-            }
+            },
+            deleteRoom (room) {
+                this.$axios({
+                    url: `/api/room/${room.id}/delete_room/`,
+                    method: 'PUT',
+                    data: room
+                })
+                .then(res => {
+                    console.log(res)
+                })
+                .catch(e => {
+                    console.log(e)
+                })
+            },
 		}
 	}
 </script>

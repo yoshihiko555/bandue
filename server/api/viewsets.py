@@ -345,8 +345,6 @@ class RoomViewSet(BaseModelViewSet):
 
     def list(self, request, *args, **kwargs):
         self.set_login_user(request)
-        # login_user = mUser.objects.get(username=self.login_user)
-        # rooms = mUser_Room.objects.filter(user_id=login_user.id)
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
@@ -363,6 +361,14 @@ class RoomViewSet(BaseModelViewSet):
             return Response(self.get_serializer(queryset, many=True).data, status=status.HTTP_201_CREATED, headers=headers)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(methods=['PUT'], detail=True)
+    def delete_room(self, request, pk=None):
+        logger.info('ルーム削除')
+        room = Room.objects.get(id=request.data['id'])
+        for u in request.data['users']:
+            user = mUser.objects.get(pk=u['pk'])
+            room.users.remove(user)
+        return Response(status=status.HTTP_200_OK)
 
 class MessageViewSet(BaseModelViewSet):
     permission_classes = (permissions.AllowAny,)
@@ -431,7 +437,7 @@ class EntryViewSet(BaseModelViewSet):
 
     @action(methods=['post'], detail=False)
     def isRead(self, request):
-        logger.info('既読したーー')
+        logger.info('既読')
         logger.info(request.data)
         user = mUser.objects.get(username=request.user.username)
         entry = Entry.objects.get(id=request.data['id'])

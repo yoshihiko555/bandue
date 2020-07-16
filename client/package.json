@@ -73,7 +73,8 @@
       "comma-spacing": "off",
       "padded-blocks": "off",
       "prefer-const": "off",
-      "no-unused-components": "off"
+      "no-unused-components": "off",
+      "no-multi-spaces": "off"
     }
   },
   "browserslist": [
