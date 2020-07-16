@@ -75,17 +75,30 @@ class BaseModelViewSet(viewsets.ModelViewSet, GetLoginUserMixin):
     """
 
     def list(self, request, *args, **kwargs):
+        """
+        getでリクエストが来たらlogin_userをセット
+        response=Trueだったらレスポンスも返す
+        paginate=Trueだったらページネーションありのレスポンスを返す
+        """
         self.set_login_user(request)
+
+        if 'response' in kwargs and kwargs['response'] == True:
+            return self.send_response(**kwargs)
+
+    def send_response(self, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+
+        """
+        paginate=Trueだったらページネーションありのレスポンスを返す
+        """
+        if 'paginate' in kwargs and kwargs['paginate'] == True:
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = self.get_serializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-
-    def set_login_user(self, request):
-        self.login_user = request.query_params['loginUser'] if 'loginUser' in request.query_params else None
 
 
 class TweetViewSet(BaseModelViewSet):
@@ -114,7 +127,8 @@ class TweetViewSet(BaseModelViewSet):
     parser_class = (FileUploadParser)
 
     def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+        return super().list(request, paginate=True,
+                            response=True, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
 
@@ -344,10 +358,14 @@ class RoomViewSet(BaseModelViewSet):
     serializer_class = RoomSerializer
 
     def list(self, request, *args, **kwargs):
-        self.set_login_user(request)
-        queryset = self.filter_queryset(self.get_queryset())
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+
+        return super().list(request, response=True, *args, **kwargs)
+        # self.set_login_user(request)
+        # login_user = mUser.objects.get(username=self.login_user)
+        # rooms = mUser_Room.objects.filter(user_id=login_user.id)
+        # queryset = self.filter_queryset(self.get_queryset())
+        # serializer = self.get_serializer(queryset, many=True)
+        # return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         self.login_user = request.data['loginUser'] if 'loginUser' in request.data else None
@@ -377,10 +395,11 @@ class MessageViewSet(BaseModelViewSet):
 
     def list(self, request, *args, **kwargs):
         logger.info('メッセージ一覧取得')
-        self.set_login_user(request)
-        queryset = self.filter_queryset(self.get_queryset())
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        return super().list(request, response=True, *args, **kwargs)
+        # self.set_login_user(request)
+        # queryset = self.filter_queryset(self.get_queryset())
+        # serializer = self.get_serializer(queryset, many=True)
+        # return Response(serializer.data)
 
     @action(methods=['PUT'], detail=True)
     def message_delete(self, request, pk=None):
@@ -409,7 +428,8 @@ class EntryViewSet(BaseModelViewSet):
     filter_class = EntryFilter
 
     def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
+        return super().list(request, response=True,
+                            paginate=True, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
         request.data.update({
@@ -470,8 +490,7 @@ class InfoViewSet(BaseModelViewSet):
     queryset = Notification.objects.all().order_by('-created_at')
 
     def list(self, request, *args, **kwargs):
-        logger.debug('====InfoViewSetのlist====')
-        self.set_login_user(request)
+        super().list(request, *args, **kwargs)
         self.serializer_class = NotificationSerializer
         if self.login_user == None:
             queryset = self.get_queryset()
