@@ -125,6 +125,10 @@ class Const {
     WS_TYPE_CHAT_MESSAGE = 'chat_message'
 
     WS_TYPE_READ_MESSAGE = 'read_message'
+
+    HTTP_STATUS_OK = 200
+
+    HTTP_STATUS_CREATED = 201
 }
 
 export { Const }

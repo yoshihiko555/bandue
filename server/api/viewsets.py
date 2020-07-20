@@ -52,6 +52,7 @@ from .filters import (
     TweetFilter,
     MUserFilter,
     EntryFilter,
+    RoomFilter,
 )
 
 from .mixins import (
@@ -356,28 +357,29 @@ class RoomViewSet(BaseModelViewSet):
     permission_classes = (permissions.AllowAny,)
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
+    filter_class = RoomFilter
 
     def list(self, request, *args, **kwargs):
 
         return super().list(request, response=True, *args, **kwargs)
-        # self.set_login_user(request)
-        # login_user = mUser.objects.get(username=self.login_user)
-        # rooms = mUser_Room.objects.filter(user_id=login_user.id)
-        # queryset = self.filter_queryset(self.get_queryset())
-        # serializer = self.get_serializer(queryset, many=True)
-        # return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         self.login_user = request.data['loginUser'] if 'loginUser' in request.data else None
-        queryset = self.filter_queryset(self.get_queryset())
-        serializer = self.get_serializer(data=request.data)
+        target = request.data['name']
+        rooms = Room.objects.filter(users__username=self.login_user)
 
-        if serializer.is_valid():
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-
-            return Response(self.get_serializer(queryset, many=True).data, status=status.HTTP_201_CREATED, headers=headers)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if self.check_room(rooms, target):
+            # 既に部屋が存在する
+            room = Room.objects.get(users__username=target)
+            return Response(self.get_serializer(room).data, status=status.HTTP_200_OK)
+        else:
+            # 部屋が存在しないので新規作成
+            serializer = self.get_serializer(data=request.data)
+            if serializer.is_valid():
+                self.perform_create(serializer)
+                headers = self.get_success_headers(serializer.data)
+                return Response(self.get_serializer(serializer.instance).data, status=status.HTTP_201_CREATED, headers=headers)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(methods=['PUT'], detail=True)
     def delete_room(self, request, pk=None):
@@ -387,6 +389,14 @@ class RoomViewSet(BaseModelViewSet):
             user = mUser.objects.get(pk=u['pk'])
             room.users.remove(user)
         return Response(status=status.HTTP_200_OK)
+
+    def check_room(self, rooms, target):
+        for room in rooms:
+            for user in room.users.all():
+                if user.username == target:
+                    return True
+
+        return False
 
 class MessageViewSet(BaseModelViewSet):
     permission_classes = (permissions.AllowAny,)

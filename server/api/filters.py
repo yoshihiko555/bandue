@@ -208,3 +208,51 @@ class EntryFilter(django_filter.FilterSet):
         logger.info(res)
 
         return res
+
+
+class RoomFilter(django_filter.FilterSet):
+    """
+    部屋を絞るフィルタークラス
+    """
+    loginUser = django_filter.CharFilter(method='self_room')
+    searchText = django_filter.CharFilter(field_name='users__username', method='content_filter')
+
+    def __init__(self, *args, **kwargs):
+        self.login_user = kwargs['data']['loginUser'] if 'loginUser' in kwargs['data'] else None
+        super().__init__(*args, **kwargs)
+
+    class Meta:
+        model = Room
+        fields = []
+
+    def self_room(self, queryset, name, value):
+        user = mUser.objects.get(username=self.login_user)
+        queryset = user.room_set.all()
+        return queryset
+
+    # 検索文字からツイートを絞る
+    def content_filter(self, queryset, name, value):
+        
+        q_list = []
+        qs = list({i.strip() for i in value.split(',')})
+        for q in qs:
+            q_list.append('Q(users__username__contains=q)')
+
+        query_str = '&'.join(q_list)
+        # ログインユーザー以外の部屋を取得
+        query_str += ' & ~Q(users__username="{0}")'.format(self.login_user)
+        q = Room.objects.filter(eval(query_str))
+
+        # ログインユーザーの部屋と検索結果の部屋を照合
+        pk_list = []
+        for i in q:
+            for j in queryset:
+                if i.id == j.id:
+                    # ログインユーザーの部屋の中に検索結果の部屋が存在
+                    pk_list.append(i.id)
+                    break
+
+        res = Room.objects.filter(pk__in=pk_list)
+        logger.debug('検索結果 : ')
+        logger.info(res)
+        return res
