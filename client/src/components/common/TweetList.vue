@@ -87,21 +87,58 @@
 				<div>
 					<img :src='tweet.images' width="100">
 				</div>
-				<v-card-actions>
-					<v-list-item>
-						<v-list-item-content v-for='tag in tweet.hashTag' :key='tag.title'>
-							<v-list-item-title>{{ tag.title }}</v-list-item-title>
-						</v-list-item-content>
-
-						<v-row
-							align='center'
-							justify='end'
+				<v-container>
+					<v-row>
+						<div
+							v-if='tweet.reply_count != 0
+								|| tweet.isReply === true'
+							class='reply_wrap'
 						>
-							<retweet :tweet=tweet :index=index></retweet>
-							<like :tweet=tweet :index=index></like>
-						</v-row>
-					</v-list-item>
-				</v-card-actions>
+							<div
+								v-if='tweet.isRetweet'
+							>
+								<v-btn
+									text
+									color='primary'
+									class='reply_text z10'
+									@click='showReplyDetail(tweet)'
+								>このスレッドを表示</v-btn>
+							</div>
+							<div
+								v-else
+							>
+								<v-avatar
+									size='34'
+									class='reply_img'
+								>
+									<v-img src='@/static/img/default_icon.jpeg'></v-img>
+								</v-avatar>
+								<v-btn
+									text
+									color='primary'
+									class='reply_text z10'
+									@click='showReplyDetail(tweet)'
+								>このスレッドを表示</v-btn>
+							</div>
+						</div>
+						<v-spacer></v-spacer>
+						<v-card-actions>
+							<v-list-item>
+								<v-list-item-content v-for='tag in tweet.hashTag' :key='tag.title'>
+									<v-list-item-title>{{ tag.title }}</v-list-item-title>
+								</v-list-item-content>
+								<v-row
+									align='center'
+									justify='end'
+								>
+									<reply :tweet=tweet></reply>
+									<retweet :tweet=tweet></retweet>
+									<like :tweet=tweet></like>
+								</v-row>
+							</v-list-item>
+						</v-card-actions>
+					</v-row>
+				</v-container>
 			</v-card>
 		</div>
 
@@ -122,15 +159,23 @@
 			:tweet='selectTweet'
 		></TweetDetail>
 
+		<ReplyDetail
+			@closeModal='closeModal'
+			:replyDetailDialog='replyDetailDialog'
+			:tweet='selectTweet'
+		></ReplyDetail>
+
 	</div>
 </template>
 
 <script>
 	import TweetEdit from '@/components/common/TweetEdit'
 	import TweetDetail from '@/components/common/TweetDetail'
+	import Reply from '@/components/common/Reply'
 	import Retweet from '@/components/common/Retweet'
 	import Like from '@/components/common/Like'
 	import Loading from '@/components/common/Loading'
+	import ReplyDetail from '@/components/common/ReplyDetail'
   import { Common } from '@/static/js/common'
   import { mapState } from 'vuex'
 
@@ -151,9 +196,11 @@
 		components: {
 			TweetEdit,
 			TweetDetail,
+			Reply,
 			Retweet,
 			Like,
 			Loading,
+			ReplyDetail,
 		},
 		data: () => ({
 			tweetList: [],
@@ -177,6 +224,7 @@
 			scrollMax: 0,
 			initLoading: true,
       tweetLoading: true,
+			replyDetailDialog: false,
 		}),
 		created () {
 			this.$eventHub.$on('create-tweet', this.tweetUpdate)
@@ -195,7 +243,6 @@
 				}
 			})
 			.then(res => {
-				console.log(res.data.next)
 				for (var i in res.data.results) {
 					var updatedAt = res.data.results[i].updated_at.substr(0, 10)
 					res.data.results[i].updated_at = updatedAt
@@ -241,6 +288,7 @@
 			closeModal () {
 				this.tweetEditDialog = false
 				this.tweetDetailDialog = false
+				this.replyDetailDialog = false
 			},
 			// TODO 削除前に確認モーダル表示
 			showDeleteDialog (tweet) {
@@ -298,6 +346,11 @@
 					}
 				}
 			},
+			showReplyDetail (tweet) {
+				console.log('showReplyDetail')
+				this.replyDetailDialog = true
+				this.selectTweet = tweet
+			},
 		}
 	}
 </script>
@@ -315,6 +368,12 @@
 			width: 100%;
 			height: 100%;
 			z-index: 0;
+		}
+
+		.reply_wrap {
+			padding-left: 20px;
+			position: relative;
+			top: 20px;
 		}
 
 		.tweet_author {

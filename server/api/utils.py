@@ -1,6 +1,12 @@
 import time
 import logging
 
+from .models import (
+    RetweetRelationShip,
+    ReplyRelationShip,
+)
+
+
 logger = logging.getLogger(__name__)
 def analyzeMethod(func):
     """
@@ -43,3 +49,62 @@ def chunked(queryset, chunk_size=1000):
         if len(chunk) < chunk_size:
             raise StopIteration
         start += chunk_size
+
+
+
+def search_retweet_target(tweet):
+    """
+    リツイートの対象を取得するメソッド　
+    """
+    try:
+        return RetweetRelationShip.objects.get(retweet=tweet).target_tweet
+    except RetweetRelationShip.DoesNotExist:
+        raise ObjectDoesNotExist
+
+
+def search_reply_target(tweet):
+    """
+    リプライの対象を取得するメソッド
+    """
+    try:
+        return ReplyRelationShip.objects.get(reply=tweet).reply_target_tweet
+    except ReplyRelationShip.DoesNotExist:
+        raise ObjectDoesNotExist
+
+
+def search_retweet_reply_target(tweet):
+    """
+    リツイートのリプライの対象を取得するメソッド
+    """
+    try:
+        return ReplyRelationShip.objects.get(reply=\
+            RetweetRelationShip.objects.get(retweet=tweet).target_tweet).reply_target_tweet
+    except ReplyRelationShip.DoesNotExist:
+        raise ObjectDoesNotExist
+
+
+def search_reply_target_base(tweet):
+    """
+    リプライの対象のベースツイートを取得するメソッド
+    """
+    try:
+        return ReplyRelationShip.objects.get(reply=tweet).reply_target_base
+    except ReplyRelationShip.DoesNotExist:
+        raise ObjectDoesNotExist
+
+
+def search_retweet_reply_target_base(tweet):
+    """
+    リツイートのリプライの対象のベースツイートを取得するメソッド
+    """
+    try:
+        return ReplyRelationShip.objects.get(reply=\
+            RetweetRelationShip.objects.get(retweet=tweet).target_tweet).reply_target_base
+    except ReplyRelationShip.DoesNotExist:
+        raise ObjectDoesNotExist
+
+def is_base_tweet(tweet):
+    """
+    大元のツイートか判定
+    """
+    return tweet.isReply == False and tweet.isRetweet == False

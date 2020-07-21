@@ -19,7 +19,6 @@ from .serializers import (
     ProfileSerializer,
     TweetSerializer,
     EntrySerializer,
-    ReplySerializer,
     RoomSerializer,
     MessageSerializer,
     MSettingSerializer,
@@ -28,7 +27,6 @@ from .models import (
     mUser,
     HashTag,
     Tweet,
-    Reply,
     mSetting,
     hUserUpd,
     hTweetUpd,
@@ -42,7 +40,11 @@ from .models import (
     FollowRelationShip,
     RetweetRelationShip,
 )
-from .permissions import IsMyselfOrReadOnly
+from .permissions import (
+    IsMyselfOrReadOnly,
+    BlockListPermission,
+)
+
 from django.contrib.admin.utils import lookup_field
 
 logger = logging.getLogger(__name__)

@@ -3,7 +3,6 @@ from .models import (
     mUser,
     HashTag,
     Tweet,
-    Reply,
     mSetting,
     hUserUpd,
     hTweetUpd,
@@ -15,13 +14,13 @@ from .models import (
     Message,
     Age,
     ReadManagement,
+    Notification
 )
 
 admin.site.register(mUser)
 # admin.site.register(MessageRelationShip)
 admin.site.register(HashTag)
 admin.site.register(Tweet)
-admin.site.register(Reply)
 admin.site.register(mSetting)
 admin.site.register(hUserUpd)
 admin.site.register(hTweetUpd)
@@ -33,3 +32,4 @@ admin.site.register(Room)
 admin.site.register(Message)
 admin.site.register(Age)
 admin.site.register(ReadManagement)
+admin.site.register(Notification)

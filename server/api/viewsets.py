@@ -18,7 +18,6 @@ from .serializers import (
     ProfileSerializer,
     TweetSerializer,
     EntrySerializer,
-    ReplySerializer,
     RoomSerializer,
     MessageSerializer,
     NotificationSerializer,
@@ -28,7 +27,6 @@ from .models import (
     mUser,
     HashTag,
     Tweet,
-    Reply,
     mSetting,
     hUserUpd,
     hTweetUpd,
@@ -41,7 +39,8 @@ from .models import (
     ReadManagement,
     FollowRelationShip,
     RetweetRelationShip,
-    Notification
+    Notification,
+    ReplyRelationShip
 )
 from .permissions import IsMyselfOrReadOnly
 from django.template.context_processors import request
@@ -61,6 +60,12 @@ from .mixins import (
 
 from .utils import (
     analyzeMethod,
+    search_retweet_target,
+    search_reply_target,
+    search_retweet_reply_target,
+    search_reply_target_base,
+    search_retweet_reply_target_base,
+    is_base_tweet,
 )
 
 from django.utils.decorators import method_decorator
@@ -235,6 +240,7 @@ class TweetViewSet(BaseModelViewSet):
             author=target_tweet.author,
             content=target_tweet.content,
             images=target_tweet.images,
+            isReply=target_tweet.isReply,
             isRetweet=True,
             retweet_username=login_user.username
         )
@@ -247,30 +253,89 @@ class TweetViewSet(BaseModelViewSet):
         )
         return Response({'status': 'success'}, status=status.HTTP_201_CREATED)
 
-
-
-class ReplyViewSet(BaseModelViewSet):
-
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-    queryset = Reply.objects.all()
-    serializer_class = ReplySerializer
-
-    def create(self, request, *args, **kwargs):
-
-        logger.debug('reply_create')
+    @transaction.atomic
+    @action(methods=['post'], detail=False)
+    def reply(self, request):
+        logger.debug('replyメソッド')
         logger.debug(request.data)
-        request.data.update({
-            'author_pk': str(request.user.pk),
-            'target': str(request.data['target'])
-        })
-        queryset = self.filter_queryset(self.get_queryset())
-        serializer = self.get_serializer(data=request.data)
 
-        if serializer.is_valid():
-            self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
-            return Response(status=status.HTTP_201_CREATED, headers=headers)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        login_user = request.user
+        content = request.data['content']
+
+        # 対象のツイートを取得
+        try:
+            tweet = Tweet.objects.get(pk=request.data['target_tweet_pk'])
+        except Tweet.DoesNotExist:
+            logger.error('Tweetが取得出来てない')
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        target_tweet = tweet
+        reply_target_base = tweet
+
+        if tweet.isRetweet is True:
+            try:
+                target_tweet = search_retweet_target(tweet)
+            except RetweetRelationShip.DoesNotExist:
+                logger.debug('target_tweet取得できてない')
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        if is_base_tweet(target_tweet):
+            reply_target_base = target_tweet
+        else:
+            reply_target_base = search_reply_target_base(target_tweet)
+
+        reply_tweet = Tweet.objects.create(
+            author=login_user,
+            content=content,
+            isReply=True,
+        )
+        ReplyRelationShip.objects.create(
+            reply_target_tweet=target_tweet,
+            reply=reply_tweet,
+            reply_target_base=reply_target_base,
+        )
+
+        return Response(TweetSerializer(reply_tweet).data, status=status.HTTP_201_CREATED)
+
+
+    @action(methods=['get'], detail=False)
+    def replyDetail(self, request):
+
+        self.set_login_user(request)
+        try:
+            tweet = Tweet.objects.get(pk=request.query_params['target_tweet_pk'])
+        except Tweet.DoesNotExist:
+            logger.error('Tweetが取得できてない')
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        if tweet.isRetweet == True:
+            try:
+                tweet = search_retweet_target(tweet)
+            except RetweetRelationShip.DoesNotExist:
+                logger.debug('target_tweet取得できてない')
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        if is_base_tweet(tweet) == False:
+            tweet = search_reply_target_base(tweet)
+
+        fields = [
+            'pk',
+            'author',
+            'author_pk',
+            'content',
+            'reply_count',
+            'retweet_count',
+            'liked_count',
+            'hashTag',
+            'created_at',
+            'updated_at',
+            'created_time',
+            'isRetweet',
+            'reply',
+            'userIcon'
+        ]
+
+        return Response(TweetSerializer(tweet, fields=fields).data, status=status.HTTP_200_OK)
 
 
 class mUserViewSet(viewsets.ModelViewSet):

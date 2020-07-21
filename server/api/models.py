@@ -179,7 +179,9 @@ class HashTag(models.Model):
 
 
 class Tweet(models.Model):
-
+    """
+    author : ツイートの作成者
+    """
     author = models.ForeignKey(mUser, on_delete=models.CASCADE, related_name='author')
     content = models.TextField(_('Content'))
     liked = models.ManyToManyField(
@@ -198,6 +200,10 @@ class Tweet(models.Model):
     # リツイートかのフラグ
     isRetweet = models.BooleanField(_('This is retweet whether or not'), default=False)
 
+    # リプライかのフラグ
+    isReply = models.BooleanField(_('This is reply whether or not'), default=False)
+
+    # リツイートしたユーザー名
     retweet_username = models.CharField(_('Retweet Username'), max_length=30, blank=True, null=True)
 
     retweets = models.ManyToManyField(
@@ -205,7 +211,17 @@ class Tweet(models.Model):
         blank=True,
         symmetrical=False,
         through='RetweetRelationShip',
-        through_fields=('target_tweet', 'retweet')
+        through_fields=('target_tweet', 'retweet'),
+        related_name='retweet_target'
+    )
+
+    replys = models.ManyToManyField(
+        'self',
+        blank=True,
+        symmetrical=False,
+        through='ReplyRelationShip',
+        through_fields=('reply_target_tweet', 'reply'),
+        related_name='reply_target'
     )
 
     def __str__(self):
@@ -232,6 +248,25 @@ class RetweetRelationShip(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+class ReplyRelationShip(models.Model):
+
+    reply_target_tweet = models.ForeignKey(
+        'api.Tweet',
+        on_delete=models.CASCADE,
+        related_name='reply_target_tweet'
+    )
+    reply = models.ForeignKey(
+        'api.Tweet',
+        on_delete=models.CASCADE,
+        related_name='reply'
+    )
+    reply_target_base = models.ForeignKey(
+        'api.Tweet',
+        on_delete=models.CASCADE,
+        related_name='reply_target_base'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
 class LikedRelationShip(models.Model):
 
     liked_tweet = models.ForeignKey(
@@ -245,18 +280,6 @@ class LikedRelationShip(models.Model):
         related_name='liked_user'
     )
     created_at = models.DateTimeField(auto_now_add=True)
-
-
-class Reply(models.Model):
-
-    author = models.ForeignKey(mUser, on_delete=models.CASCADE)
-    target = models.ForeignKey(Tweet, on_delete=models.CASCADE)
-    content = models.TextField(_('Content'))
-    created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
-    deleted = models.BooleanField(_('Delete Flag'), default=False)
-
-    def __str__(self):
-        return self.content
 
 
 class mSetting(models.Model):

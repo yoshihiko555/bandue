@@ -236,6 +236,8 @@
 				if (statusCode === 404) {
 					this.$router.push('/404')
 					this.reload()
+				} else if (statusCode === 403) {
+					console.log('認証で拒否された')
 				}
 			},
 

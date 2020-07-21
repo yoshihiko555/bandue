@@ -2,7 +2,7 @@
     <div>
         <v-btn
             icon
-            @click='liked(tweet, index)'
+            @click='liked(tweet)'
             class='z10'
         >
             <v-icon v-if='!tweet.isLiked'
@@ -24,10 +24,6 @@
             tweet: {
                 type: Object,
                 required: true
-            },
-            index: {
-                type: Number,
-                required: true
             }
         },
         data: () => ({
@@ -37,7 +33,7 @@
 
         },
         methods: {
-          liked (tweet, index) {
+          liked (tweet) {
     				if (tweet.isLiked) {
     					tweet.liked_count--
     				} else {

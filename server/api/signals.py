@@ -2,7 +2,6 @@ from .models import (
     mUser,
     HashTag,
     Tweet,
-    Reply,
     mSetting,
     hUserUpd,
     hTweetUpd,
@@ -18,6 +17,7 @@ from .models import (
     Notification,
     pre_bulk_update,
     post_bulk_update,
+    ReplyRelationShip,
 )
 
 from api.serializers import (
@@ -74,7 +74,7 @@ NOTIFICATION_WORD = {
 TWEET_EVENT = [
     RETWEET,
     LIKED,
-    REPLY
+    REPLY,
 ]
 
 
@@ -114,6 +114,25 @@ def retweet_receiver(sender, instance, created, raw, using, update_fields, **kwa
 
     except mUser.DoesNotExist:
         logger.error('mUserが存在しません。')
+
+@receiver(post_save, sender=ReplyRelationShip)
+def reply_receiver(sender, instance, created, **kwargs):
+
+    target_instance = instance.reply_target_tweet
+    reply_instance = instance.reply
+
+    receive_user = target_instance.author
+    send_user = reply_instance.author
+
+    try:
+        isExists = check_exists(REPLY, receive_user, send_user, target_instance)
+        isMyself = check_myself(receive_user, send_user)
+        if not isExists and not isMyself:
+            send_response(REPLY, receive_user, send_user, target_instance)
+
+    except ReplyRelationShip.DoesNotExist:
+        logger.error('ReplyRelationShipが存在しません。')
+
 
 
 @receiver(m2m_changed, sender=Tweet.liked.through)

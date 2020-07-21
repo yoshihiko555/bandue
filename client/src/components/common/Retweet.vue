@@ -2,7 +2,7 @@
     <div>
         <v-btn
             icon
-            @click='retweetConfirm(tweet, index)'
+            @click='retweetConfirm(tweet)'
             class='z10'
         >
             <v-icon v-if='!tweet.isRetweeted'
@@ -31,10 +31,6 @@
             tweet: {
                 type: Object,
                 required: true
-            },
-            index: {
-                type: Number,
-                required: true
             }
         },
         components: {
@@ -45,7 +41,7 @@
             selectTweet: {},
         }),
         methods: {
-            retweetConfirm (tweet, index) {
+            retweetConfirm (tweet) {
                 this.retweetConfirmDialog = true
                 this.selectTweet = tweet
             },
@@ -53,7 +49,7 @@
                 this.retweetConfirmDialog = false
             },
             retweet () {
-				console.log('retweet')
+				        console.log('retweet')
                 let tweet = this.selectTweet
 
                 if (tweet.isRetweeted) {

@@ -5,7 +5,6 @@ from rest_framework.routers import DefaultRouter
 router = DefaultRouter()
 router.register('users', viewsets.mUserViewSet)
 router.register('tweet', viewsets.TweetViewSet)
-router.register('reply', viewsets.ReplyViewSet)
 router.register('room', viewsets.RoomViewSet)
 router.register('message', viewsets.MessageViewSet)
 router.register('entry', viewsets.EntryViewSet)
