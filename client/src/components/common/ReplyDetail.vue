@@ -28,29 +28,36 @@
       <v-card>
         <v-card-title>
           <v-avatar>
-            <v-img v-if='targetTweet.userIcon !== "/media/"' :src='targetTweet.userIcon'></v-img>
+            <v-img v-if='tweet.userIcon !== "/media/"' :src='tweet.userIcon'></v-img>
             <v-img v-else src='@/static/img/default_icon.jpeg'></v-img>
           </v-avatar>
           <v-btn
             text
             class='tweet_author z10'
-            @click='toProfile(targetTweet)'
-          >{{ targetTweet.author }}</v-btn>
+            @click='toProfile(tweet)'
+            style='text-transform: none'
+          >{{ tweet.author }}</v-btn>
           <v-spacer></v-spacer>
 
           <span class='created_time'>
-            {{ targetTweet.created_time }}
+            {{ tweet.created_time }}
           </span>
         </v-card-title>
         <v-card-text>
-          {{ targetTweet.content }}
+          {{ tweet.content }}
         </v-card-text>
         <v-container fluid>
           <v-card-actions>
             <v-spacer></v-spacer>
-            <reply :tweet=targetTweet></reply>
-            <retweet :tweet=targetTweet></retweet>
-            <like :tweet=targetTweet></like>
+            <reply
+              :tweet=tweet
+            ></reply>
+            <retweet
+              :tweet=tweet
+            ></retweet>
+            <like
+              :tweet=tweet
+            ></like>
           </v-card-actions>
         </v-container>
       </v-card>
@@ -68,6 +75,7 @@
               text
               class='tweet_author z10'
               @click='toProfile(replyTweet)'
+              style='text-transform: none'
             >{{ replyTweet.author }}</v-btn>
             <v-spacer></v-spacer>
 
@@ -81,9 +89,15 @@
           <v-container fluid>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <reply :tweet=replyTweet></reply>
-              <retweet :tweet=replyTweet></retweet>
-              <like :tweet=replyTweet></like>
+              <reply
+                :tweet=replyTweet
+              ></reply>
+              <retweet
+                :tweet=replyTweet
+              ></retweet>
+              <like
+                :tweet=replyTweet
+              ></like>
             </v-card-actions>
           </v-container>
         </v-card>
@@ -135,8 +149,6 @@
           this.$emit('closeModal')
       },
       getReplyDetail () {
-        console.log(this.tweet.pk)
-
         this.$axios({
           method: 'GET',
           url: '/api/tweet/replyDetail/',
@@ -148,6 +160,7 @@
           var updatedAt = res.data.updated_at.substr(0, 10)
           res.data.updated_at = updatedAt
           this.targetTweet = res.data
+          console.log(this.targetTweet)
         })
         .catch(e => {
           console.log(e)

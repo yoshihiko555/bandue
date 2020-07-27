@@ -26,4 +26,7 @@ class BlockListPermission(permissions.BasePermission):
         logger.debug(request.user)
         logger.debug(view)
         logger.debug(obj)
-        return True
+
+        block_list = obj.msetting.block_list
+        isBlocked = block_list.filter(username=request.user.username).exists()
+        return not isBlocked

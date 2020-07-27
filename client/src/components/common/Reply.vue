@@ -17,40 +17,56 @@
       :tweet='selectTweet'
       :replyModalDialog='replyModalDialog'
     ></ReplyModal>
+
+    <BlockDialog
+      @closeModal='closeModal'
+      :username='tweet.author'
+      :isBlockedDialog='isBlockedDialog'
+      :event='"reply"'
+    ></BlockDialog>
   </div>
 </template>
 
 <script>
   import ReplyModal from '@/components/common/ReplyModal'
+  import BlockDialog from '@/components/common/BlockDialog'
 
   export default {
     props: {
       tweet: {
         type: Object,
         required: true
-      }
+      },
     },
     components: {
       ReplyModal,
+      BlockDialog,
     },
     data: () => ({
       replyModalDialog: false,
       selectTweet: {},
+      isBlocked: false,
+      isBlockedDialog: false,
     }),
     created () {
-
+      this.isBlocked = this.tweet.isBlocked
     },
     mounted: function () {
 
     },
     methods: {
       showReplyModal (tweet) {
-        console.log('showReplyModal')
-        this.replyModalDialog = true
-        this.selectTweet = tweet
+        if (this.isBlocked) {
+          this.isBlockedDialog = true
+        } else {
+          console.log('showReplyModal')
+          this.replyModalDialog = true
+          this.selectTweet = tweet
+        }
       },
       closeModal () {
         this.replyModalDialog = false
+        this.isBlockedDialog = false
       },
       reply (content) {
         console.log('reply')
@@ -72,6 +88,7 @@
         .catch(e => {
           console.log(e)
         })
+
       }
     },
   }

@@ -47,7 +47,7 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
 
         mSetting.objects.create(
-            target=user
+            target=user,
         )
 
         return user
@@ -283,20 +283,40 @@ class LikedRelationShip(models.Model):
 
 
 class mSetting(models.Model):
+    """
+    block_list
+        - ブロックしたユーザーのリスト
+            ブロックしたユーザーはフォロー出来ない。
+            ブロックしたユーザーはフォロワーから外れる。
+            ブロックしたユーザーは自分のプロフィール画面を見るとブロックされていると分かる。
 
-    TWEET_LIMIT_LEVEL_CHOICES = (
-        (1, _('Public')),
-        (2, _('Follower')),
-        (3, _('Follower Who Follow Each Other')),
-    )
+    mute_list
+        - ミュートしたユーザーのリスト
+            ミュートしたユーザーのツイートは公開されない。
+            プロフィール画面から確認などは出来ない。
+
+    """
+
     LANGUAGE_CHOICES = (
         ('JA', _('Japanese')),
         ('EN', _('English')),
         ('FR', _('French')),
         ('GE', _('German')),
     )
-    tweet_limit_level = models.IntegerField(choices=TWEET_LIMIT_LEVEL_CHOICES, default=1)
+    isPrivate = models.BooleanField(_('isPrivate'), default=False)
     language = models.CharField(max_length=20, choices=LANGUAGE_CHOICES, default='EN')
+    block_list = models.ManyToManyField(
+        mUser,
+        symmetrical=False,
+        blank=True,
+        related_name='block_list',
+    )
+    mute_list = models.ManyToManyField(
+        mUser,
+        symmetrical=False,
+        blank=True,
+        related_name='mute_list',
+    )
     target = models.OneToOneField(mUser, on_delete=models.CASCADE)
     isDark = models.BooleanField(_('IsDark'), default=False)
 

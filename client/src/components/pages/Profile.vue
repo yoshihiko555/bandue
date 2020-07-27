@@ -23,12 +23,35 @@
 									<v-img v-else :src=icon></v-img>
 								</v-avatar>
 
-								<v-card-text class="pt-6 text-h5">
-									{{ profileData.username }}
-									<span v-if='!isMe && !loading'>
-										<follow :username='username'></follow>
-									</span>
-								</v-card-text>
+								<v-container fluid>
+									<v-card-text class="pt-6 text-h5">
+										<v-row>
+											<v-col
+												cols='8'
+											>
+												{{ profileData.username }}
+											<v-icon
+												v-if='profileData.isMute'
+											>mdi-volume-variant-off</v-icon>
+											<v-icon
+												v-if='profileData.isBlock'
+											>mdi-account-cancel</v-icon>
+											</v-col>
+										<v-spacer></v-spacer>
+										<v-col
+											cols='3'
+										>
+											<span v-if='!isMe && !loading'>
+												<follow
+												 :username='username'
+												 :isBlocked='profileData.isBlocked'
+												 :isPrivate='profileData.isPrivate'
+												></follow>
+											</span>
+										</v-col>
+									</v-row>
+									</v-card-text>
+								</v-container>
 								<v-card-text>
 									{{ profileData.introduction }}
 								</v-card-text>
@@ -39,53 +62,159 @@
 
 							<div v-if='view == 0'>
 								<v-card-text>
-									<v-btn
-										text
-										@click='changeView(1)'
-									>
-										{{ profileData.followees_count }} Following
-									</v-btn>
+									<v-row>
+										<v-col
+											cols='3'
+										>
+											<v-btn
+												text
+												@click='changeView(1)'
+											>
+												{{ profileData.followees_count }} Following
+											</v-btn>
+										</v-col>
 
-									<v-btn
-										text
-										@click='changeView(2)'
-									>
-										{{ profileData.followers_count }} Followers
-									</v-btn>
+										<v-col
+											cols='3'
+										>
+											<v-btn
+												text
+												@click='changeView(2)'
+											>
+												{{ profileData.followers_count }} Followers
+											</v-btn>
+										</v-col>
+										<v-spacer></v-spacer>
+										<v-col
+											cols='1'
+										>
+											<v-menu v-if='!isMe' bottom left class='z10'>
+												<template v-slot:activator='{ on }'>
+													<v-btn
+														dark
+														icon
+														v-on='on'
+														color='grey'
+														class='z10'
+													>
+														<v-icon>mdi-dots-vertical</v-icon>
+													</v-btn>
+												</template>
+
+												<v-list>
+													<v-list-item
+														v-if='profileData.isMute'
+														@click='unmute'
+													>
+														<v-list-item-title>{{ profileData.username }}さんのミュートを解除</v-list-item-title>
+													</v-list-item>
+													<v-list-item
+														v-else
+														@click='mute'
+													>
+														<v-list-item-title>{{ profileData.username }}さんをミュート</v-list-item-title>
+													</v-list-item>
+													<v-list-item
+														v-if='profileData.isBlock'
+														@click='unblock'
+													>
+														<v-list-item-title>{{ profileData.username }}さんのブロックを解除</v-list-item-title>
+													</v-list-item>
+													<v-list-item
+														v-else
+														@click='block'
+													>
+														<v-list-item-title>{{ profileData.username }}さんをブロック</v-list-item-title>
+													</v-list-item>
+												</v-list>
+											</v-menu>
+
+										</v-col>
+									</v-row>
 								</v-card-text>
 
-								<v-tabs
-									v-model='profileTabModel'
-									grow
-									class='tweetlist_tab_wrap'
-								>
-									<v-tab
-										v-for='(tab, i) in ProfileTablist'
-										:key='i'
-										:href='`#tab-${i}`'
+								<div v-if='profileData.tweet_limit_level === 0'>
+									<v-tabs
+										v-model='profileTabModel'
+										grow
+										class='tweetlist_tab_wrap'
 									>
-										{{ tab }}
-									</v-tab>
-								</v-tabs>
+										<v-tab
+											v-for='(tab, i) in ProfileTablist'
+											:key='i'
+											:href='`#tab-${i}`'
+										>
+											{{ tab }}
+										</v-tab>
+									</v-tabs>
 
-								<v-tabs-items v-model='profileTabModel'>
-									<v-tab-item
-										v-for='(tab, i) in ProfileTablist'
-										:key='i'
-										:value="'tab-' + i"
+									<v-tabs-items v-model='profileTabModel'>
+										<v-tab-item
+											v-for='(tab, i) in ProfileTablist'
+											:key='i'
+											:value="'tab-' + i"
+										>
+
+											<TweetList
+												v-if='i != 4'
+												:tweet-list-flg=i
+												:username='username'
+											></TweetList>
+
+											<div v-else>
+												BBS
+											</div>
+										</v-tab-item>
+									</v-tabs-items>
+								</div>
+								<div v-else-if='profileData.tweet_limit_level === 1'>
+									<v-card
+										class='block_wrap'
 									>
-
-										<TweetList
-											v-if='i != 4'
-											:tweet-list-flg=i
-											:username='username'
-										></TweetList>
-
-										<div v-else>
-											BBS
-										</div>
-									</v-tab-item>
-								</v-tabs-items>
+										<v-card-title>
+											{{ profileData.username }}さんはあなたをブロックしています。
+										</v-card-title>
+										<v-card-text>
+											{{ profileData.username }}さんにブロックされていますが、ツイートを観覧する事は可能です。
+										</v-card-text>
+											<v-row>
+												<v-spacer></v-spacer>
+												<v-btn
+													text
+													align=center
+													@click='showTweetList'
+												>ツイートを表示しますか？</v-btn>
+												<v-spacer></v-spacer>
+											</v-row>
+										<v-spacer></v-spacer>
+									</v-card>
+								</div>
+								<div v-else-if='profileData.tweet_limit_level === 2'>
+									<v-card
+										class='private_wrap'
+									>
+										<v-card-title>
+											{{ profileData.username }}さんのツイートは非公開です。
+										</v-card-title>
+										<v-card-text>
+											{{ profileData.username }}さんのツイートを表示するには、フォローしてください。
+											<v-spacer></v-spacer>
+										</v-card-text>
+									</v-card>
+								</div>
+								<div v-else-if='profileData.tweet_limit_level === 3'>
+									<v-card
+										class='private_wrap'
+									>
+										<v-card-title>
+											{{ profileData.username }}さんのツイートは非公開です。
+										</v-card-title>
+										<v-card-text>
+											{{ profileData.username }}さんはあなたをブロックしています。
+											<v-spacer></v-spacer>
+										</v-card-text>
+									</v-card>
+								</div>
 
 							</div>
 
@@ -227,7 +356,6 @@
 				this.followeesTabModel = cnt
 				this.view = cnt
 			},
-
 			showErrorPage(e) {
 				console.log('showErrorPage')
 				var response = e.response
@@ -240,10 +368,77 @@
 					console.log('認証で拒否された')
 				}
 			},
-
 			reload() {
 				Com.reload(this.$router)
-			}
+			},
+			showTweetList () {
+				this.profileData.tweet_limit_level = 0
+			},
+			mute () {
+				this.$axios({
+					method: 'POST',
+					url: '/api/users/mute/',
+					data: {
+						target_user : this.profileData.username,
+					},
+				})
+				.then(res => {
+					console.log(res)
+				})
+				.catch(e => {
+					console.log(e)
+				})
+				this.profileData.isMute = true
+			},
+			unmute () {
+				this.$axios({
+          method: 'POST',
+          url: 'api/users/unmute/',
+          data: {
+            target_user: this.profileData.username,
+          }
+        })
+        .then(res => {
+          console.log(res)
+        })
+        .catch(e => {
+          console.log(e)
+        })
+				this.profileData.isMute = false
+			},
+			block () {
+				this.$axios({
+					method: 'POST',
+					url: '/api/users/block/',
+					data: {
+						target_user : this.profileData.username,
+					},
+				})
+				.then(res => {
+					console.log(res)
+				})
+				.catch(e => {
+					console.log(e)
+				})
+				this.profileData.isBlock = true
+			},
+			unblock () {
+				this.$axios({
+          method: 'POST',
+          url: 'api/users/unblock/',
+          data: {
+            target_user: this.profileData.username
+          }
+        })
+        .then(res => {
+          console.log(res)
+        })
+        .catch(e => {
+          console.log(e)
+        })
+				this.profileData.isBlock = false
+			},
+
 		}
 	}
 </script>

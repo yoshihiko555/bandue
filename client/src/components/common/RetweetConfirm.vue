@@ -99,9 +99,8 @@
     export default {
         name: 'RetweetConfirm',
         props: ['tweet', 'retweetConfirmDialog'],
-		data: () => ({
-
-		}),
+		    data: () => ({
+        }),
         methods: {
             closeModal () {
                 this.$emit('closeModal')

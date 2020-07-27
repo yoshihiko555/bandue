@@ -85,13 +85,16 @@ class IndexView(generic.TemplateView):
     template_name = 'pages/index.html'
 
 
-class ProfileDetailView(generics.RetrieveAPIView):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+class ProfileDetailView(generics.RetrieveAPIView, GetLoginUserMixin):
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly,
+    )
     queryset = mUser.objects.all()
     serializer_class = ProfileSerializer
     lookup_field = 'username'
 
     def retrieve(self, request, *args, **kwargs):
+        self.set_login_user(request)
         instance = self.get_object()
         fields = [
             'pk',
@@ -107,6 +110,11 @@ class ProfileDetailView(generics.RetrieveAPIView):
             'tweet',
             'entry',
             'setting',
+            'tweet_limit_level',
+            'isBlocked',
+            'isPrivate',
+            'isMute',
+            'isBlock',
         ]
         serializer = self.get_serializer(instance, fields=fields)
         return Response(serializer.data)
@@ -260,6 +268,8 @@ class SearchView(BaseListAPIView):
                 'header',
                 'introduction',
                 'icon',
+                'isBlocked',
+                'isPrivate',
             ]
             if page is not None:
                 serializer = self.get_serializer(

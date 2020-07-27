@@ -6,7 +6,7 @@
                     Dark Mode
                 </v-col>
                 <v-col cols='4'>
-                    <v-switch v-model='settingData.isDark' @change='togleDarkMode'></v-switch>
+                    <v-switch v-model='settingData.isDark' @change='toggleDarkMode'></v-switch>
                 </v-col>
             </v-row>
         </v-container>
@@ -36,7 +36,7 @@
 		},
 
 		methods: {
-            togleDarkMode () {
+            toggleDarkMode () {
                 this.$axios({
                     url: '/api/setting/' + this.settingData.id + '/',
                     method: 'PUT',

@@ -20,11 +20,19 @@
             :retweetConfirmDialog='retweetConfirmDialog'
             :tweet='selectTweet'
         ></RetweetConfirm>
+
+        <BlockDialog
+          @closeModal='closeModal'
+          :username='tweet.author'
+          :isBlockedDialog='isBlockedDialog'
+          :event='"retweet"'
+        ></BlockDialog>
     </div>
 </template>
 
 <script>
     import RetweetConfirm from '@/components/common/RetweetConfirm'
+    import BlockDialog from '@/components/common/BlockDialog'
 
     export default {
         props: {
@@ -35,21 +43,32 @@
         },
         components: {
             RetweetConfirm,
+            BlockDialog,
         },
         data: () => ({
             retweetConfirmDialog: false,
             selectTweet: {},
+            isBlocked: false,
+            isBlockedDialog: false,
         }),
+        created () {
+          this.isBlocked = this.tweet.isBlocked
+        },
         methods: {
             retweetConfirm (tweet) {
+              if (this.isBlocked) {
+                this.isBlockedDialog = true
+              } else {
                 this.retweetConfirmDialog = true
                 this.selectTweet = tweet
+              }
             },
             closeModal () {
                 this.retweetConfirmDialog = false
+                this.isBlockedDialog = false
             },
             retweet () {
-				        console.log('retweet')
+                console.log('retweet')
                 let tweet = this.selectTweet
 
                 if (tweet.isRetweeted) {
@@ -75,6 +94,7 @@
                 })
                 this.retweetConfirmDialog = false
                 this.selectTweet = {}
+
             },
         }
     }

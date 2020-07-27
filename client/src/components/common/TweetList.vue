@@ -53,32 +53,59 @@
 					</span>
 
 					<!-- Tweet編集ボタン -->
-					<v-menu bottom left class='z10'>
-						<template v-slot:activator='{ on }'>
-							<v-btn
-								dark
-								icon
-								v-on='on'
-								color='grey'
-								v-show='tweetListFlg != 4'
-								class='z10'
-							>
-								<v-icon>mdi-dots-vertical</v-icon>
-							</v-btn>
-						</template>
+					<div v-if='tweetListFlg === 4 ||
+							tweetListFlg != 4 && tweet.isMyself'>
+						<v-menu bottom left class='z10'>
+							<template v-slot:activator='{ on }'>
+								<v-btn
+									dark
+									icon
+									v-on='on'
+									color='grey'
+									class='z10'
+								>
+									<v-icon>mdi-dots-vertical</v-icon>
+								</v-btn>
+							</template>
 
-						<v-list>
-							<v-list-item
-								v-for='(item, i) in kebabMenu'
-								:key='i'
-								@click='tweetEditMethods(i, tweet)'
+							<v-list
+								v-if='tweet.isMyself'
 							>
-								<v-list-item-title :class='item.color'>{{ item.title }}</v-list-item-title>
-							</v-list-item>
-						</v-list>
-					</v-menu>
+								<v-list-item
+									v-for='(item, i) in kebabMenu'
+									:key='i'
+									@click='tweetEditMethods(i, tweet)'
+								>
+									<v-list-item-title :class='item.color'>{{ item.title }}</v-list-item-title>
+								</v-list-item>
+							</v-list>
+
+							<v-list
+								v-else
+							>
+								<v-list-item
+									v-if='tweet.isFollow'
+									@click='tweetUserUnFollow(tweet)'
+								>
+									<v-list-item-title>UnFollow</v-list-item-title>
+								</v-list-item>
+								<v-list-item
+									v-else
+									@click='tweetUserFollow(tweet)'
+								>
+									<v-list-item-title>Follow</v-list-item-title>
+								</v-list-item>
+								<v-list-item
+									v-for='(item, i) in tweetUserMenu'
+									:key='i'
+									@click='tweetUserMethod(i, tweet)'
+								>
+									<v-list-item-title :class='item.color'>{{ item.title }}</v-list-item-title>
+								</v-list-item>
+							</v-list>
+						</v-menu>
+					</div>
 				</v-card-title>
-
 				<!-- 内容 -->
 				<v-card-text>
 					{{ tweet.content }}
@@ -131,9 +158,15 @@
 									align='center'
 									justify='end'
 								>
-									<reply :tweet=tweet></reply>
-									<retweet :tweet=tweet></retweet>
-									<like :tweet=tweet></like>
+									<reply
+										:tweet=tweet
+									></reply>
+									<retweet
+										:tweet=tweet
+									></retweet>
+									<like
+										:tweet=tweet
+									></like>
 								</v-row>
 							</v-list-item>
 						</v-card-actions>
@@ -213,6 +246,16 @@
 					title: 'Delete',
 					color: 'red--text',
 				}
+			],
+			tweetUserMenu: [
+				{
+					title: 'Mute',
+					color: '',
+				},
+				{
+					title: 'Block',
+					color: 'red--text'
+				},
 			],
 			tweetEditDialog: false,
 			tweetDeleteDialog: false,
@@ -350,6 +393,80 @@
 				console.log('showReplyDetail')
 				this.replyDetailDialog = true
 				this.selectTweet = tweet
+			},
+			tweetUserFollow (tweet) {
+				console.log('tweetUserFollow')
+				this.$axios({
+					method: 'POST',
+					url: '/api/users/follow/',
+					data: {
+						target_user : tweet.author,
+						isTweetList : true,
+					},
+				})
+				.then(res => {
+					console.log(res)
+					this.tweetList = res.data.results
+				})
+				.catch(e => {
+					console.log(e)
+				})
+			},
+			tweetUserUnFollow (tweet) {
+				this.$axios({
+					method: 'POST',
+					url: '/api/users/unfollow/',
+					data: {
+						target_user : tweet.author,
+						isTweetList : true,
+					},
+				})
+				.then(res => {
+					console.log(res)
+					this.tweetList = res.data.results
+				})
+				.catch(e => {
+					console.log(e)
+				})
+			},
+			mute (tweet) {
+				this.$axios({
+					method: 'POST',
+					url: '/api/users/mute/',
+					data: {
+						target_user : tweet.author,
+					},
+				})
+				.then(res => {
+					console.log(res)
+					this.tweetList = res.data.results
+				})
+				.catch(e => {
+					console.log(e)
+				})
+			},
+			block (tweet) {
+				this.$axios({
+					method: 'POST',
+					url: '/api/users/block/',
+					data: {
+						target_user : tweet.author,
+					},
+				})
+				.then(res => {
+					console.log(res)
+					this.tweetList = res.data.results
+				})
+				.catch(e => {
+					console.log(e)
+				})
+			},
+			tweetUserMethod (i, tweet) {
+				let tweetUserMethodList = [
+					this.mute,
+					this.block,
+				]
+				tweetUserMethodList[i](tweet)
 			},
 		}
 	}

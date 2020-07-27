@@ -86,7 +86,8 @@ def follow_receiver(sender, instance, action, reverse, model, pk_set, using, **k
             receive_user = mUser.objects.get(pk=list(pk_set)[0])
             send_user = instance
             isExists = check_exists(FOLLOW, receive_user, send_user)
-            if not isExists:
+            isBlocked = check_blocked(receive_user, send_user)
+            if not isExists and not isBlocked:
                 send_response(FOLLOW, receive_user, send_user)
 
         except mUser.DoesNotExist:
@@ -106,7 +107,8 @@ def retweet_receiver(sender, instance, created, raw, using, update_fields, **kwa
         try:
             isExists = check_exists(RETWEET, receive_user, send_user, target_instance)
             isMyself = check_myself(receive_user, send_user)
-            if not isExists and not isMyself:
+            isBlocked = check_blocked(receive_user, send_user)
+            if not isExists and not isMyself and not isBlocked:
                 send_response(RETWEET, receive_user, send_user, target_instance)
 
         except RetweetRelationShip.DoesNotExist:
@@ -127,7 +129,8 @@ def reply_receiver(sender, instance, created, **kwargs):
     try:
         isExists = check_exists(REPLY, receive_user, send_user, target_instance)
         isMyself = check_myself(receive_user, send_user)
-        if not isExists and not isMyself:
+        isBlocked = check_blocked(receive_user, send_user)
+        if not isExists and not isMyself and not isBlocked:
             send_response(REPLY, receive_user, send_user, target_instance)
 
     except ReplyRelationShip.DoesNotExist:
@@ -144,8 +147,9 @@ def liked_receiver(sender, instance, action, reverse, model, pk_set, using, **kw
             send_user = mUser.objects.get(pk=list(pk_set)[0])
             isExists = check_exists(LIKED, receive_user, send_user, instance)
             isMyself = check_myself(receive_user, send_user)
+            isBlocked = check_blocked(receive_user, send_user)
 
-            if not isExists and not isMyself:
+            if not isExists and not isMyself and not isBlocked:
                 send_response(LIKED, receive_user, send_user, instance)
 
         except mUser.DoesNotExist:
@@ -211,6 +215,13 @@ def check_myself(receive_user, send_user):
     """
 
     return receive_user == send_user
+
+def check_blocked(receive_user, send_user):
+    """
+    対象ユーザーにブロックされていないかチェック
+    """
+    block_list = receive_user.msetting.block_list
+    return block_list.filter(username=send_user.username).exists()
 
 
 def send_response(event, receive_user, send_user, *args):

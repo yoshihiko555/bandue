@@ -82,13 +82,13 @@
 			loginUser: null,
 			roomName: null,
 			messages: [],
-            unreadMessages: [],
+      unreadMessages: [],
 			ws: null,
 			isShowMsg: false,
 			roomId: null,
 			sender: null,
 			receiver: null,
-            showMenu: false,
+      showMenu: false,
 		}),
 		mounted: function () {
 			this.loginUser = (this.$store.state.isAuth) ? this.$store.state.loginUser : null
@@ -109,32 +109,32 @@
 					console.log('メッセージ一覧', res.data)
 					this.messages = res.data
 					for (var msg of res.data) {
-                        // 未読メッセージを保持
-                        if (!msg.readed && this.loginUser !== msg.sender) this.unreadMessages.push(msg)
-                    }
-                    console.log('自身の未読メッセージ',this.unreadMessages)
+              // 未読メッセージを保持
+              if (!msg.readed && this.loginUser !== msg.sender) this.unreadMessages.push(msg)
+          }
+          console.log('自身の未読メッセージ',this.unreadMessages)
 					this.isShowMsg = true
 					this.roomName = roomName
 					this.roomId = id
 					this.sender = this.$store.state.loginUser
 					this.receiver = roomName
 					const url = 'ws://' + window.location.host + '/ws/' + id + '/'
-                    this.ws = new WebSocket(url)
+          this.ws = new WebSocket(url)
 				})
 				.then(res => {
-                    if (this.unreadMessages.length !== 0) {
-                        this.$axios({
-                            url: '/api/message/message_read/',
-                            method: 'PUT',
-                            data: this.unreadMessages,
-                        })
-                        .then(res => {
-                            console.log('既読アクション完了',res)
-                        })
-                        .catch(e => {
-                            console.log(e)
-                        })
-                    }
+            if (this.unreadMessages.length !== 0) {
+                this.$axios({
+                    url: '/api/message/message_read/',
+                    method: 'PUT',
+                    data: this.unreadMessages,
+                })
+                .then(res => {
+                    console.log('既読アクション完了',res)
+                })
+                .catch(e => {
+                    console.log(e)
+                })
+            }
 				})
 				.catch(e => {
 					console.log(e)
@@ -156,33 +156,33 @@
                         // ソケット受信処理
 						let receiveData = JSON.parse(e.data)
 
-                        switch (receiveData.type) {
+            switch (receiveData.type) {
 
-                            // メッセージ受信
-                            case Con.WS_TYPE_CHAT_MESSAGE:
-                                console.log('メッセージ受信', receiveData)
-                                receiveData.isMe = this.loginUser === receiveData.sender
-                                this.messages.push(receiveData)
-                                this.$refs.content.internalValue = ''
+                // メッセージ受信
+                case Con.WS_TYPE_CHAT_MESSAGE:
+                    console.log('メッセージ受信', receiveData)
+                    receiveData.isMe = this.loginUser === receiveData.sender
+                    this.messages.push(receiveData)
+                    this.$refs.content.internalValue = ''
+                    break
+
+                // 既読
+                case Con.WS_TYPE_READ_MESSAGE:
+                    console.log('既読受信', receiveData)
+                    for (let d of receiveData.data) {
+                        for (let msg of this.messages) {
+                            if (!msg.isMe) continue
+                            if (d.id === msg.id) {
+                                this.$set(msg, 'readed', true)
                                 break
-
-                            // 既読
-                            case Con.WS_TYPE_READ_MESSAGE:
-                                console.log('既読受信', receiveData)
-                                for (let d of receiveData.data) {
-                                    for (let msg of this.messages) {
-                                        if (!msg.isMe) continue
-                                        if (d.id === msg.id) {
-                                            this.$set(msg, 'readed', true)
-                                            break
-                                        }
-                                    }
-                                }
-                                break
-
-                            default:
-                                // 何もしない
+                            }
                         }
+                    }
+                    break
+
+                default:
+                    // 何もしない
+            }
 					}
 				}
 			},

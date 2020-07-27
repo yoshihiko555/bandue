@@ -116,6 +116,15 @@ class ProfileSerializer(DynamicFieldsModelSerializer):
     tweet = serializers.SerializerMethodField()
     entry = serializers.SerializerMethodField()
     setting = serializers.SerializerMethodField()
+    tweet_limit_level = serializers.SerializerMethodField(read_only=True)
+    isBlocked = serializers.SerializerMethodField(read_only=True)
+    isPrivate = serializers.SerializerMethodField(read_only=True)
+    isMute = serializers.SerializerMethodField(read_only=True)
+    isBlock = serializers.SerializerMethodField(read_only=True)
+
+    def __init__(self, *args, **kwargs):
+        self.login_user = kwargs['context']['view'].get_login_user() if 'context' in kwargs else None
+        super().__init__(*args, **kwargs)
 
     class Meta:
         model = mUser
@@ -136,8 +145,12 @@ class ProfileSerializer(DynamicFieldsModelSerializer):
             'tweet',
             'entry',
             'setting',
+            'tweet_limit_level',
+            'isBlocked',
+            'isPrivate',
+            'isMute',
+            'isBlock',
         ]
-
 
     def get_followers(self, obj):
         return ProfileSubSerializer(mUser.objects.filter(followees=obj), many=True).data
@@ -151,14 +164,80 @@ class ProfileSerializer(DynamicFieldsModelSerializer):
     def get_entry(self, obj):
         return EntrySerializer(Entry.objects.filter(author=obj), many=True).data
 
-
     def get_setting(self, obj):
         try:
-            # setting = mSetting.objects.get(target=obj)
-            # logger.info(setting.target__username)
             return MSettingSerializer(mSetting.objects.get(target=obj)).data
         except mSetting.DoesNotExist:
             return None
+
+
+    def get_tweet_limit_level(self, obj):
+
+        if self.login_user == None or obj.username == self.login_user:
+            return 0
+
+        isBlocked = obj.msetting.block_list.filter(username=self.login_user).exists()
+        isPrivate = obj.msetting.isPrivate
+
+        try:
+            login_user = mUser.objects.get(username=self.login_user)
+        except mUser.DoesNotExist:
+            return 0
+
+        isFollow = login_user.followees.filter(username=obj.username).exists()
+
+        if isPrivate:
+            if isFollow:
+                return 0
+            if isBlocked:
+                return 3
+            return 2
+
+        if isBlocked:
+            return 1
+
+        return 0
+
+
+    def get_isBlocked(self, obj):
+
+        if self.login_user == None:
+            return False
+
+        return obj.msetting.block_list.filter(username=self.login_user).exists()
+
+
+    def get_isPrivate(self, obj):
+
+        if self.login_user == None:
+            return False
+
+        return obj.msetting.isPrivate
+
+    def get_isMute(self, obj):
+
+        if self.login_user == None:
+            return False
+
+        try:
+            login_user = mUser.objects.get(username=self.login_user)
+        except mUser.DoesNotExist:
+            return False
+
+        return login_user.msetting.mute_list.filter(username=obj.username).exists()
+
+
+    def get_isBlock(self, obj):
+
+        if self.login_user == None:
+            return False
+
+        try:
+            login_user = mUser.objects.get(username=self.login_user)
+        except mUser.DoesNotExist:
+            return False
+
+        return login_user.msetting.block_list.filter(username=obj.username).exists()
 
     def create(self, validated_data):
         return mUser.objects.create_user(username=validated_data['username'], email=validated_data['email'], password=validated_data['password'])
@@ -181,6 +260,8 @@ class TweetSerializer(DynamicFieldsModelSerializer):
     liked = serializers.SerializerMethodField()
     liked_count = serializers.SerializerMethodField()
     isLiked = serializers.SerializerMethodField()
+    isFollow = serializers.SerializerMethodField()
+    isMyself = serializers.SerializerMethodField()
     reply = serializers.SerializerMethodField()
     reply_count = serializers.SerializerMethodField()
     isRetweeted = serializers.SerializerMethodField()
@@ -192,10 +273,18 @@ class TweetSerializer(DynamicFieldsModelSerializer):
     followees_in_liked = serializers.SerializerMethodField()
     created_time = serializers.SerializerMethodField()
     userIcon = serializers.SerializerMethodField()
+    isBlocked = serializers.SerializerMethodField(read_only=True)
 
 
     def __init__(self, *args, **kwargs):
-        self.login_user = kwargs['context']['view'].get_login_user() if 'context' in kwargs else None
+        logger.debug('==============INIT==============')
+        logger.debug(kwargs)
+        if 'context' in kwargs:
+            self.login_user = kwargs['context']['view'].get_login_user()
+            self.v = kwargs['context']['view']
+        else:
+            self.login_user = None
+
         super().__init__(*args, **kwargs)
 
     class Meta:
@@ -208,6 +297,8 @@ class TweetSerializer(DynamicFieldsModelSerializer):
             'liked',
             'liked_count',
             'isLiked',
+            'isFollow',
+            'isMyself',
             'hashTag',
             'images',
             'created_at',
@@ -225,6 +316,7 @@ class TweetSerializer(DynamicFieldsModelSerializer):
             'followees_in_retweet_users',
             'followees_in_liked',
             'created_time',
+            'isBlocked',
         ]
 
     def get_hashTag(self, obj):
@@ -258,6 +350,25 @@ class TweetSerializer(DynamicFieldsModelSerializer):
             target_tweet = search_retweet_target(target_tweet)
         return target_tweet.liked.filter(username=self.login_user).exists()
 
+    def get_isFollow(self, obj):
+
+        if self.login_user == None:
+            return False
+
+        try:
+            login_user = mUser.objects.get(username=self.login_user)
+        except mUser.DoesNotExist:
+            return False
+
+        return login_user.followees.filter(username=obj.author.username).exists()
+
+    def get_isMyself(self, obj):
+
+        if self.login_user == None:
+            return False
+
+        return obj.author.username == self.login_user
+
 
     def get_isRetweeted(self, obj):
 
@@ -289,7 +400,7 @@ class TweetSerializer(DynamicFieldsModelSerializer):
         ]
 
         if self.login_user != None:
-            fields += ['isRetweeted', 'isLiked']
+            fields += ['isRetweeted', 'isLiked', 'isBlocked']
 
         target_tweet = obj
         if obj.isRetweet == True:
@@ -303,6 +414,13 @@ class TweetSerializer(DynamicFieldsModelSerializer):
             target_tweet = search_reply_target_base(target_tweet)
 
         res = Tweet.objects.filter(pk__in=ReplyRelationShip.objects.filter(reply_target_base=target_tweet).values('reply'))
+
+        if hasattr(self, 'v'):
+            context = {
+                'view': self.v
+            }
+            return TweetSerializer(res, fields=fields, many=True, context=context).data
+
         return TweetSerializer(res, fields=fields, many=True).data
 
 
@@ -430,6 +548,18 @@ class TweetSerializer(DynamicFieldsModelSerializer):
 
     def get_userIcon(self, obj):
         return '/media/' + str(obj.author.icon)
+
+    def get_isBlocked(self, obj):
+
+        logger.debug('=======get_isBlocked======')
+
+        if self.login_user == None:
+            logger.debug('login_userがない')
+            return False
+
+        logger.debug(obj.author)
+
+        return obj.author.msetting.block_list.filter(username=self.login_user).exists()
 
 
     def create(self, validated_data):
@@ -649,7 +779,7 @@ class MSettingSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'target',
-            'tweet_limit_level',
+            'isPrivate',
             'language',
             'isDark'
         ]
