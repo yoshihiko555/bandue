@@ -47,7 +47,7 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
 
         mSetting.objects.create(
-            target=user
+            target=user,
         )
 
         return user
@@ -179,7 +179,9 @@ class HashTag(models.Model):
 
 
 class Tweet(models.Model):
-
+    """
+    author : ツイートの作成者
+    """
     author = models.ForeignKey(mUser, on_delete=models.CASCADE, related_name='author')
     content = models.TextField(_('Content'))
     liked = models.ManyToManyField(
@@ -198,6 +200,10 @@ class Tweet(models.Model):
     # リツイートかのフラグ
     isRetweet = models.BooleanField(_('This is retweet whether or not'), default=False)
 
+    # リプライかのフラグ
+    isReply = models.BooleanField(_('This is reply whether or not'), default=False)
+
+    # リツイートしたユーザー名
     retweet_username = models.CharField(_('Retweet Username'), max_length=30, blank=True, null=True)
 
     retweets = models.ManyToManyField(
@@ -205,7 +211,17 @@ class Tweet(models.Model):
         blank=True,
         symmetrical=False,
         through='RetweetRelationShip',
-        through_fields=('target_tweet', 'retweet')
+        through_fields=('target_tweet', 'retweet'),
+        related_name='retweet_target'
+    )
+
+    replys = models.ManyToManyField(
+        'self',
+        blank=True,
+        symmetrical=False,
+        through='ReplyRelationShip',
+        through_fields=('reply_target_tweet', 'reply'),
+        related_name='reply_target'
     )
 
     def __str__(self):
@@ -232,6 +248,25 @@ class RetweetRelationShip(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+class ReplyRelationShip(models.Model):
+
+    reply_target_tweet = models.ForeignKey(
+        'api.Tweet',
+        on_delete=models.CASCADE,
+        related_name='reply_target_tweet'
+    )
+    reply = models.ForeignKey(
+        'api.Tweet',
+        on_delete=models.CASCADE,
+        related_name='reply'
+    )
+    reply_target_base = models.ForeignKey(
+        'api.Tweet',
+        on_delete=models.CASCADE,
+        related_name='reply_target_base'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
 class LikedRelationShip(models.Model):
 
     liked_tweet = models.ForeignKey(
@@ -247,33 +282,41 @@ class LikedRelationShip(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-class Reply(models.Model):
-
-    author = models.ForeignKey(mUser, on_delete=models.CASCADE)
-    target = models.ForeignKey(Tweet, on_delete=models.CASCADE)
-    content = models.TextField(_('Content'))
-    created_at = models.DateTimeField(_('Created At'), auto_now_add=True)
-    deleted = models.BooleanField(_('Delete Flag'), default=False)
-
-    def __str__(self):
-        return self.content
-
-
 class mSetting(models.Model):
+    """
+    block_list
+        - ブロックしたユーザーのリスト
+            ブロックしたユーザーはフォロー出来ない。
+            ブロックしたユーザーはフォロワーから外れる。
+            ブロックしたユーザーは自分のプロフィール画面を見るとブロックされていると分かる。
 
-    TWEET_LIMIT_LEVEL_CHOICES = (
-        (1, _('Public')),
-        (2, _('Follower')),
-        (3, _('Follower Who Follow Each Other')),
-    )
+    mute_list
+        - ミュートしたユーザーのリスト
+            ミュートしたユーザーのツイートは公開されない。
+            プロフィール画面から確認などは出来ない。
+
+    """
+
     LANGUAGE_CHOICES = (
         ('JA', _('Japanese')),
         ('EN', _('English')),
         ('FR', _('French')),
         ('GE', _('German')),
     )
-    tweet_limit_level = models.IntegerField(choices=TWEET_LIMIT_LEVEL_CHOICES, default=1)
+    isPrivate = models.BooleanField(_('isPrivate'), default=False)
     language = models.CharField(max_length=20, choices=LANGUAGE_CHOICES, default='EN')
+    block_list = models.ManyToManyField(
+        mUser,
+        symmetrical=False,
+        blank=True,
+        related_name='block_list',
+    )
+    mute_list = models.ManyToManyField(
+        mUser,
+        symmetrical=False,
+        blank=True,
+        related_name='mute_list',
+    )
     target = models.OneToOneField(mUser, on_delete=models.CASCADE)
     isDark = models.BooleanField(_('IsDark'), default=False)
 

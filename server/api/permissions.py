@@ -16,3 +16,17 @@ class IsMyselfOrReadOnly(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
         return obj == request.user
+
+
+class BlockListPermission(permissions.BasePermission):
+
+    def has_object_permission(self, request, view, obj):
+        logger.debug('===============BlockListPermission===============')
+        logger.debug(self)
+        logger.debug(request.user)
+        logger.debug(view)
+        logger.debug(obj)
+
+        block_list = obj.msetting.block_list
+        isBlocked = block_list.filter(username=request.user.username).exists()
+        return not isBlocked

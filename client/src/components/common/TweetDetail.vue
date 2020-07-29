@@ -18,29 +18,10 @@
 					<v-list-item-title>{{ tag.title }}</v-list-item-title>
 				</v-list-item-content>
 
-				<v-btn icon>
-					<v-icon v-if='!tweet.isRetweeted'
-						color='black lighten-5'
-						ref='tweet_retweet'
-					>mdi-repeat</v-icon>
-					<v-icon v-else
-						color='green lighten-1'
-						ref='tweet_retweet'
-					>mdi-repeat</v-icon>
-				</v-btn>
-				<span class='mr-2' ref='tweet_retweet_count'>{{ tweet.retweet_count }}</span>
+				<reply :tweet=tweet></reply>
+				<retweet :tweet=tweet></retweet>
+				<like :tweet=tweet></like>
 
-				<v-btn icon>
-					<v-icon v-if='!tweet.isLiked'
-						color='red lighten-3'
-						ref='tweet_isLiked'
-					>mdi-heart</v-icon>
-					<v-icon v-else
-						color='red lighten-1'
-						ref='tweet_isLiked'
-					>mdi-heart</v-icon>
-				</v-btn>
-				<span class='mr-2' ref='tweet_isLikedCount'>{{ tweet.liked_count }}</span>
 				<v-spacer></v-spacer>
 				<v-btn color='teal lighten-4' @click='closeModal'>Close</v-btn>
 			</v-card-actions>
@@ -50,6 +31,9 @@
 
 <script>
 	import { Common } from '@/static/js/common'
+	import Reply from '@/components/common/Reply'
+	import Retweet from '@/components/common/Retweet'
+	import Like from '@/components/common/Like'
 
 	const Com = new Common()
 
@@ -58,6 +42,11 @@
 		props: ['tweet', 'tweetDetailDialog'],
 		data: () => ({
 		}),
+		components: {
+			Reply,
+			Retweet,
+			Like,
+		},
 		methods: {
 			closeModal () {
 				this.$emit('closeModal')

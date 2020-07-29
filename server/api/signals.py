@@ -2,7 +2,6 @@ from .models import (
     mUser,
     HashTag,
     Tweet,
-    Reply,
     mSetting,
     hUserUpd,
     hTweetUpd,
@@ -19,6 +18,7 @@ from .models import (
     pre_bulk_update,
     post_bulk_update,
     MessageNotification,
+    ReplyRelationShip,
 )
 
 from api.serializers import (
@@ -76,7 +76,7 @@ NOTIFICATION_WORD = {
 TWEET_EVENT = [
     RETWEET,
     LIKED,
-    REPLY
+    REPLY,
 ]
 
 
@@ -88,7 +88,8 @@ def follow_receiver(sender, instance, action, reverse, model, pk_set, using, **k
             receive_user = mUser.objects.get(pk=list(pk_set)[0])
             send_user = instance
             isExists = check_exists(FOLLOW, receive_user, send_user)
-            if not isExists:
+            isBlocked = check_blocked(receive_user, send_user)
+            if not isExists and not isBlocked:
                 send_response(FOLLOW, receive_user, send_user)
 
         except mUser.DoesNotExist:
@@ -108,7 +109,8 @@ def retweet_receiver(sender, instance, created, raw, using, update_fields, **kwa
         try:
             isExists = check_exists(RETWEET, receive_user, send_user, target_instance)
             isMyself = check_myself(receive_user, send_user)
-            if not isExists and not isMyself:
+            isBlocked = check_blocked(receive_user, send_user)
+            if not isExists and not isMyself and not isBlocked:
                 send_response(RETWEET, receive_user, send_user, target_instance)
 
         except RetweetRelationShip.DoesNotExist:
@@ -116,6 +118,26 @@ def retweet_receiver(sender, instance, created, raw, using, update_fields, **kwa
 
     except mUser.DoesNotExist:
         logger.error('mUserが存在しません。')
+
+@receiver(post_save, sender=ReplyRelationShip)
+def reply_receiver(sender, instance, created, **kwargs):
+
+    target_instance = instance.reply_target_tweet
+    reply_instance = instance.reply
+
+    receive_user = target_instance.author
+    send_user = reply_instance.author
+
+    try:
+        isExists = check_exists(REPLY, receive_user, send_user, target_instance)
+        isMyself = check_myself(receive_user, send_user)
+        isBlocked = check_blocked(receive_user, send_user)
+        if not isExists and not isMyself and not isBlocked:
+            send_response(REPLY, receive_user, send_user, target_instance)
+
+    except ReplyRelationShip.DoesNotExist:
+        logger.error('ReplyRelationShipが存在しません。')
+
 
 
 @receiver(m2m_changed, sender=Tweet.liked.through)
@@ -127,8 +149,9 @@ def liked_receiver(sender, instance, action, reverse, model, pk_set, using, **kw
             send_user = mUser.objects.get(pk=list(pk_set)[0])
             isExists = check_exists(LIKED, receive_user, send_user, instance)
             isMyself = check_myself(receive_user, send_user)
+            isBlocked = check_blocked(receive_user, send_user)
 
-            if not isExists and not isMyself:
+            if not isExists and not isMyself and not isBlocked:
                 send_response(LIKED, receive_user, send_user, instance)
 
         except mUser.DoesNotExist:
@@ -193,6 +216,13 @@ def check_myself(receive_user, send_user):
     """
 
     return receive_user == send_user
+
+def check_blocked(receive_user, send_user):
+    """
+    対象ユーザーにブロックされていないかチェック
+    """
+    block_list = receive_user.msetting.block_list
+    return block_list.filter(username=send_user.username).exists()
 
 
 def send_response(event, receive_user, send_user, *args):

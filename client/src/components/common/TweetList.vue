@@ -53,32 +53,59 @@
 					</span>
 
 					<!-- Tweet編集ボタン -->
-					<v-menu bottom left class='z10'>
-						<template v-slot:activator='{ on }'>
-							<v-btn
-								dark
-								icon
-								v-on='on'
-								color='grey'
-								v-show='tweetListFlg != 4'
-								class='z10'
-							>
-								<v-icon>mdi-dots-vertical</v-icon>
-							</v-btn>
-						</template>
+					<div v-if='tweetListFlg === 4 ||
+							tweetListFlg != 4 && tweet.isMyself'>
+						<v-menu bottom left class='z10'>
+							<template v-slot:activator='{ on }'>
+								<v-btn
+									dark
+									icon
+									v-on='on'
+									color='grey'
+									class='z10'
+								>
+									<v-icon>mdi-dots-vertical</v-icon>
+								</v-btn>
+							</template>
 
-						<v-list>
-							<v-list-item
-								v-for='(item, i) in kebabMenu'
-								:key='i'
-								@click='tweetEditMethods(i, tweet)'
+							<v-list
+								v-if='tweet.isMyself'
 							>
-								<v-list-item-title :class='item.color'>{{ item.title }}</v-list-item-title>
-							</v-list-item>
-						</v-list>
-					</v-menu>
+								<v-list-item
+									v-for='(item, i) in kebabMenu'
+									:key='i'
+									@click='tweetEditMethods(i, tweet)'
+								>
+									<v-list-item-title :class='item.color'>{{ item.title }}</v-list-item-title>
+								</v-list-item>
+							</v-list>
+
+							<v-list
+								v-else
+							>
+								<v-list-item
+									v-if='tweet.isFollow'
+									@click='tweetUserUnFollow(tweet)'
+								>
+									<v-list-item-title>UnFollow</v-list-item-title>
+								</v-list-item>
+								<v-list-item
+									v-else
+									@click='tweetUserFollow(tweet)'
+								>
+									<v-list-item-title>Follow</v-list-item-title>
+								</v-list-item>
+								<v-list-item
+									v-for='(item, i) in tweetUserMenu'
+									:key='i'
+									@click='tweetUserMethod(i, tweet)'
+								>
+									<v-list-item-title :class='item.color'>{{ item.title }}</v-list-item-title>
+								</v-list-item>
+							</v-list>
+						</v-menu>
+					</div>
 				</v-card-title>
-
 				<!-- 内容 -->
 				<v-card-text>
 					{{ tweet.content }}
@@ -87,21 +114,64 @@
 				<div>
 					<img :src='tweet.images' width="100">
 				</div>
-				<v-card-actions>
-					<v-list-item>
-						<v-list-item-content v-for='tag in tweet.hashTag' :key='tag.title'>
-							<v-list-item-title>{{ tag.title }}</v-list-item-title>
-						</v-list-item-content>
-
-						<v-row
-							align='center'
-							justify='end'
+				<v-container>
+					<v-row>
+						<div
+							v-if='tweet.reply_count != 0
+								|| tweet.isReply === true'
+							class='reply_wrap'
 						>
-							<retweet :tweet=tweet :index=index></retweet>
-							<like :tweet=tweet :index=index></like>
-						</v-row>
-					</v-list-item>
-				</v-card-actions>
+							<div
+								v-if='tweet.isRetweet'
+							>
+								<v-btn
+									text
+									color='primary'
+									class='reply_text z10'
+									@click='showReplyDetail(tweet)'
+								>このスレッドを表示</v-btn>
+							</div>
+							<div
+								v-else
+							>
+								<v-avatar
+									size='34'
+									class='reply_img'
+								>
+									<v-img src='@/static/img/default_icon.jpeg'></v-img>
+								</v-avatar>
+								<v-btn
+									text
+									color='primary'
+									class='reply_text z10'
+									@click='showReplyDetail(tweet)'
+								>このスレッドを表示</v-btn>
+							</div>
+						</div>
+						<v-spacer></v-spacer>
+						<v-card-actions>
+							<v-list-item>
+								<v-list-item-content v-for='tag in tweet.hashTag' :key='tag.title'>
+									<v-list-item-title>{{ tag.title }}</v-list-item-title>
+								</v-list-item-content>
+								<v-row
+									align='center'
+									justify='end'
+								>
+									<reply
+										:tweet=tweet
+									></reply>
+									<retweet
+										:tweet=tweet
+									></retweet>
+									<like
+										:tweet=tweet
+									></like>
+								</v-row>
+							</v-list-item>
+						</v-card-actions>
+					</v-row>
+				</v-container>
 			</v-card>
 		</div>
 
@@ -122,15 +192,23 @@
 			:tweet='selectTweet'
 		></TweetDetail>
 
+		<ReplyDetail
+			@closeModal='closeModal'
+			:replyDetailDialog='replyDetailDialog'
+			:tweet='selectTweet'
+		></ReplyDetail>
+
 	</div>
 </template>
 
 <script>
 	import TweetEdit from '@/components/common/TweetEdit'
 	import TweetDetail from '@/components/common/TweetDetail'
+	import Reply from '@/components/common/Reply'
 	import Retweet from '@/components/common/Retweet'
 	import Like from '@/components/common/Like'
 	import Loading from '@/components/common/Loading'
+	import ReplyDetail from '@/components/common/ReplyDetail'
   import { Common } from '@/static/js/common'
   import { mapState } from 'vuex'
 
@@ -151,9 +229,11 @@
 		components: {
 			TweetEdit,
 			TweetDetail,
+			Reply,
 			Retweet,
 			Like,
 			Loading,
+			ReplyDetail,
 		},
 		data: () => ({
 			tweetList: [],
@@ -167,6 +247,16 @@
 					color: 'red--text',
 				}
 			],
+			tweetUserMenu: [
+				{
+					title: 'Mute',
+					color: '',
+				},
+				{
+					title: 'Block',
+					color: 'red--text'
+				},
+			],
 			tweetEditDialog: false,
 			tweetDeleteDialog: false,
 			tweetDetailDialog: false,
@@ -177,6 +267,7 @@
 			scrollMax: 0,
 			initLoading: true,
       tweetLoading: true,
+			replyDetailDialog: false,
 		}),
 		created () {
 			this.$eventHub.$on('create-tweet', this.tweetUpdate)
@@ -195,7 +286,6 @@
 				}
 			})
 			.then(res => {
-				console.log(res.data.next)
 				for (var i in res.data.results) {
 					var updatedAt = res.data.results[i].updated_at.substr(0, 10)
 					res.data.results[i].updated_at = updatedAt
@@ -241,6 +331,7 @@
 			closeModal () {
 				this.tweetEditDialog = false
 				this.tweetDetailDialog = false
+				this.replyDetailDialog = false
 			},
 			// TODO 削除前に確認モーダル表示
 			showDeleteDialog (tweet) {
@@ -298,6 +389,85 @@
 					}
 				}
 			},
+			showReplyDetail (tweet) {
+				console.log('showReplyDetail')
+				this.replyDetailDialog = true
+				this.selectTweet = tweet
+			},
+			tweetUserFollow (tweet) {
+				console.log('tweetUserFollow')
+				this.$axios({
+					method: 'POST',
+					url: '/api/users/follow/',
+					data: {
+						target_user : tweet.author,
+						isTweetList : true,
+					},
+				})
+				.then(res => {
+					console.log(res)
+					this.tweetList = res.data.results
+				})
+				.catch(e => {
+					console.log(e)
+				})
+			},
+			tweetUserUnFollow (tweet) {
+				this.$axios({
+					method: 'POST',
+					url: '/api/users/unfollow/',
+					data: {
+						target_user : tweet.author,
+						isTweetList : true,
+					},
+				})
+				.then(res => {
+					console.log(res)
+					this.tweetList = res.data.results
+				})
+				.catch(e => {
+					console.log(e)
+				})
+			},
+			mute (tweet) {
+				this.$axios({
+					method: 'POST',
+					url: '/api/users/mute/',
+					data: {
+						target_user : tweet.author,
+					},
+				})
+				.then(res => {
+					console.log(res)
+					this.tweetList = res.data.results
+				})
+				.catch(e => {
+					console.log(e)
+				})
+			},
+			block (tweet) {
+				this.$axios({
+					method: 'POST',
+					url: '/api/users/block/',
+					data: {
+						target_user : tweet.author,
+					},
+				})
+				.then(res => {
+					console.log(res)
+					this.tweetList = res.data.results
+				})
+				.catch(e => {
+					console.log(e)
+				})
+			},
+			tweetUserMethod (i, tweet) {
+				let tweetUserMethodList = [
+					this.mute,
+					this.block,
+				]
+				tweetUserMethodList[i](tweet)
+			},
 		}
 	}
 </script>
@@ -315,6 +485,12 @@
 			width: 100%;
 			height: 100%;
 			z-index: 0;
+		}
+
+		.reply_wrap {
+			padding-left: 20px;
+			position: relative;
+			top: 20px;
 		}
 
 		.tweet_author {

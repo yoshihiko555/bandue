@@ -145,6 +145,7 @@
 					this.$router.push('/profile/' + username)
 					Com.reload(this.$router)
 				} else if (Con.TWEET_EVENT.includes(event)) {
+					console.log(info.target_tweet_info)
 					this.showTweetDetail(info.target_tweet_info)
 				} else {
 					console.log('それ以外。メッセージとか？')

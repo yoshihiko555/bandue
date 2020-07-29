@@ -44,6 +44,7 @@
 	import AcountSetting from '@/components/common/AcountSetting'
 	import SystemSetting from '@/components/common/SystemSetting'
 	import BbsSetting from '@/components/common/BbsSetting'
+	import Privacy from '@/components/common/Privacy'
 
 	export default {
 		name: 'Setting',
@@ -53,14 +54,16 @@
 			Sidebar,
 			AcountSetting,
 			SystemSetting,
-			BbsSetting
+			BbsSetting,
+			Privacy,
 		},
 		data: () => ({
 			settingPage: 0,
 			pageList: [
 				AcountSetting,
 				SystemSetting,
-				BbsSetting
+				BbsSetting,
+				Privacy,
 			],
 			settingModel: 0,		// 使わない？
 			settingList: [			// 使わない？
@@ -75,6 +78,9 @@
 				{
 					text: 'BbsSetting',
 					icon: ''
+				},
+				{
+					text: 'Privacy'
 				}
 			],
 			acountSettingList: [

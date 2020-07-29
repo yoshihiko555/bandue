@@ -73,8 +73,18 @@
           							align='center'
           							justify='end'
           						>
-          							<retweet :tweet=tweet :index=index></retweet>
-          							<like :tweet=tweet :index=index></like>
+                        <reply
+                          :tweet=tweet
+                          :isBlocked=tweet.isBlocked
+                        ></reply>
+          							<retweet
+                          :tweet=tweet
+                          :isBlocked=tweet.isBlocked
+                        ></retweet>
+          							<like
+                          :tweet=tweet
+                          :isBlocked=tweet.isBlocked
+                        ></like>
           						</v-row>
           					</v-list-item>
           				</v-card-actions>
@@ -111,32 +121,38 @@
           <div v-else>
             <div v-if='userList.length > 0'>
               <div v-for='(user, index) in userList' :key='`user.username-${index}`'>
-                <v-card
-                  flat
-                  class='user_wrap'
-                  height='200px'
-                >
-                  <v-card-title
-                    class='username_wrap'
+                <div v-if='!user.isBlocked'>
+                  <v-card
+                    flat
+                    class='user_wrap'
+                    height='200px'
                   >
-                    <v-avatar>
-                      <v-img v-if='user.icon !== null' :src='user.icon'></v-img>
-                      <v-img v-else src='@/static/img/default_icon.jpeg'></v-img>
-                    </v-avatar>
-                    <router-link
-                      @click.native='reload()'
-                      :to='{ name : "Profile", params : { username: user.username}}'
-                      class='username z10'
-                    >{{ user.username | truncate(10, '..') }}</router-link>
-                    <v-spacer></v-spacer>
-                    <span class='follow_btn ml-8'>
-                      <follow :username='user.username' :height='"40px"' :width='"120px"'></follow>
-                    </span>
-                  </v-card-title>
-                  <v-card-text>
-                    {{ user.introduction | truncate(60) }}
-                  </v-card-text>
-                </v-card>
+                    <v-card-title
+                      class='username_wrap'
+                    >
+                      <v-avatar>
+                        <v-img v-if='user.icon !== null' :src='user.icon'></v-img>
+                        <v-img v-else src='@/static/img/default_icon.jpeg'></v-img>
+                      </v-avatar>
+                      <router-link
+                        @click.native='reload()'
+                        :to='{ name : "Profile", params : { username: user.username}}'
+                        class='username z10'
+                      >{{ user.username | truncate(10, '..') }}</router-link>
+                      <v-spacer></v-spacer>
+                      <span class='follow_btn ml-8'>
+                        <follow
+                          :username='user.username'
+                          :isBlocked='user.isBlocked'
+                          :isPrivate='user.isPrivate'
+                        ></follow>
+                      </span>
+                    </v-card-title>
+                    <v-card-text>
+                      {{ user.introduction | truncate(60) }}
+                    </v-card-text>
+                  </v-card>
+                </div>
               </div>
               <div v-if='nextPage != null'>
                 <div v-if='!loadingMore'>
@@ -171,6 +187,7 @@
 
 <script>
 
+import Reply from '@/components/common/Reply'
 import Retweet from '@/components/common/Retweet'
 import Like from '@/components/common/Like'
 import Follow from '@/components/common/Follow'
@@ -189,6 +206,7 @@ export default {
     }
   },
   components: {
+    Reply,
     Retweet,
     Like,
     Follow,

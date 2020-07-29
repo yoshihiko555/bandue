@@ -4,7 +4,6 @@ from .models import (
     mUser,
     HashTag,
     Tweet,
-    Reply,
     mSetting,
     hUserUpd,
     hTweetUpd,
@@ -42,6 +41,7 @@ class TweetFilter(django_filter.FilterSet):
     """
 
     def __init__(self, *args, **kwargs):
+        self.login_user = kwargs['data']['loginUser'] if 'loginUser' in kwargs['data'] else None
         self.target_user = kwargs['data']['targetUser'] if 'targetUser' in kwargs['data'] else None
         self.searchFlg = kwargs['data']['searchFlg'] if 'searchFlg' in kwargs['data'] else None
         super().__init__(*args, **kwargs)
@@ -69,7 +69,12 @@ class TweetFilter(django_filter.FilterSet):
                 q_list.append('Q(content__contains=q)')
         query_str = '&'.join(q_list) + '|'.join(h_list)
 
-        q = Tweet.objects.filter(eval(query_str))
+        # ブロックリストにログインユーザーが入っている場合,
+        # また、非公開の場合、省く
+        q = Tweet.objects.filter(eval(query_str)).exclude(
+            Q(author__msetting__block_list__username=self.login_user) |
+            Q(author__msetting__isPrivate=True)
+        )
         # TODO トレンド順
         if self.searchFlg == '0':
             logger.debug('=====================================トレンド============================================')
@@ -100,22 +105,22 @@ class TweetFilter(django_filter.FilterSet):
             # リプライツイート除いた一覧
             if value == 0:
 
-                t_list = Tweet.objects.filter( \
-                    author=target_user).exclude(Q(isRetweet=True) & \
-                        Q(author=target_user) & Q(retweet_username=self.target_user))
-                res = t_list.exclude(reply__isnull=False).order_by('-created_at')
+                user_tweet = target_user.author.all().exclude(Q(isReply=True))
+                user_retweet = Tweet.objects.filter(pk__in=target_user.retweet_user.all().values('retweet'))
+                res = user_tweet.union(user_retweet).order_by('-created_at')
 
             # リプライツイート含めた一覧
             elif value == 1:
 
-                res = target_user.author.all().exclude(Q(isRetweet=True) & \
-                    Q(author=target_user) & Q(retweet_username=self.target_user)).order_by('-created_at')
+                user_tweet = target_user.author.all()
+                user_retweet = Tweet.objects.filter(pk__in=target_user.retweet_user.all().values('retweet'))
+                res = user_tweet.union(user_retweet).order_by('-created_at')
 
             # 画像含めた一覧
             elif value == 2:
                 res = target_user.author.all().exclude( \
-                    Q(images__isnull=False) | Q(author=target_user) & \
-                        Q(retweet_username=self.target_user)).order_by('-created_at')
+                    Q(images__isnull=False) | \
+                        Q(isRetweet=True) | Q(isReply=True)).order_by('-created_at')
 
             # いいねしたツイート一覧
             elif value == 3:
@@ -123,14 +128,17 @@ class TweetFilter(django_filter.FilterSet):
 
             # ユーザー&フォローユーザーツイート一覧
             elif value == 4:
-                my_tweets = target_user.author.all().exclude()
+                mute_list = target_user.msetting.mute_list
+
+                my_tweets = target_user.author.all()
 
                 followees_tweets = Tweet.objects.filter( \
-                    author__in=target_user.followees.all()).exclude(isRetweet=True)
+                    author__in=target_user.followees.all()).exclude(Q(isRetweet=True) \
+                        | Q(author__in=mute_list.all()))
 
                 followees_retweets = Tweet.objects.filter( \
                     pk__in=RetweetRelationShip.objects.filter( \
-                        retweet_user__in=target_user.followees.all()))
+                        retweet_user__in=target_user.followees.all())).exclude(isReply=True)
 
                 res = my_tweets.union(followees_tweets).union(followees_retweets).order_by('-created_at')
 
@@ -178,9 +186,11 @@ class MUserFilter(django_filter.FilterSet):
 
     def username_filter(self, queryset, name, value):
 
+        # TODO ログインユーザーがブロックされてたら検索結果に対象ユーザーをのせない
+
         # 同じ検索ワード, ハッシュタグは省く
         q_list = list({Q(username__contains=i.strip()) for i in value.split(',') if i.strip()[0] != '#'})
-        return mUser.objects.filter(*q_list).exclude(username=self.login_user)
+        return mUser.objects.filter(*q_list).exclude(Q(username=self.login_user))
 
 
 class EntryFilter(django_filter.FilterSet):
@@ -232,7 +242,7 @@ class RoomFilter(django_filter.FilterSet):
 
     # 検索文字からツイートを絞る
     def content_filter(self, queryset, name, value):
-        
+
         q_list = []
         qs = list({i.strip() for i in value.split(',')})
         for q in qs:
