@@ -33,6 +33,7 @@
 
 <script>
 	import { Common } from '@/static/js/common'
+	import { Const } from '@/static/js/const'
 	import Header from '@/components/common/Header'
 	import Footer from '@/components/common/Footer'
 	import Sidebar from '@/components/common/Sidebar'
@@ -41,6 +42,7 @@
 	import Search from '@/components/common/Search'
 
 	const Com = new Common()
+	const Con = new Const()
 
 	export default {
 		name: 'Index',
@@ -70,8 +72,9 @@
 
 			this.ws.onmessage = e => {
 				var receiveData = JSON.parse(e.data)
-				this.$eventHub.$emit('cntUpInfo', 'Info')
-				console.log('ソケット結果受信', receiveData)
+                console.log('ソケット結果受信', receiveData)
+                let event = (receiveData.type === Con.WS_TYPE_NOTIFICATION) ? 'Info' : 'Message'
+				this.$eventHub.$emit('cntUpInfo', event)
 			}
     },
 		methods: {

@@ -30,11 +30,20 @@
                                 <v-list-item
                                     v-for='(room, i) in rooms'
                                     :key='i'
-                                    @click='showRoom(room.id, room.room_name)'
+                                    @click='showRoom(room)'
                                 >
                                     <v-list-item-content>
                                         <v-list-item-title v-text='room.room_name'></v-list-item-title>
                                     </v-list-item-content>
+
+                                    <v-list-item-action>
+                                        <v-badge
+                                            color='red accent-2'
+                                            :content='room.msg_count'
+									        :value='room.msg_count'
+                                        >
+                                        </v-badge>
+                                    </v-list-item-action>
 
                                     <!-- Message編集ボタン -->
                                     <v-menu bottom left>
@@ -150,8 +159,9 @@
         },
         created () {
 			this.$eventHub.$on('create-room', this.roomsUpdate)
+			this.$eventHub.$on('clear-cnt', this.clearCount)
 		},
-		mounted: function () {
+		mounted () {
 			const loginUser = this.$store.state.loginUser
 			this.$axios({
 				method: 'GET',
@@ -169,8 +179,8 @@
 			})
 		},
 		methods: {
-			showRoom (id, roomName) {
-				this.$refs.messageBox.showMessage(id, roomName)
+			showRoom (room) {
+				this.$refs.messageBox.showMessage(room)
             },
             roomsUpdate (res) {
                 console.log(res)
@@ -215,6 +225,11 @@
             trim (word) {
                 return String(word).replace(/^\s+|\s+$/g, '')
             },
+            clearCount (room, cnt) {
+                console.log(room)
+                room.msg_count = 0
+                this.$eventHub.$emit('removeMessageInfo', cnt)
+            }
 		}
 	}
 </script>

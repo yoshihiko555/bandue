@@ -18,6 +18,7 @@ from .models import (
     FollowRelationShip,
     RetweetRelationShip,
     Notification,
+    MessageNotification,
 )
 from rest_framework.renderers import JSONRenderer
 
@@ -560,9 +561,10 @@ class RoomSerializer(serializers.ModelSerializer):
     name = serializers.CharField(required=False)
     room_name = serializers.SerializerMethodField()
     users = serializers.SerializerMethodField()
+    msg_count = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
-        self.login_user = kwargs['context']['view'].get_login_user()
+        self.login_user = kwargs['context']['view'].get_login_user() if 'context' in kwargs else None
         super().__init__(*args, **kwargs)
 
     class Meta:
@@ -573,6 +575,7 @@ class RoomSerializer(serializers.ModelSerializer):
             'room_name',
             'users',
             'created_at',
+            'msg_count',
         ]
 
     def get_room_name(self, obj):
@@ -587,6 +590,14 @@ class RoomSerializer(serializers.ModelSerializer):
         user_contents = ProfileSubSerializer(users, many=True).data
         return user_contents
 
+    def get_msg_count(self, obj):
+        msg = obj.room.all()
+        count = []
+        for m in msg:
+            if (m.sender.username != self.login_user and not m.readed):
+                count.append(m)
+        return len(count)
+
     def create(self, validated_data):
         name = validated_data['name']
         room = Room.objects.create()
@@ -600,7 +611,7 @@ class MessageSerializer(serializers.ModelSerializer):
     isMe = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
-        self.login_user = kwargs['context']['view'].get_login_user()
+        self.login_user = kwargs['context']['view'].get_login_user() if 'context' in kwargs else None
         super().__init__(*args, **kwargs)
 
     class Meta:
@@ -609,6 +620,7 @@ class MessageSerializer(serializers.ModelSerializer):
             'id',
             'content',
             'sender',
+            'receiver',
             'image',
             'readed',
             'deleted',
@@ -632,6 +644,7 @@ class MessageSubSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'sender',
+            'receiver',
             'readed',
             'deleted',
         ]
@@ -747,8 +760,7 @@ class NotificationCountSerializer(serializers.ModelSerializer):
         return self.get_infomation_count(obj, event_list)
 
     def get_msg_count(self, obj):
-        event_list = [4]
-        return self.get_infomation_count(obj, event_list)
+        return self.get_message_notice_count(obj)
 
 
     def get_infomation_count(self, obj, event_list):
@@ -763,3 +775,76 @@ class NotificationCountSerializer(serializers.ModelSerializer):
         except mUser.DoesNotExist:
             logger.error('mUserが存在しません')
             return 0
+
+
+    def get_message_notice_count(self, obj):
+        if self.login_user == None:
+            return 0
+
+        try:
+            login_user = mUser.objects.get(username=self.login_user)
+            return MessageNotification.objects.filter(
+                receiver=login_user,
+                readed=False
+            ).count()
+        except mUser.DoesNotExist:
+            logger.info('mUserが存在しません')
+            return 0
+
+
+class MessageNotificationSerializer(serializers.ModelSerializer):
+    created_time = serializers.SerializerMethodField()
+    receiver = serializers.SerializerMethodField()
+    sender = serializers.SerializerMethodField()
+    room = serializers.SerializerMethodField()
+    message = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MessageNotification
+        fields = [
+            'pk',
+            'receiver',
+            'sender',
+            'room',
+            'message',
+            'created_at',
+            'created_time',
+            'readed',
+        ]
+
+
+    def get_receiver(self, obj):
+        return ProfileSubSerializer(obj.receiver).data
+
+
+    def get_sender(self, obj):
+        return ProfileSubSerializer(obj.sender).data
+
+
+    def get_room(self, obj):
+        return RoomSerializer(obj.room).data
+
+    def get_message(self, obj):
+        return MessageSerializer(obj.message).data
+
+
+    def get_created_time(self, obj):
+
+        timezone = pytz.timezone('Asia/Tokyo')
+        now = datetime.now(tz=timezone)
+        created_at = obj.created_at
+        diff = now - created_at
+
+        if diff.days >= 30:
+            return (now - timedelta(days=diff.days)).strftime('%Y/%m/%d')
+
+        if diff.days != 0:
+            return str(diff.days) + '日'
+
+        if diff.seconds // 60 == 0:
+            return str(diff.seconds) + '秒'
+
+        if diff.seconds // 60 // 60 == 0:
+            return str(diff.seconds // 60) + '分'
+
+        return str(diff.seconds // 60 // 60) + '時間'

@@ -126,9 +126,14 @@ class Const {
 
     WS_TYPE_READ_MESSAGE = 'read_message'
 
+    WS_TYPE_NOTIFICATION= 'notification'
+
+    WS_TYPE_MSG_NOTIFICATION= 'message_notification'
+
     HTTP_STATUS_OK = 200
 
     HTTP_STATUS_CREATED = 201
+
 }
 
 export { Const }

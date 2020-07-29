@@ -18,6 +18,7 @@ from .models import (
     Notification,
     pre_bulk_update,
     post_bulk_update,
+    MessageNotification,
 )
 
 from api.serializers import (
@@ -25,6 +26,7 @@ from api.serializers import (
     TweetSerializer,
     NotificationSerializer,
     MessageSubSerializer,
+    MessageNotificationSerializer,
 )
 
 
@@ -168,7 +170,6 @@ def check_exists(event, receive_user, send_user, *args):
     """
     同じ通知で未読の通知があったら、被るためチェック
     """
-
     if event in TWEET_EVENT:
         return Notification.objects.filter(
             event=event,
@@ -224,9 +225,46 @@ def send_response(event, receive_user, send_user, *args):
     )
 
 @receiver(post_bulk_update, sender=Message)
-def send_res(sender, **kwargs):
+def send_read_message(sender, **kwargs):
+    """
+    対象ルームに対して、既読通知を送るメソッド
+    """
+
     channel_layer = get_channel_layer()
     async_to_sync(channel_layer.group_send)(
         str(kwargs['queryset'][0].room.id),
         {'type': 'read_message',  'data': MessageSubSerializer(kwargs['queryset'], many=True).data}
+    )
+
+
+@receiver(post_save, sender=Message)
+def recevie_message(sender, instance, created, raw, using, update_fields, **kwargs):
+    logger.info('メッセージが来た')
+
+    try:
+        target_room = instance.room
+        sender = instance.sender
+        receiver = target_room.users.exclude(username=sender.username)[0]
+        isMyself = check_myself(receiver, sender)
+        if not isMyself:
+            send_message_notice(receiver, sender, target_room, instance)
+
+    except mUser.DoesNotExist:
+        logger.info('ユーザーが存在しません')
+
+def send_message_notice(receiver, sender, room, message):
+    """
+    対象のレイヤーにメッセージの通知を送るメソッド
+    """
+
+    res = MessageNotification.objects.create(
+        receiver=receiver,
+        sender=sender,
+        room=room,
+        message=message,
+    )
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        receiver.username,
+        {'type': 'message_notification',  'content': MessageNotificationSerializer(res).data}
     )

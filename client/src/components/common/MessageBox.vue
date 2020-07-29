@@ -97,13 +97,12 @@
 			this.scrollEnd()
 		},
 		methods: {
-			showMessage (id, roomName) {
+			showMessage (room) {
+                console.log(room)
 				this.$axios({
 					method: 'GET',
-					url: '/api/message/',
-					params: {
-						loginUser: this.loginUser
-					},
+                    url: '/api/message/get_room_msg/',
+                    params: room,
 				})
 				.then(res => {
 					console.log('メッセージ一覧', res.data)
@@ -114,22 +113,29 @@
                     }
                     console.log('自身の未読メッセージ',this.unreadMessages)
 					this.isShowMsg = true
-					this.roomName = roomName
-					this.roomId = id
+					this.roomName = room.room_name
+					this.roomId = room.id
 					this.sender = this.$store.state.loginUser
-					this.receiver = roomName
-					const url = 'ws://' + window.location.host + '/ws/' + id + '/'
+					this.receiver = room.room_name
+					const url = 'ws://' + window.location.host + '/ws/' + room.id + '/'
                     this.ws = new WebSocket(url)
 				})
 				.then(res => {
-                    if (this.unreadMessages.length !== 0) {
+                    if (this.unreadMessages.length) {
+                        console.log('ここにきた')
                         this.$axios({
                             url: '/api/message/message_read/',
                             method: 'PUT',
-                            data: this.unreadMessages,
+                            data: {
+                                messages: this.unreadMessages,
+                                user: this.sender,
+                                room: room,
+                            }
                         })
                         .then(res => {
                             console.log('既読アクション完了',res)
+                            this.$eventHub.$emit('clear-cnt', room, this.unreadMessages.length)
+                            this.unreadMessages = 0
                         })
                         .catch(e => {
                             console.log(e)

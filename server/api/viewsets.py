@@ -41,7 +41,8 @@ from .models import (
     ReadManagement,
     FollowRelationShip,
     RetweetRelationShip,
-    Notification
+    Notification,
+    MessageNotification,
 )
 from .permissions import IsMyselfOrReadOnly
 from django.template.context_processors import request
@@ -411,6 +412,20 @@ class MessageViewSet(BaseModelViewSet):
         # serializer = self.get_serializer(queryset, many=True)
         # return Response(serializer.data)
 
+    @action(methods=['GET'], detail=False)
+    def get_room_msg(self, request, pk=None):
+        logger.info('来たー')
+        logger.info(request.query_params)
+        self.set_login_user(request)
+        logger.info(self.login_user)
+        login_user = mUser.objects.get(username=self.login_user)
+        queryset = Message.objects.filter(
+            room=Room.objects.get(id=request.query_params['id'])
+        )
+        serializer = self.get_serializer(queryset, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     @action(methods=['PUT'], detail=True)
     def message_delete(self, request, pk=None):
         message = Message.objects.get(pk=pk)
@@ -421,14 +436,31 @@ class MessageViewSet(BaseModelViewSet):
     @action(methods=['PUT'], detail=False)
     def message_read(self, request):
         logger.info('既読')
+        logger.info(request.data)
         messages = []
-        for i in request.data:
+        for i in request.data['messages']:
             msg = Message.objects.get(id=i['id'])
             msg.readed = True
             messages.append(msg)
 
         Message.objects.bulk_update(messages, fields=['readed'])
+
+        # メッセージ通知テーブル初期化
+        self.remove_msg_notice(request.data['user'], request.data['room'])
+
         return Response(status=status.HTTP_200_OK)
+
+    def remove_msg_notice(self, user, room):
+        notifications = MessageNotification.objects.filter(
+            receiver=mUser.objects.get(username=user),
+            room=Room.objects.get(id=room['id']),
+            readed=False,
+        )
+        infos = []
+        for notification in notifications:
+            notification.readed = True
+            infos.append(notification)
+        MessageNotification.objects.bulk_update(infos, fields=['readed'])
 
 
 class EntryViewSet(BaseModelViewSet):

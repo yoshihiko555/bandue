@@ -28,21 +28,6 @@ SECRET_KEY = 'c&h4a)zuz(@kt1((c67*d!^-gclzlq!!!!@t)ljh0$9e+q7w81'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-if DEBUG:
-    logging.basicConfig(
-        level = logging.DEBUG,
-        format = '''%(levelname)s %(asctime)s %(pathname)s:%(funcName)s:%(lineno)s
-        %(message)s''')
-
-else:
-    logging.basicConfig(
-        level = logging.DEBUG,
-        format = '''%(levelname)s %(asctime)s %(pathname)s:%(funcName)s 行数:%(lineno)s:%(lineno)s
-        %(message)s'''
-        # filename = 'logs/debug.log',
-        # filemode = 'a'
-    )
-
 ALLOWED_HOSTS = [
     '192.168.33.12',
     '192.168.33.13',
@@ -221,3 +206,23 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 AUTH_USER_MODEL = 'api.mUser'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+if DEBUG:
+    logging.basicConfig(
+        level = logging.DEBUG,
+        format = '''%(levelname)s %(asctime)s %(pathname)s:%(funcName)s:%(lineno)s
+        %(message)s''')
+    INSTALLED_APPS += ['corsheaders']
+    MIDDLEWARE = ['corsheaders.middleware.CorsMiddleware'] + MIDDLEWARE
+    CORS_ORIGIN_WHITELIST = (
+        'http://localhost:8080',
+    )
+
+else:
+    logging.basicConfig(
+        level = logging.DEBUG,
+        format = '''%(levelname)s %(asctime)s %(pathname)s:%(funcName)s 行数:%(lineno)s:%(lineno)s
+        %(message)s'''
+        # filename = 'logs/debug.log',
+        # filemode = 'a'
+    )

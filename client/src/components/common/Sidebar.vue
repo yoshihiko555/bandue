@@ -108,7 +108,8 @@
 		created () {
 			this.$eventHub.$on('cntUpInfo', this.cntUpInfo)
 			this.$eventHub.$on('cntDownInfo', this.cntDownInfo)
-			this.$eventHub.$on('cntZeroInfo', this.cntZeroInfo)
+            this.$eventHub.$on('cntZeroInfo', this.cntZeroInfo)
+            this.$eventHub.$on('removeMessageInfo', this.removeMessageInfo)
 		},
 
 		mounted: function () {
@@ -160,7 +161,11 @@
 			},
 			cntZeroInfo(menu) {
 				this.items[Con.SIDEBAR_INDEX[menu]].info_content = 0
-			},
+            },
+            removeMessageInfo (cnt) {
+                console.log(cnt)
+                this.items[Con.SIDEBAR_INDEX.Message].info_content -= cnt
+            }
 		}
 	}
 </script>

@@ -51,6 +51,7 @@ class MessageConsumer(AsyncWebsocketConsumer):
             roomId = text_data_json['roomId']
             content = text_data_json['content']
             sender = text_data_json['sender']
+            receiver = text_data_json['receiver']
             await self.createMessage(text_data_json)
             await self.channel_layer.group_send(
                 self.room_group_name,
@@ -59,6 +60,7 @@ class MessageConsumer(AsyncWebsocketConsumer):
                     'roomId': roomId,
                     'content': content,
                     'sender': sender,
+                    'receiver': receiver,
                 }
             )
         except Exception as e:
@@ -68,10 +70,12 @@ class MessageConsumer(AsyncWebsocketConsumer):
         try:
             content = event['content']
             sender = event['sender']
+            receiver = event['receiver']
             await self.send(text_data=json.dumps({
                 'type': 'chat_message',
                 'content': content,
                 'sender': sender,
+                'receiver': receiver,
                 'id': self.message_id,
                 'deleted': False,
             }))
@@ -94,12 +98,13 @@ class MessageConsumer(AsyncWebsocketConsumer):
         try:
             room = Room.objects.get(id=event['roomId'])
             sender = mUser.objects.get(username=event['sender'])
+            receiver = mUser.objects.get(username=event['receiver'])
             msg = Message.objects.create(
                 room=room,
                 content=event['content'],
                 sender=sender,
+                receiver=receiver,
             )
-            msg.save()
             self.message_id = str(msg.id)
         except Exception as e:
             raise
@@ -135,6 +140,17 @@ class NotificationConsumer(AsyncWebsocketConsumer):
             content = event['content']
             await self.send(text_data=json.dumps({
                 'type': 'notification',
+                'content': content,
+            }))
+        except Exception as e:
+            raise
+
+    async def message_notification(self, event):
+        logger.debug('=====MESSAGE_NOTIFICATION=====')
+        try:
+            content = event['content']
+            await self.send(text_data=json.dumps({
+                'type': 'message_notification',
                 'content': content,
             }))
         except Exception as e:

@@ -481,6 +481,7 @@ class Message(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     room = models.ForeignKey(Room, related_name='room', on_delete=models.CASCADE)
     sender = models.ForeignKey(mUser, related_name='sender', on_delete=models.CASCADE)
+    receiver = models.ForeignKey(mUser, related_name='receiver', on_delete=models.CASCADE)
     content = models.TextField(_('Content'))
     image = models.ImageField(_('Image'), upload_to=content_file_name, blank=True, null=True)
     readed = models.BooleanField(_('Readed'), default=False)
@@ -529,6 +530,42 @@ class Notification(models.Model):
         Tweet,
         on_delete=models.CASCADE,
         related_name='target_tweet_info',
+        blank=True,
+        null=True,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    readed = models.BooleanField(default=False)
+    deleted = models.BooleanField(default=False)
+
+
+class MessageNotification(models.Model):
+
+    objects = UpdateManager.as_manager()
+
+    receiver = models.ForeignKey(
+        mUser,
+        on_delete=models.CASCADE,
+        related_name='msg_notice_receiver',
+    )
+    sender = models.ForeignKey(
+        mUser,
+        on_delete=models.CASCADE,
+        related_name='msg_notice_sender',
+    )
+
+    room = models.ForeignKey(
+        Room,
+        on_delete=models.CASCADE,
+        related_name='msg_notice_room',
+        blank=True,
+        null=True,
+    )
+
+    message = models.ForeignKey(
+        Message,
+        on_delete=models.CASCADE,
+        related_name='msg_notice_message',
         blank=True,
         null=True,
     )
