@@ -21,6 +21,10 @@ logger = logging.getLogger(__name__)
 
 
 class MessageConsumer(AsyncWebsocketConsumer):
+    """
+    メッセージ関連のコンシューマー
+    """
+
     groups = ['broadcast']
 
     async def connect(self):
@@ -111,6 +115,10 @@ class MessageConsumer(AsyncWebsocketConsumer):
 
 
 class NotificationConsumer(AsyncWebsocketConsumer):
+    """
+    通知関連のコンシューマー
+    """
+
     groups = ['broadcast']
 
     async def connect(self):

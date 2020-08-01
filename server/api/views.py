@@ -31,8 +31,6 @@ from .models import (
     hUserUpd,
     hTweetUpd,
     mAccessLog,
-    Band,
-    MemberShip,
     Entry,
     Room,
     Message,
@@ -42,7 +40,6 @@ from .models import (
 )
 from .permissions import (
     IsMyselfOrReadOnly,
-    BlockListPermission,
 )
 
 from django.contrib.admin.utils import lookup_field
@@ -86,6 +83,10 @@ class IndexView(generic.TemplateView):
 
 
 class ProfileDetailView(generics.RetrieveAPIView, GetLoginUserMixin):
+    """
+    ユーザー毎のプロフィールを取得
+    """
+
     permission_classes = (
         permissions.IsAuthenticatedOrReadOnly,
     )
@@ -123,6 +124,9 @@ class ProfileDetailView(generics.RetrieveAPIView, GetLoginUserMixin):
 
 
 class ProfileUpdateView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    ユーザーの情報をアップデート
+    """
     permission_classes = (permissions.IsAuthenticated,)
     queryset = mUser.objects.all()
     serializer_class = ProfileSerializer
@@ -141,6 +145,9 @@ class ProfileUpdateView(generics.RetrieveUpdateDestroyAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class SignUpView(generics.CreateAPIView, GetLoginUserMixin):
+    """
+    サインインする
+    """
 
     permission_classes = (permissions.AllowAny,)
     queryset = mUser.objects.all()
@@ -245,7 +252,6 @@ class SearchView(BaseListAPIView):
                 'isRetweet',
                 'isRetweeted',
                 'retweet_count',
-                # 'isSendFollowRequest',
             ]
             if searchFlg == self.MEDIA:
                 fields.append('images')
@@ -289,22 +295,6 @@ class SearchView(BaseListAPIView):
             )
             return Response(serializer.data)
 
-        # if searchFlg != self.USER:
-        #     queryset = self.filter_queryset(self.get_queryset())
-        #     page = self.paginate_queryset(queryset)
-        #     if page is not None:
-        #         serializer = self.get_serializer(page, many=True)
-        #         return self.get_paginated_response(serializer.data)
-        #     serializer = self.get_serializer(queryset, many=True)
-        #     return Response(serializer.data)
-        # else:
-        #     queryset = self.get_queryset()
-        #     filterd_queryset_list = self.username_filter(queryset, request)
-        #     pagination_class = StandardListResultSetPagination()
-        #     page = pagination_class.paginate_queryset(filterd_queryset_list, request)
-        #     serializer = self.get_serializer(page, many=True)
-        #     return pagination_class.get_paginated_response(serializer.data)
-
     def setSearchQuery(self, searchFlg, *args, **kwargs):
         self.queryset = self.search_query[searchFlg]['queryset']
         self.serializer_class = self.search_query[searchFlg]['serializer_class']
@@ -315,7 +305,6 @@ class SearchView(BaseListAPIView):
         #     searchText = request.query_params['searchText']
         #     q_list = [Q(username__contains=i.strip()) for i in searchText.split(',')]
         #     return sorted(mUser.objects.filter(*q_list).exclude(username=self.login_user), key = lambda u: u.get_follower_count())[::-1]
-
 
 
 class SettingView(generics.RetrieveUpdateAPIView, GetLoginUserMixin):

@@ -7,8 +7,6 @@ from .models import (
     hUserUpd,
     hTweetUpd,
     mAccessLog,
-    Band,
-    MemberShip,
     Entry,
     Room,
     Message,
@@ -106,6 +104,9 @@ class ProfileSerializer(DynamicFieldsModelSerializer):
         -------------------------------------
         followees : フォローしているユーザー一覧
         followers : フォローされているユーザー一覧
+        isBlocked : ブロックされているか
+        isBlock : ブロックしたユーザーか
+        isSendFollowRequest : フォロー申請を送っている状態か
     """
 
     email = serializers.EmailField()
@@ -178,6 +179,13 @@ class ProfileSerializer(DynamicFieldsModelSerializer):
 
 
     def get_tweet_limit_level(self, obj):
+        """
+        ツイート公開レベルを取得するメソッド
+            0: 公開
+            1: ブロックモーダル表示
+            2: 非公開
+            3: ブロックモーダル表示（block & private)
+        """
 
         if self.login_user == None or obj.username == self.login_user:
             return 0
@@ -288,6 +296,9 @@ class TweetSerializer(DynamicFieldsModelSerializer):
         isLiked : 表示したユーザーが既にいいねしているかどうか
         isRetweet : リツイートかどうか
         isRetweeted : 表示したユーザーが既にリツイートしているかどうか
+        followees_in_retweet_users : フォローしている人がリツイートユーザーにいたら取得
+        followees_in_liked : フォローしている人がいいねしたユーザーにいたら取得
+        isSendFollowRequest : フォロー申請を送っている状態か
     """
 
     author = serializers.ReadOnlyField(source='author.username')
@@ -435,6 +446,7 @@ class TweetSerializer(DynamicFieldsModelSerializer):
             'userIcon',
         ]
 
+        # ログインしているユーザーならこれらのフィールドも
         if self.login_user != None:
             fields += ['isRetweeted', 'isLiked', 'isBlocked']
 
@@ -446,11 +458,13 @@ class TweetSerializer(DynamicFieldsModelSerializer):
                 logger.error('エラー')
                 return None
 
+        # 元ツイートじゃなければ元のツイート取得し、それに関連するリプライを取得
         if is_base_tweet(target_tweet) is False:
             target_tweet = search_reply_target_base(target_tweet)
 
         res = Tweet.objects.filter(pk__in=ReplyRelationShip.objects.filter(reply_target_base=target_tweet).values('reply'))
 
+        # login_userの取得メソッドを渡すため、viewをセット
         if hasattr(self, 'v'):
             context = {
                 'view': self.v
@@ -845,6 +859,11 @@ class MSettingSerializer(serializers.ModelSerializer):
 
 
 class NotificationSerializer(serializers.ModelSerializer):
+    """
+    通知のシリアライザー
+        isAccepted : 申請が許可された。
+        isRejected : 申請が拒否された。
+    """
 
     event = serializers.SerializerMethodField()
     created_time = serializers.SerializerMethodField()
@@ -939,6 +958,9 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 
 class NotificationCountSerializer(serializers.ModelSerializer):
+    """
+    通知の数を取得するシリアライザー
+    """
 
     info_count = serializers.SerializerMethodField()
     msg_count = serializers.SerializerMethodField()

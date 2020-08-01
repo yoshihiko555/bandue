@@ -23,6 +23,9 @@ post_bulk_update = ModelSignal(use_caching=True)
 
 
 class UpdateManager(models.QuerySet):
+    """
+    updateの前後でSignalを定義。
+    """
 
     def update(self, **kwargs):
         pre_bulk_update.send(sender=self.model, queryset=self, update_kwargs=kwargs)
@@ -32,6 +35,11 @@ class UpdateManager(models.QuerySet):
 
 
 class UserManager(BaseUserManager):
+    """
+    独自ユーザーマネージャーを定義。
+    ユーザーネーム、Eメール、パスワードを必須にする。
+    """
+
 
     use_in_migrations = True
 
@@ -162,6 +170,9 @@ class mUser(AbstractBaseUser, PermissionsMixin):
 
 
 class FollowRelationShip(models.Model):
+    """
+    フォローの中間テーブル
+    """
 
     followee = models.ForeignKey(
         'api.mUser',
@@ -177,6 +188,10 @@ class FollowRelationShip(models.Model):
 
 
 class FollowRequest(models.Model):
+    """
+    フォロー申請の中間テーブル
+        isAcceptedは認証されたらTrueになる。
+    """
 
     follow_request_user = models.ForeignKey(
         'api.mUser',
@@ -204,9 +219,8 @@ class HashTag(models.Model):
 
 
 class Tweet(models.Model):
-    """
-    author : ツイートの作成者
-    """
+
+    # author : ツイートの作成者
     author = models.ForeignKey(mUser, on_delete=models.CASCADE, related_name='author')
     content = models.TextField(_('Content'))
     liked = models.ManyToManyField(
@@ -254,6 +268,9 @@ class Tweet(models.Model):
 
 
 class RetweetRelationShip(models.Model):
+    """
+    リツイートの中間テーブル
+    """
 
     target_tweet = models.ForeignKey(
         'api.Tweet',
@@ -274,6 +291,9 @@ class RetweetRelationShip(models.Model):
 
 
 class ReplyRelationShip(models.Model):
+    """
+    リプライの中間テーブル
+    """
 
     reply_target_tweet = models.ForeignKey(
         'api.Tweet',
@@ -292,8 +312,11 @@ class ReplyRelationShip(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
-class LikedRelationShip(models.Model):
 
+class LikedRelationShip(models.Model):
+    """
+    いいねの中間テーブル
+    """
     liked_tweet = models.ForeignKey(
         'api.Tweet',
         on_delete=models.CASCADE,
@@ -314,11 +337,20 @@ class mSetting(models.Model):
             ブロックしたユーザーはフォロー出来ない。
             ブロックしたユーザーはフォロワーから外れる。
             ブロックしたユーザーは自分のプロフィール画面を見るとブロックされていると分かる。
+            いいね、リツイート、リプライ出来ない。
 
     mute_list
         - ミュートしたユーザーのリスト
             ミュートしたユーザーのツイートは公開されない。
             プロフィール画面から確認などは出来ない。
+
+    isPrivate
+        - ツイート公開フラグ
+            True:
+                フォロワーにのみ公開する。
+                フォローするには申請が必要。
+            False:
+                誰でも見れて誰でもフォロー出来る。
 
     """
 
@@ -390,34 +422,6 @@ class mAccessLog(models.Model):
     browser = models.CharField(_('Browser'), max_length=50)
     time = models.DateTimeField(_('Access Time'), auto_now_add=True)
     language = models.CharField(_('Language'), max_length=30)
-
-
-class Band(models.Model):
-
-    name = models.CharField(_('Community Name'), max_length=100)
-    members = models.ManyToManyField(
-        mUser,
-        through='MemberShip',
-        through_fields=('band', 'muser'),
-    )
-
-    def __str__(self):
-        return self.name
-
-
-class MemberShip(models.Model):
-
-    band = models.ForeignKey(Band, on_delete=models.CASCADE)
-    muser = models.ForeignKey(mUser, on_delete=models.CASCADE)
-    inviter = models.ForeignKey(
-        mUser,
-        on_delete=models.CASCADE,
-        related_name='membership_invites',
-    )
-    invite_reason = models.CharField(_('Invites Reason'), max_length=100)
-
-    def __str__(self):
-        return self.inviter.username + ' が ' + self.band.name + ' に ' + self.muser.username + ' を招待'
 
 
 class Entry(models.Model):
@@ -572,6 +576,18 @@ class ReadManagement(models.Model):
 
 
 class Notification(models.Model):
+    """
+    通知のテーブル
+        - event
+            0: フォロー
+            1: リツイート
+            2: いいね
+            3: リプライ
+            4: フォローリクエスト
+
+        - target_tweet_info
+            ツイート関連の通知だったら対象ツイート情報が入る
+    """
 
     objects = UpdateManager.as_manager()
 
