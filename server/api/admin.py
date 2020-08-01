@@ -14,7 +14,10 @@ from .models import (
     Message,
     Age,
     ReadManagement,
-    Notification
+    Notification,
+    MessageNotification,
+    ReplyRelationShip,
+    FollowRequest,
 )
 
 admin.site.register(mUser)
@@ -33,3 +36,6 @@ admin.site.register(Message)
 admin.site.register(Age)
 admin.site.register(ReadManagement)
 admin.site.register(Notification)
+admin.site.register(MessageNotification)
+admin.site.register(ReplyRelationShip)
+admin.site.register(FollowRequest)

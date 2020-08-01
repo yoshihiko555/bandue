@@ -113,6 +113,17 @@
 		},
 
 		mounted: function () {
+
+			const url = 'ws://' + window.location.host + '/ws/user/' + this.$store.state.loginUser + '/'
+			this.ws = new WebSocket(url)
+
+			this.ws.onmessage = e => {
+				var receiveData = JSON.parse(e.data)
+				console.log('ソケット結果受信', receiveData)
+				let event = (receiveData.type === Con.WS_TYPE_NOTIFICATION) ? 'Info' : 'Message'
+				this.$eventHub.$emit('cntUpInfo', event)
+			}
+
 			this.$axios.get('/api/info/getInfoCnt/')
 			.then(res => {
 				console.log(res)

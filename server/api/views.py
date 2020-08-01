@@ -115,6 +115,8 @@ class ProfileDetailView(generics.RetrieveAPIView, GetLoginUserMixin):
             'isPrivate',
             'isMute',
             'isBlock',
+            'isFollow',
+            'isSendFollowRequest',
         ]
         serializer = self.get_serializer(instance, fields=fields)
         return Response(serializer.data)
@@ -138,7 +140,7 @@ class ProfileUpdateView(generics.RetrieveUpdateDestroyAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class SignUpView(generics.CreateAPIView):
+class SignUpView(generics.CreateAPIView, GetLoginUserMixin):
 
     permission_classes = (permissions.AllowAny,)
     queryset = mUser.objects.all()
@@ -220,7 +222,6 @@ class SearchView(BaseListAPIView):
         },
     }
 
-    @analyzeMethod
     def list(self, request, *args, **kwargs):
         searchFlg = request.query_params['searchFlg']
         self.setSearchQuery(searchFlg, *args, **kwargs)
@@ -244,6 +245,7 @@ class SearchView(BaseListAPIView):
                 'isRetweet',
                 'isRetweeted',
                 'retweet_count',
+                # 'isSendFollowRequest',
             ]
             if searchFlg == self.MEDIA:
                 fields.append('images')
@@ -270,6 +272,8 @@ class SearchView(BaseListAPIView):
                 'icon',
                 'isBlocked',
                 'isPrivate',
+                'isFollow',
+                'isSendFollowRequest',
             ]
             if page is not None:
                 serializer = self.get_serializer(

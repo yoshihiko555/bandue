@@ -19,6 +19,7 @@ from .models import (
     post_bulk_update,
     MessageNotification,
     ReplyRelationShip,
+    FollowRequest,
 )
 
 from api.serializers import (
@@ -65,12 +66,14 @@ FOLLOW = 0
 RETWEET = 1
 LIKED = 2
 REPLY = 3
+FOLLOW_REQUEST = 4
 
 NOTIFICATION_WORD = {
     FOLLOW: 'さんにフォローされました。',
     RETWEET: 'さんがあなたのツイートをリツイートしました。',
     LIKED: 'さんがあなたのツイートをいいねしました。',
     REPLY: 'さんからリプライが届きました。',
+    FOLLOW_REQUEST: 'さんからフォロー申請が届きました。',
 }
 
 TWEET_EVENT = [
@@ -89,7 +92,8 @@ def follow_receiver(sender, instance, action, reverse, model, pk_set, using, **k
             send_user = instance
             isExists = check_exists(FOLLOW, receive_user, send_user)
             isBlocked = check_blocked(receive_user, send_user)
-            if not isExists and not isBlocked:
+            isFollowRequest = check_isFollowRequest(receive_user, send_user)
+            if not isExists and not isBlocked and not isFollowRequest:
                 send_response(FOLLOW, receive_user, send_user)
 
         except mUser.DoesNotExist:
@@ -119,6 +123,7 @@ def retweet_receiver(sender, instance, created, raw, using, update_fields, **kwa
     except mUser.DoesNotExist:
         logger.error('mUserが存在しません。')
 
+
 @receiver(post_save, sender=ReplyRelationShip)
 def reply_receiver(sender, instance, created, **kwargs):
 
@@ -139,7 +144,6 @@ def reply_receiver(sender, instance, created, **kwargs):
         logger.error('ReplyRelationShipが存在しません。')
 
 
-
 @receiver(m2m_changed, sender=Tweet.liked.through)
 def liked_receiver(sender, instance, action, reverse, model, pk_set, using, **kwargs):
 
@@ -156,6 +160,18 @@ def liked_receiver(sender, instance, action, reverse, model, pk_set, using, **kw
 
         except mUser.DoesNotExist:
             logger.error('mUserが存在しません。')
+
+
+@receiver(post_save, sender=FollowRequest)
+def follow_request_receiver(sender, instance, created, **kwargs):
+
+    if created == True:
+        send_user = instance.follow_request_user
+        receive_user = instance.follow_response_user
+
+        isExists = check_exists(FOLLOW_REQUEST, receive_user, send_user)
+        if not isExists:
+            send_response(FOLLOW_REQUEST, receive_user, send_user)
 
 # @receiver(post_save, sender=Notification)
 # def notification_receiver(sender, instance, created, raw, using, update_fields, **kwargs):
@@ -188,6 +204,21 @@ def liked_receiver(sender, instance, action, reverse, model, pk_set, using, **kw
     # logger.debug(instance)
     # logger.debug(update_kwargs)
 
+def check_isFollowRequest(receive_user, send_user):
+    """
+    フォロー申請のデータがあるか、チェック
+    """
+
+    try:
+        FollowRequest.objects.get(
+            follow_request_user=send_user,
+            follow_response_user=receive_user
+        ).delete()
+    except FollowRequest.DoesNotExist:
+        return False
+
+    return True
+
 
 def check_exists(event, receive_user, send_user, *args):
     """
@@ -202,12 +233,20 @@ def check_exists(event, receive_user, send_user, *args):
             readed=False,
         ).exists()
     else:
-        return Notification.objects.filter(
-            event=event,
-            receive_user=receive_user,
-            send_user=send_user,
-            readed=False,
-        ).exists()
+        # フォローは過去にフォローして事あったら通知送らない
+        if event is FOLLOW:
+            return Notification.objects.filter(
+                event=event,
+                receive_user=receive_user,
+                send_user=send_user,
+            ).exists()
+        else:
+            return Notification.objects.filter(
+                event=event,
+                receive_user=receive_user,
+                send_user=send_user,
+                readed=False,
+            ).exists()
 
 
 def check_myself(receive_user, send_user):

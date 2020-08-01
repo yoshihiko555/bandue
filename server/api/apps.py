@@ -9,4 +9,6 @@ class ApiConfig(AppConfig):
             liked_receiver,
             follow_receiver,
             retweet_receiver,
+            follow_request_receiver,
+            reply_receiver,
         )

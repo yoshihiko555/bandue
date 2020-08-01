@@ -11,40 +11,118 @@
 					<v-col cols='6' class="px-0">
 						<div v-if='infoList.length != 0 && initLoading === false'>
 							<div v-for='(info, index) in infoList' :key='`infoList-${index}`' class='info_area'>
-								<v-card
-									flat
-									class='info_wrap'
-									ref='info_ref'
-									@click='InfoDetail(info, index)'
-								>
-									<v-card-title
-										class='info_title'
+								<div v-if='info.event !== "Follow Request"'>
+									<v-card
+										flat
+										class='info_wrap'
+										ref='info_ref'
+										@click='InfoDetail(info, index)'
 									>
-										<div v-if='info.event === "Liked"'>
-											<v-icon
-												color='red lighten-1'
-											>mdi-heart</v-icon>
-										</div>
-										<div v-else-if='info.event === "Retweet"'>
-											<v-icon
-												color='grey lighten-1'
-											>mdi-repeat</v-icon>
-										</div>
-										<v-avatar
-										 	v-else
-											class='infomation_icon'
+										<v-card-title
+											class='info_title'
 										>
-											<v-img v-if='info.send_user.icon === null' src='@/static/img/default_icon.jpeg'></v-img>
-											<v-img v-else :src=icon></v-img>
-										</v-avatar>
-									</v-card-title>
-
-									<v-card-text
-										class='info_text'
+											<div v-if='info.event === "Liked"'>
+												<v-icon
+													color='red lighten-1'
+												>mdi-heart</v-icon>
+											</div>
+											<div v-else-if='info.event === "Retweet"'>
+												<v-icon
+													color='grey lighten-1'
+												>mdi-repeat</v-icon>
+											</div>
+											<v-avatar
+												v-else
+												class='infomation_icon'
+											>
+												<v-img v-if='info.send_user.icon === null' src='@/static/img/default_icon.jpeg'></v-img>
+												<v-img v-else :src=icon></v-img>
+											</v-avatar>
+										</v-card-title>
+										<v-row>
+											<v-col
+												cols='12'
+											>
+												<v-card-text
+													class='info_text'
+												>
+													{{ info.infomation }}
+												</v-card-text>
+											</v-col>
+										</v-row>
+									</v-card>
+								</div>
+								<div v-else>
+									<v-card
+										:ripple='false'
+										flat
+										class='info_wrap'
+										ref='info_ref'
 									>
-										{{ info.infomation }}
-									</v-card-text>
-								</v-card>
+										<v-card-title
+											class='info_title'
+										>
+											<v-avatar
+												class='infomation_icon'
+											>
+												<v-img v-if='info.send_user.icon === null' src='@/static/img/default_icon.jpeg'></v-img>
+												<v-img v-else :src=icon></v-img>
+											</v-avatar>
+										</v-card-title>
+										<v-row>
+											<v-col
+												cols='8'
+											>
+												<v-card-text
+													class='info_text'
+												>
+													{{ info.infomation }}
+												</v-card-text>
+											</v-col>
+											<v-col
+												cols='4'
+											>
+												<v-card-actions
+													v-if='info.event === "Follow Request"'
+												>
+													<v-list-item>
+														<v-row
+															v-if='info.isAccepted'
+															align='center'
+															justify='end'
+														>
+															<v-btn
+																disabled
+															>許可しました。</v-btn>
+														</v-row>
+														<v-row
+															v-else-if='info.isRejected'
+															align='center'
+															justify='end'
+														>
+															<v-btn
+																disabled
+															>拒否しました。</v-btn>
+														</v-row>
+														<v-row
+															v-else
+															align='center'
+															justify='end'
+														>
+															<v-btn
+																@click='acceptFollowRequest(info, index)'
+															>許可する</v-btn>
+															<v-spacer></v-spacer>
+															<v-btn
+																@click='rejectFollowRequest(info, index)'
+															>拒否する</v-btn>
+														</v-row>
+													</v-list-item>
+												</v-card-actions>
+											</v-col>
+										</v-row>
+									</v-card>
+								</div>
 							</div>
 						</div>
 						<div v-else>
@@ -116,6 +194,7 @@
 
 			this.$axios.get('/api/info/')
 			.then(res => {
+				console.log(res.data)
 				this.infoList = res.data.results
 				this.initLoading = false
 			})
@@ -159,7 +238,44 @@
 			showTweetDetail (tweet) {
 				this.tweetDetailDialog = true
 				this.selectTweet = tweet
-			}
+			},
+
+			acceptFollowRequest (info, index) {
+				this.infoList[index].isAccepted = true
+				console.log(info.pk + 'を削除します')
+				this.$axios({
+                    method: 'POST',
+                    url: '/api/users/acceptFollowRequest/',
+                    data: {
+                        target_user: info.send_user.username,
+						notification_pk: info.pk,
+                    },
+                })
+                .then(res => {
+                    console.log(res)
+                })
+                .catch(e => {
+                    console.log(e)
+                })
+			},
+
+			rejectFollowRequest (info, index) {
+				this.infoList[index].isRejected = true
+				this.$axios({
+					method: 'POST',
+					url: '/api/users/rejectFollowRequest/',
+					data: {
+						target_user: info.send_user.username,
+						notification_pk: info.pk,
+					},
+				})
+				.then(res => {
+					console.log(res)
+				})
+				.catch(e => {
+					console.log(e)
+				})
+			},
 		}
 	}
 </script>

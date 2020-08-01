@@ -41,7 +41,8 @@ from .models import (
     RetweetRelationShip,
     Notification,
     MessageNotification,
-    ReplyRelationShip
+    ReplyRelationShip,
+    FollowRequest,
 )
 from .permissions import (
     IsMyselfOrReadOnly,
@@ -432,7 +433,7 @@ class mUserViewSet(BaseModelViewSet):
 
 
     @action(methods=['post'], detail=False)
-    def unfollow(self, request):
+    def unFollow(self, request):
 
         login_user = request.user
         unfollowed_username = request.data['target_user']
@@ -440,6 +441,12 @@ class mUserViewSet(BaseModelViewSet):
         login_user.followees.remove(unfollowed_user)
 
         logger.debug(str(request.user) + 'が' + request.data['target_user'] + 'をアンフォロー')
+
+        # フォロー申請のデータがあったら削除
+        FollowRequest.objects.filter(
+            follow_request_user=login_user,
+            follow_response_user=unfollowed_user
+        ).delete()
 
         if 'isTweetList' in request.data:
             return self.return_tweet_list(login_user)
@@ -474,7 +481,7 @@ class mUserViewSet(BaseModelViewSet):
 
 
     @action(methods=['post'], detail=False)
-    def unmute(self, request):
+    def unMute(self, request):
 
         login_user = request.user
 
@@ -511,7 +518,7 @@ class mUserViewSet(BaseModelViewSet):
 
 
     @action(methods=['post'], detail=False)
-    def unblock(self, request):
+    def unBlock(self, request):
 
         login_user = request.user
 
@@ -554,6 +561,83 @@ class mUserViewSet(BaseModelViewSet):
             'icon',
         ]
         return Response(ProfileSerializer(mute_list, fields=fields, many=True).data)
+
+    @action(methods=['post'], detail=False)
+    def followRequest(self, request):
+
+        login_user = request.user
+
+        try:
+            target_user = mUser.objects.get(username=request.data['target_user'])
+        except mUser.DoesNotExist:
+            return Response(status=statu.HTTP_400_BAD_REQUEST)
+
+        FollowRequest.objects.create(
+            follow_request_user=login_user,
+            follow_response_user=target_user
+        )
+
+        return Response(status=status.HTTP_200_OK)
+
+    @action(methods=['post'], detail=False)
+    def acceptFollowRequest(self, request):
+
+        login_user = request.user
+
+        try:
+            target_user = mUser.objects.get(username=request.data['target_user'])
+        except mUser.DoesNotExist:
+            return Response(status=statu.HTTP_400_BAD_REQUEST)
+
+        try:
+            follow_request = FollowRequest.objects.get(
+                follow_request_user=target_user,
+                follow_response_user=login_user
+            )
+            follow_request.isAccepted = True
+            follow_request.save()
+        except FollowRequest.DoesNotExist:
+            logger.error('FollowRequestが取得できていない')
+
+        target_user.followees.add(login_user)
+
+        try:
+            Notification.objects.get(
+                pk=request.data['notification_pk']
+            ).delete()
+        except Notification.DoesNotExist:
+            logger.error('Notificationが取得できていない')
+
+        return Response(status=status.HTTP_200_OK)
+
+
+    @action(methods=['post'], detail=False)
+    def rejectFollowRequest(self, request):
+
+        login_user = request.user
+
+        try:
+            target_user = mUser.objects.get(username=request.data['target_user'])
+        except mUser.DoesNotExist:
+            return Response(status=statu.HTTP_400_BAD_REQUEST)
+
+        try:
+            FollowRequest.objects.get(
+                follow_request_user=target_user,
+                follow_response_user=login_user
+            ).delete()
+        except FollowRequest.DoesNotExist:
+            logger.error('FollowRequestが取得できていない')
+
+        try:
+            Notification.objects.get(
+                pk=request.data['notification_pk']
+            ).delete()
+        except Notification.DoesNotExist:
+            logger.error('Notificationが取得できていない')
+
+        return Response(status=status.HTTP_200_OK)
+
 
 
 class RoomViewSet(BaseModelViewSet):

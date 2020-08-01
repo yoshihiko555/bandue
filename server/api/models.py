@@ -124,7 +124,16 @@ class mUser(AbstractBaseUser, PermissionsMixin):
         blank=True,
         symmetrical=False,
         through='FollowRelationShip',
-        through_fields=('followee', 'follower')
+        through_fields=('followee', 'follower'),
+    )
+
+    follow_requests = models.ManyToManyField(
+        'self',
+        blank=True,
+        symmetrical=False,
+        through='FollowRequest',
+        through_fields=('follow_request_user', 'follow_response_user'),
+        related_name='follow_request_users',
     )
 
     readed_entry = models.ManyToManyField('api.Entry', blank=True)
@@ -164,6 +173,22 @@ class FollowRelationShip(models.Model):
         on_delete=models.CASCADE,
         related_name='follower'
     )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class FollowRequest(models.Model):
+
+    follow_request_user = models.ForeignKey(
+        'api.mUser',
+        on_delete=models.CASCADE,
+        related_name='follow_request_user'
+    )
+    follow_response_user = models.ForeignKey(
+        'api.mUser',
+        on_delete=models.CASCADE,
+        related_name='follow_response_user'
+    )
+    isAccepted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -555,6 +580,7 @@ class Notification(models.Model):
         (1, _('Retweet')),
         (2, _('Liked')),
         (3, _('Reply')),
+        (4, _('Follow Request'))
     )
     event = models.IntegerField(choices=event_choices)
     receive_user = models.ForeignKey(

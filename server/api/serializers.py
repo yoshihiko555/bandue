@@ -19,6 +19,7 @@ from .models import (
     Notification,
     MessageNotification,
     ReplyRelationShip,
+    FollowRequest,
 )
 from rest_framework.renderers import JSONRenderer
 
@@ -122,6 +123,8 @@ class ProfileSerializer(DynamicFieldsModelSerializer):
     isPrivate = serializers.SerializerMethodField(read_only=True)
     isMute = serializers.SerializerMethodField(read_only=True)
     isBlock = serializers.SerializerMethodField(read_only=True)
+    isFollow = serializers.SerializerMethodField(read_only=True)
+    isSendFollowRequest = serializers.SerializerMethodField(read_only=True)
 
     def __init__(self, *args, **kwargs):
         self.login_user = kwargs['context']['view'].get_login_user() if 'context' in kwargs else None
@@ -151,6 +154,8 @@ class ProfileSerializer(DynamicFieldsModelSerializer):
             'isPrivate',
             'isMute',
             'isBlock',
+            'isFollow',
+            'isSendFollowRequest',
         ]
 
     def get_followers(self, obj):
@@ -240,6 +245,36 @@ class ProfileSerializer(DynamicFieldsModelSerializer):
 
         return login_user.msetting.block_list.filter(username=obj.username).exists()
 
+
+    def get_isFollow(self, obj):
+
+        if self.login_user == None:
+            return False
+
+        try:
+            login_user = mUser.objects.get(username=self.login_user)
+        except mUser.DoesNotExist:
+            return False
+
+        return login_user.followees.filter(username=obj.username).exists()
+
+    def get_isSendFollowRequest(self, obj):
+
+        if self.login_user == None:
+            return False
+
+        try:
+            login_user = mUser.objects.get(username=self.login_user)
+        except mUser.DoesNotExist:
+            return False
+
+        return FollowRequest.objects.filter(
+            follow_request_user=login_user,
+            follow_response_user=obj,
+            isAccepted=False,
+        ).exists()
+
+
     def create(self, validated_data):
         return mUser.objects.create_user(username=validated_data['username'], email=validated_data['email'], password=validated_data['password'])
 
@@ -275,11 +310,10 @@ class TweetSerializer(DynamicFieldsModelSerializer):
     created_time = serializers.SerializerMethodField()
     userIcon = serializers.SerializerMethodField()
     isBlocked = serializers.SerializerMethodField(read_only=True)
+    isSendFollowRequest = serializers.SerializerMethodField(read_only=True)
 
 
     def __init__(self, *args, **kwargs):
-        logger.debug('==============INIT==============')
-        logger.debug(kwargs)
         if 'context' in kwargs:
             self.login_user = kwargs['context']['view'].get_login_user()
             self.v = kwargs['context']['view']
@@ -318,6 +352,7 @@ class TweetSerializer(DynamicFieldsModelSerializer):
             'followees_in_liked',
             'created_time',
             'isBlocked',
+            'isSendFollowRequest',
         ]
 
     def get_hashTag(self, obj):
@@ -552,15 +587,26 @@ class TweetSerializer(DynamicFieldsModelSerializer):
 
     def get_isBlocked(self, obj):
 
-        logger.debug('=======get_isBlocked======')
-
         if self.login_user == None:
-            logger.debug('login_userがない')
             return False
 
-        logger.debug(obj.author)
-
         return obj.author.msetting.block_list.filter(username=self.login_user).exists()
+
+    def get_isSendFollowRequest(self, obj):
+
+        if self.login_user == None:
+            return False
+
+        try:
+            login_user = mUser.objects.get(username=self.login_user)
+        except mUser.DoesNotExist:
+            return False
+
+        return FollowRequest.objects.filter(
+            follow_request_user=login_user,
+            follow_response_user=obj.author,
+            isAccepted=False
+        ).exists()
 
 
     def create(self, validated_data):
@@ -805,6 +851,8 @@ class NotificationSerializer(serializers.ModelSerializer):
     receive_user = serializers.SerializerMethodField()
     send_user = serializers.SerializerMethodField()
     target_tweet_info = serializers.SerializerMethodField()
+    isAccepted = serializers.SerializerMethodField()
+    isRejected = serializers.BooleanField(default=False)
 
     class Meta:
         model = Notification
@@ -818,6 +866,8 @@ class NotificationSerializer(serializers.ModelSerializer):
             'created_at',
             'created_time',
             'readed',
+            'isAccepted',
+            'isRejected',
         ]
 
 
@@ -874,6 +924,19 @@ class NotificationSerializer(serializers.ModelSerializer):
 
         return str(diff.seconds // 60 // 60) + '時間'
 
+    def get_isAccepted(self, obj):
+
+        if obj.event != 4:
+            return False
+
+        try:
+            return FollowRequest.objects.get(
+                follow_request_user=obj.send_user,
+                follow_response_user=obj.receive_user
+            ).isAccepted
+        except FollowRequest.DoesNotExist:
+            return False
+
 
 class NotificationCountSerializer(serializers.ModelSerializer):
 
@@ -892,7 +955,7 @@ class NotificationCountSerializer(serializers.ModelSerializer):
         super().__init__(*args, **kwargs)
 
     def get_info_count(self, obj):
-        event_list = [0, 1, 2, 3]
+        event_list = [0, 1, 2, 3, 4]
         return self.get_infomation_count(obj, event_list)
 
     def get_msg_count(self, obj):

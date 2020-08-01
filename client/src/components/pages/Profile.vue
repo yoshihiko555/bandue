@@ -31,6 +31,9 @@
 											>
 												{{ profileData.username }}
 											<v-icon
+												v-if='profileData.isPrivate'
+											>mdi-lock</v-icon>
+											<v-icon
 												v-if='profileData.isMute'
 											>mdi-volume-variant-off</v-icon>
 											<v-icon
@@ -43,9 +46,7 @@
 										>
 											<span v-if='!isMe && !loading'>
 												<follow
-												 :username='username'
-												 :isBlocked='profileData.isBlocked'
-												 :isPrivate='profileData.isPrivate'
+												 :profileData='profileData'
 												></follow>
 											</span>
 										</v-col>
@@ -104,7 +105,7 @@
 												<v-list>
 													<v-list-item
 														v-if='profileData.isMute'
-														@click='unmute'
+														@click='unMute'
 													>
 														<v-list-item-title>{{ profileData.username }}さんのミュートを解除</v-list-item-title>
 													</v-list-item>
@@ -116,7 +117,7 @@
 													</v-list-item>
 													<v-list-item
 														v-if='profileData.isBlock'
-														@click='unblock'
+														@click='unBlock'
 													>
 														<v-list-item-title>{{ profileData.username }}さんのブロックを解除</v-list-item-title>
 													</v-list-item>
@@ -390,20 +391,20 @@
 				})
 				this.profileData.isMute = true
 			},
-			unmute () {
+			unMute () {
 				this.$axios({
-          method: 'POST',
-          url: 'api/users/unmute/',
-          data: {
-            target_user: this.profileData.username,
-          }
-        })
-        .then(res => {
-          console.log(res)
-        })
-        .catch(e => {
-          console.log(e)
-        })
+          			method: 'POST',
+          			url: 'api/users/unMute/',
+          			data: {
+            			target_user: this.profileData.username,
+          		}
+        	})
+        	.then(res => {
+          		console.log(res)
+        	})
+        	.catch(e => {
+          		console.log(e)
+    		})
 				this.profileData.isMute = false
 			},
 			block () {
@@ -422,23 +423,22 @@
 				})
 				this.profileData.isBlock = true
 			},
-			unblock () {
+			unBlock () {
 				this.$axios({
-          method: 'POST',
-          url: 'api/users/unblock/',
-          data: {
-            target_user: this.profileData.username
-          }
-        })
-        .then(res => {
-          console.log(res)
-        })
-        .catch(e => {
-          console.log(e)
-        })
+          			method: 'POST',
+          			url: 'api/users/unBlock/',
+          			data: {
+            			target_user: this.profileData.username
+          		}
+        	})
+        	.then(res => {
+          		console.log(res)
+        	})
+    		.catch(e => {
+          		console.log(e)
+        	})
 				this.profileData.isBlock = false
 			},
-
 		}
 	}
 </script>

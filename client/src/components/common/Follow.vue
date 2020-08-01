@@ -1,24 +1,31 @@
 <template>
-  <span>
-    <span v-if='isFollow != null'>
-      <v-btn v-if='isFollow'
-          class='blue lighten-4 ma-3'
-          color='white'
-          @click='follow'
-      >フォローを外す</v-btn>
-      <v-btn v-else
-          class='blue lighten-4 ma-3'
-          color='white'
-          @click='follow'
-      >フォローする</v-btn>
+    <span>
+        <span v-if='profileData.isSendFollowRequest'>
+            <v-btn
+                class='blue lighten-5 ma-3'
+                color='white'
+                @click='clearFollowRequest'
+            >フォロー申請中</v-btn>
+        </span>
+        <span v-else>
+            <v-btn v-if='profileData.isFollow'
+                class='blue lighten-4 ma-3'
+                color='white'
+                @click='unFollow'
+            >フォローを外す</v-btn>
+            <v-btn v-else
+                class='blue lighten-4 ma-3'
+                color='white'
+                @click='follow'
+            >フォローする</v-btn>
+        </span>
+        <BlockDialog
+          @closeModal='closeModal'
+          :username='profileData.username'
+          :isBlockedDialog='isBlockedDialog'
+          :event='"follow"'
+        ></BlockDialog>
     </span>
-    <BlockDialog
-      @closeModal='closeModal'
-      :username='username'
-      :isBlockedDialog='isBlockedDialog'
-      :event='"follow"'
-    ></BlockDialog>
-  </span>
 </template>
 
 <script>
@@ -28,81 +35,86 @@
     export default {
         name: 'Follow',
         props: [
-          'username',
-          'isBlocked',
-          'isPrivate',
+          'profileData'
         ],
         data: () => ({
-            isFollow: null,
             isBlockedDialog: false,
         }),
         components: {
           BlockDialog
         },
         created () {
-            console.log(this.username)
-            this.$axios({
-                method: 'POST',
-                url: '/api/users/isFollow/',
-                data: {
-                    target_user : this.username
-                },
-            })
-            .then(res => {
-                console.log(res.data)
-                const status = res.data.status
-                const isFollow = res.data.isFollow
-                if (status === 'success') {
-                    if (isFollow === IS_FOLLOW) {
-                        this.isFollow = true
-                        console.log('既にフォローしてる')
-                    } else {
-                        this.isFollow = false
-                        console.log('まだフォローしてない')
-                    }
-                }
-            })
-            .catch(e => {
-                console.log(e)
-            })
+
         },
         methods: {
             follow () {
                 console.log('followMethod')
-                if (this.isPrivate && this.isBlocked) {
-                  console.log('非公開＆ブロック')
-                  this.isBlockedDialog = true
-                } else if (this.isPrivate) {
-                  console.log('非公開アカウントのためフォローには許可が必要')
-                // フォローを認証する仕組み作る
-                } else if (this.isBlocked) {
-                  console.log('ブロックされているためフォロー出来ない')
-                  this.isBlockedDialog = true
+                const {isFollow, isPrivate, isBlocked} = this.profileData
+                if (isPrivate || isBlocked) {
+                    if (isBlocked) {
+                        this.showBlockedDialog()
+                    } else if (isPrivate) {
+                        this.sendFollowRequest()
+                    }
                 } else {
-                  const targetUrl = (this.isFollow) ? 'unfollow' : 'follow'
-                  this.$axios({
-                      method: 'POST',
-                      url: '/api/users/' + targetUrl + '/',
-                      data: {
-                          target_user : this.username
-                      },
-                  })
-                  .then(res => {
-                      console.log(res.data)
-                      const status = res.data.status
-                      const isFollow = res.data.isFollow
-                      if (status === 'success') {
-                          this.isFollow = isFollow === IS_FOLLOW
-                      }
-                  })
-                  .catch(e => {
-                      console.log(e)
-                  })
+                    this.profileData.isFollow = true
+                    this.$axios({
+                        method: 'POST',
+                        url: '/api/users/follow/',
+                        data: {
+                            target_user : this.profileData.username
+                        },
+                    })
+                    .then(res => {
+                        console.log(res.data)
+                    })
+                    .catch(e => {
+                        console.log(e)
+                    })
                 }
             },
+            unFollow () {
+                this.profileData.isFollow = false
+                this.$axios({
+                    method: 'POST',
+                    url: '/api/users/unFollow/',
+                    data: {
+                        target_user : this.profileData.username
+                    },
+                })
+                .then(res => {
+                    console.log(res.data)
+                })
+                .catch(e => {
+                    console.log(e)
+                })
+            },
             closeModal () {
-              this.isBlockedDialog = false
-            }
+                this.isBlockedDialog = false
+            },
+            showBlockedDialog () {
+                this.isBlockedDialog = true
+            },
+            sendFollowRequest () {
+                console.log('sendFollowRequest')
+                this.profileData.isSendFollowRequest = true
+                this.$axios({
+                    method: 'POST',
+                    url: '/api/users/followRequest/',
+                    data: {
+                        target_user: this.profileData.username
+                    },
+                })
+                .then(res => {
+                    console.log(res)
+                })
+                .catch(e => {
+                    console.log(e)
+                })
+            },
+            clearFollowRequest () {
+                // フォロー申請をキャンセル。そのうち実装。
+            },
         }
     }
 </script>

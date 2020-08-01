@@ -60,23 +60,14 @@
 			ws: null,
 		}),
 		mounted: function () {
-		  this.isAuth = this.$store.state.isAuth
-      this.lodding = false
+			this.isAuth = this.$store.state.isAuth
+			this.lodding = false
 
-      if (!this.isAuth) {
-          this.$router.push('/signin')
-          Com.reload(this.$router)
-      }
-			const url = 'ws://' + window.location.host + '/ws/user/' + this.$store.state.loginUser + '/'
-			this.ws = new WebSocket(url)
-
-			this.ws.onmessage = e => {
-				var receiveData = JSON.parse(e.data)
-                console.log('ソケット結果受信', receiveData)
-                let event = (receiveData.type === Con.WS_TYPE_NOTIFICATION) ? 'Info' : 'Message'
-				this.$eventHub.$emit('cntUpInfo', event)
-			}
-    },
+			if (!this.isAuth) {
+				this.$router.push('/signin')
+				Com.reload(this.$router)
+			}			
+    	},
 		methods: {
 			reload () {
 				Com.reload(this.$router)
