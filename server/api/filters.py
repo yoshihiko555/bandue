@@ -8,8 +8,6 @@ from .models import (
     hUserUpd,
     hTweetUpd,
     mAccessLog,
-    Band,
-    MemberShip,
     Entry,
     Room,
     Message,
@@ -31,11 +29,17 @@ class TweetFilter(django_filter.FilterSet):
         Parameters
         -----------------------------------------
         tweetListFlg : ページによってツイートを絞る
+            0: リプライツイート除いた一覧
+            1: リプライツイート含めた一覧
+            2: 画像含めた一覧
+            3: いいねしたツイート一覧
+            4: ユーザー&フォローユーザーツイート一覧
 
         searchFlg : 検索文字によってツイートを絞る
-            0 => トレンド
-            1 => 新着順
-            3 => 画像ありツイート
+            0 : トレンド
+            1 : 新着順
+            3 : 画像ありツイート
+            ※2はユーザーリストでユーザーフィルターで絞る。
 
         searchText : 検索文字列
     """
@@ -130,16 +134,22 @@ class TweetFilter(django_filter.FilterSet):
             elif value == 4:
                 mute_list = target_user.msetting.mute_list
 
+                # 自分のツイート
                 my_tweets = target_user.author.all()
 
+                # フォローユーザーのツイート
+                #   ミュートしたユーザーは省く
                 followees_tweets = Tweet.objects.filter( \
                     author__in=target_user.followees.all()).exclude(Q(isRetweet=True) \
                         | Q(author__in=mute_list.all()))
 
+                # フォローユーザーのリツイート
+                #   リプライツイート単体は省く
                 followees_retweets = Tweet.objects.filter( \
                     pk__in=RetweetRelationShip.objects.filter( \
                         retweet_user__in=target_user.followees.all())).exclude(isReply=True)
 
+                # unionしたものが結果
                 res = my_tweets.union(followees_tweets).union(followees_retweets).order_by('-created_at')
 
         logger.debug('--TWEET_FILTER_RESULT--')

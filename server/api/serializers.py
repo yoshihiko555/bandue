@@ -7,8 +7,6 @@ from .models import (
     hUserUpd,
     hTweetUpd,
     mAccessLog,
-    Band,
-    MemberShip,
     Entry,
     Room,
     Message,
@@ -19,6 +17,7 @@ from .models import (
     Notification,
     MessageNotification,
     ReplyRelationShip,
+    FollowRequest,
 )
 from rest_framework.renderers import JSONRenderer
 
@@ -105,6 +104,9 @@ class ProfileSerializer(DynamicFieldsModelSerializer):
         -------------------------------------
         followees : フォローしているユーザー一覧
         followers : フォローされているユーザー一覧
+        isBlocked : ブロックされているか
+        isBlock : ブロックしたユーザーか
+        isSendFollowRequest : フォロー申請を送っている状態か
     """
 
     email = serializers.EmailField()
@@ -122,6 +124,8 @@ class ProfileSerializer(DynamicFieldsModelSerializer):
     isPrivate = serializers.SerializerMethodField(read_only=True)
     isMute = serializers.SerializerMethodField(read_only=True)
     isBlock = serializers.SerializerMethodField(read_only=True)
+    isFollow = serializers.SerializerMethodField(read_only=True)
+    isSendFollowRequest = serializers.SerializerMethodField(read_only=True)
 
     def __init__(self, *args, **kwargs):
         self.login_user = kwargs['context']['view'].get_login_user() if 'context' in kwargs else None
@@ -151,6 +155,8 @@ class ProfileSerializer(DynamicFieldsModelSerializer):
             'isPrivate',
             'isMute',
             'isBlock',
+            'isFollow',
+            'isSendFollowRequest',
         ]
 
     def get_followers(self, obj):
@@ -173,6 +179,13 @@ class ProfileSerializer(DynamicFieldsModelSerializer):
 
 
     def get_tweet_limit_level(self, obj):
+        """
+        ツイート公開レベルを取得するメソッド
+            0: 公開
+            1: ブロックモーダル表示
+            2: 非公開
+            3: ブロックモーダル表示（block & private)
+        """
 
         if self.login_user == None or obj.username == self.login_user:
             return 0
@@ -240,6 +253,36 @@ class ProfileSerializer(DynamicFieldsModelSerializer):
 
         return login_user.msetting.block_list.filter(username=obj.username).exists()
 
+
+    def get_isFollow(self, obj):
+
+        if self.login_user == None:
+            return False
+
+        try:
+            login_user = mUser.objects.get(username=self.login_user)
+        except mUser.DoesNotExist:
+            return False
+
+        return login_user.followees.filter(username=obj.username).exists()
+
+    def get_isSendFollowRequest(self, obj):
+
+        if self.login_user == None:
+            return False
+
+        try:
+            login_user = mUser.objects.get(username=self.login_user)
+        except mUser.DoesNotExist:
+            return False
+
+        return FollowRequest.objects.filter(
+            follow_request_user=login_user,
+            follow_response_user=obj,
+            isAccepted=False,
+        ).exists()
+
+
     def create(self, validated_data):
         return mUser.objects.create_user(username=validated_data['username'], email=validated_data['email'], password=validated_data['password'])
 
@@ -253,6 +296,9 @@ class TweetSerializer(DynamicFieldsModelSerializer):
         isLiked : 表示したユーザーが既にいいねしているかどうか
         isRetweet : リツイートかどうか
         isRetweeted : 表示したユーザーが既にリツイートしているかどうか
+        followees_in_retweet_users : フォローしている人がリツイートユーザーにいたら取得
+        followees_in_liked : フォローしている人がいいねしたユーザーにいたら取得
+        isSendFollowRequest : フォロー申請を送っている状態か
     """
 
     author = serializers.ReadOnlyField(source='author.username')
@@ -275,11 +321,10 @@ class TweetSerializer(DynamicFieldsModelSerializer):
     created_time = serializers.SerializerMethodField()
     userIcon = serializers.SerializerMethodField()
     isBlocked = serializers.SerializerMethodField(read_only=True)
+    isSendFollowRequest = serializers.SerializerMethodField(read_only=True)
 
 
     def __init__(self, *args, **kwargs):
-        logger.debug('==============INIT==============')
-        logger.debug(kwargs)
         if 'context' in kwargs:
             self.login_user = kwargs['context']['view'].get_login_user()
             self.v = kwargs['context']['view']
@@ -318,6 +363,7 @@ class TweetSerializer(DynamicFieldsModelSerializer):
             'followees_in_liked',
             'created_time',
             'isBlocked',
+            'isSendFollowRequest',
         ]
 
     def get_hashTag(self, obj):
@@ -400,6 +446,7 @@ class TweetSerializer(DynamicFieldsModelSerializer):
             'userIcon',
         ]
 
+        # ログインしているユーザーならこれらのフィールドも
         if self.login_user != None:
             fields += ['isRetweeted', 'isLiked', 'isBlocked']
 
@@ -411,11 +458,13 @@ class TweetSerializer(DynamicFieldsModelSerializer):
                 logger.error('エラー')
                 return None
 
+        # 元ツイートじゃなければ元のツイート取得し、それに関連するリプライを取得
         if is_base_tweet(target_tweet) is False:
             target_tweet = search_reply_target_base(target_tweet)
 
         res = Tweet.objects.filter(pk__in=ReplyRelationShip.objects.filter(reply_target_base=target_tweet).values('reply'))
 
+        # login_userの取得メソッドを渡すため、viewをセット
         if hasattr(self, 'v'):
             context = {
                 'view': self.v
@@ -552,15 +601,26 @@ class TweetSerializer(DynamicFieldsModelSerializer):
 
     def get_isBlocked(self, obj):
 
-        logger.debug('=======get_isBlocked======')
-
         if self.login_user == None:
-            logger.debug('login_userがない')
             return False
 
-        logger.debug(obj.author)
-
         return obj.author.msetting.block_list.filter(username=self.login_user).exists()
+
+    def get_isSendFollowRequest(self, obj):
+
+        if self.login_user == None:
+            return False
+
+        try:
+            login_user = mUser.objects.get(username=self.login_user)
+        except mUser.DoesNotExist:
+            return False
+
+        return FollowRequest.objects.filter(
+            follow_request_user=login_user,
+            follow_response_user=obj.author,
+            isAccepted=False
+        ).exists()
 
 
     def create(self, validated_data):
@@ -799,12 +859,19 @@ class MSettingSerializer(serializers.ModelSerializer):
 
 
 class NotificationSerializer(serializers.ModelSerializer):
+    """
+    通知のシリアライザー
+        isAccepted : 申請が許可された。
+        isRejected : 申請が拒否された。
+    """
 
     event = serializers.SerializerMethodField()
     created_time = serializers.SerializerMethodField()
     receive_user = serializers.SerializerMethodField()
     send_user = serializers.SerializerMethodField()
     target_tweet_info = serializers.SerializerMethodField()
+    isAccepted = serializers.SerializerMethodField()
+    isRejected = serializers.BooleanField(default=False)
 
     class Meta:
         model = Notification
@@ -818,6 +885,8 @@ class NotificationSerializer(serializers.ModelSerializer):
             'created_at',
             'created_time',
             'readed',
+            'isAccepted',
+            'isRejected',
         ]
 
 
@@ -874,8 +943,24 @@ class NotificationSerializer(serializers.ModelSerializer):
 
         return str(diff.seconds // 60 // 60) + '時間'
 
+    def get_isAccepted(self, obj):
+
+        if obj.event != 4:
+            return False
+
+        try:
+            return FollowRequest.objects.get(
+                follow_request_user=obj.send_user,
+                follow_response_user=obj.receive_user
+            ).isAccepted
+        except FollowRequest.DoesNotExist:
+            return False
+
 
 class NotificationCountSerializer(serializers.ModelSerializer):
+    """
+    通知の数を取得するシリアライザー
+    """
 
     info_count = serializers.SerializerMethodField()
     msg_count = serializers.SerializerMethodField()
@@ -892,7 +977,7 @@ class NotificationCountSerializer(serializers.ModelSerializer):
         super().__init__(*args, **kwargs)
 
     def get_info_count(self, obj):
-        event_list = [0, 1, 2, 3]
+        event_list = [0, 1, 2, 3, 4]
         return self.get_infomation_count(obj, event_list)
 
     def get_msg_count(self, obj):

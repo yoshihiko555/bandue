@@ -31,8 +31,6 @@ from .models import (
     hUserUpd,
     hTweetUpd,
     mAccessLog,
-    Band,
-    MemberShip,
     Entry,
     Room,
     Message,
@@ -41,7 +39,8 @@ from .models import (
     RetweetRelationShip,
     Notification,
     MessageNotification,
-    ReplyRelationShip
+    ReplyRelationShip,
+    FollowRequest,
 )
 from .permissions import (
     IsMyselfOrReadOnly,
@@ -110,6 +109,9 @@ class BaseModelViewSet(viewsets.ModelViewSet, GetLoginUserMixin):
         return Response(serializer.data)
 
     def return_tweet_list(self, login_user):
+        """
+        home画面で表示するツイート一覧を返す
+        """
 
         mute_list = login_user.msetting.mute_list
 
@@ -204,6 +206,12 @@ class TweetViewSet(BaseModelViewSet):
 
     @action(methods=['post'], detail=False)
     def liked(self, request):
+        """
+        いいねするアクション
+            いいねの動作自体重要度低めのため、以下の動作にする。
+                - いいねしてたら→いいね解除
+                - いいねしてなかったら→いいね
+        """
 
         logger.debug('likedメソッド')
         logger.debug(request.data)
@@ -221,6 +229,10 @@ class TweetViewSet(BaseModelViewSet):
 
 
     def set_tweet_liked_info(self, tweet, login_user):
+        """
+        いいねしてたらいいね解除、してなかったらいいねする。
+        """
+
         try:
             tweet.liked.all().get(username=login_user.username)
             tweet.liked.remove(login_user)
@@ -233,6 +245,10 @@ class TweetViewSet(BaseModelViewSet):
     @transaction.atomic
     @action(methods=['post'], detail=False)
     def retweet(self, request):
+        """
+        リツイートするアクション
+        """
+
         logger.debug('retweetメソッド')
         login_user = request.user
         tweet = Tweet.objects.get(pk=request.data['target_tweet_pk'])
@@ -240,6 +256,12 @@ class TweetViewSet(BaseModelViewSet):
 
 
     def set_tweet_relation(self, login_user, tweet):
+        """
+        対象ツイートをリツイートするメソッド。
+            - 対象ツイートがリツイートだったら元ツイート情報を取得し紐づける。
+            - 既に同じリツイートが存在する場合、削除
+            - 存在しない場合、新規作成して元ツイートと結び付けたリツイートを作成
+        """
 
         target_tweet = tweet
         if tweet.isRetweet == True:
@@ -279,6 +301,11 @@ class TweetViewSet(BaseModelViewSet):
     @transaction.atomic
     @action(methods=['post'], detail=False)
     def reply(self, request):
+        """
+        リプライのアクション。
+            中間テーブルは紐づいているリプライを全て取得するため、
+            元のツイートと、リプライ対象のツイートを持つ。
+        """
         logger.debug('replyメソッド')
         logger.debug(request.data)
 
@@ -323,6 +350,9 @@ class TweetViewSet(BaseModelViewSet):
 
     @action(methods=['get'], detail=False)
     def replyDetail(self, request):
+        """
+        対象リプライのリプライ一覧を取得するアクション
+        """
 
         self.set_login_user(request)
 
@@ -432,7 +462,7 @@ class mUserViewSet(BaseModelViewSet):
 
 
     @action(methods=['post'], detail=False)
-    def unfollow(self, request):
+    def unFollow(self, request):
 
         login_user = request.user
         unfollowed_username = request.data['target_user']
@@ -440,6 +470,12 @@ class mUserViewSet(BaseModelViewSet):
         login_user.followees.remove(unfollowed_user)
 
         logger.debug(str(request.user) + 'が' + request.data['target_user'] + 'をアンフォロー')
+
+        # フォロー申請のデータがあったら削除
+        FollowRequest.objects.filter(
+            follow_request_user=login_user,
+            follow_response_user=unfollowed_user
+        ).delete()
 
         if 'isTweetList' in request.data:
             return self.return_tweet_list(login_user)
@@ -460,6 +496,9 @@ class mUserViewSet(BaseModelViewSet):
 
     @action(methods=['post'], detail=False)
     def mute(self, request):
+        """
+        ユーザーをミュートするアクション
+        """
 
         login_user = request.user
 
@@ -474,7 +513,10 @@ class mUserViewSet(BaseModelViewSet):
 
 
     @action(methods=['post'], detail=False)
-    def unmute(self, request):
+    def unMute(self, request):
+        """
+        ミュートを解除するアクション
+        """
 
         login_user = request.user
 
@@ -489,6 +531,9 @@ class mUserViewSet(BaseModelViewSet):
 
     @action(methods=['post'], detail=False)
     def block(self, request):
+        """
+        ユーザーをブロックするアクション
+        """
 
         login_user = request.user
 
@@ -511,7 +556,10 @@ class mUserViewSet(BaseModelViewSet):
 
 
     @action(methods=['post'], detail=False)
-    def unblock(self, request):
+    def unBlock(self, request):
+        """
+        ユーザーのブロックを解除するアクション
+        """
 
         login_user = request.user
 
@@ -525,6 +573,9 @@ class mUserViewSet(BaseModelViewSet):
 
     @action(methods=['post'], detail=False)
     def muteList(self, request):
+        """
+        ミュートしているユーザー一覧を返すアクション
+        """
 
         login_user = request.user
         mute_list = login_user.msetting.mute_list.all()
@@ -541,6 +592,9 @@ class mUserViewSet(BaseModelViewSet):
 
     @action(methods=['post'], detail=False)
     def blockList(self, request):
+        """
+        ブロックしているユーザー一覧を返すアクション
+        """
 
         login_user = request.user
         mute_list = login_user.msetting.block_list.all()
@@ -554,6 +608,97 @@ class mUserViewSet(BaseModelViewSet):
             'icon',
         ]
         return Response(ProfileSerializer(mute_list, fields=fields, many=True).data)
+
+    @action(methods=['post'], detail=False)
+    def followRequest(self, request):
+        """
+        フォロー申請を作成するアクション
+        """
+
+        login_user = request.user
+
+        try:
+            target_user = mUser.objects.get(username=request.data['target_user'])
+        except mUser.DoesNotExist:
+            return Response(status=statu.HTTP_400_BAD_REQUEST)
+
+        FollowRequest.objects.create(
+            follow_request_user=login_user,
+            follow_response_user=target_user
+        )
+
+        return Response(status=status.HTTP_200_OK)
+
+    @action(methods=['post'], detail=False)
+    def acceptFollowRequest(self, request):
+        """
+        フォロー申請を許可するアクション
+        """
+
+        login_user = request.user
+
+        try:
+            target_user = mUser.objects.get(username=request.data['target_user'])
+        except mUser.DoesNotExist:
+            return Response(status=statu.HTTP_400_BAD_REQUEST)
+
+        # isAcceptedをTrueにする
+        try:
+            follow_request = FollowRequest.objects.get(
+                follow_request_user=target_user,
+                follow_response_user=login_user
+            )
+            follow_request.isAccepted = True
+            follow_request.save()
+        except FollowRequest.DoesNotExist:
+            logger.error('FollowRequestが取得できていない')
+
+        # フォローユーザーに追加
+        target_user.followees.add(login_user)
+
+        # 申請の通知を削除
+        try:
+            Notification.objects.get(
+                pk=request.data['notification_pk']
+            ).delete()
+        except Notification.DoesNotExist:
+            logger.error('Notificationが取得できていない')
+
+        return Response(status=status.HTTP_200_OK)
+
+
+    @action(methods=['post'], detail=False)
+    def rejectFollowRequest(self, request):
+        """
+        フォロー申請を拒否するアクション
+        """
+
+        login_user = request.user
+
+        try:
+            target_user = mUser.objects.get(username=request.data['target_user'])
+        except mUser.DoesNotExist:
+            return Response(status=statu.HTTP_400_BAD_REQUEST)
+
+        # フォロー申請を削除
+        try:
+            FollowRequest.objects.get(
+                follow_request_user=target_user,
+                follow_response_user=login_user
+            ).delete()
+        except FollowRequest.DoesNotExist:
+            logger.error('FollowRequestが取得できていない')
+
+        # フォロー申請の通知を削除
+        try:
+            Notification.objects.get(
+                pk=request.data['notification_pk']
+            ).delete()
+        except Notification.DoesNotExist:
+            logger.error('Notificationが取得できていない')
+
+        return Response(status=status.HTTP_200_OK)
+
 
 
 class RoomViewSet(BaseModelViewSet):

@@ -76,6 +76,9 @@
 					tweetData.append('images', this.file)
 					tweetData.append('content', this.tweet_content)
 				} else {
+					if (this.tweet_content.length === 0) {
+						return
+					}
 					tweetData = {
 						content: this.tweet_content
 					}

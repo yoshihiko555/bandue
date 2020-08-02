@@ -6,7 +6,11 @@ class ApiConfig(AppConfig):
 
     def ready(self):
         from .signals import (
-            liked_receiver,
             follow_receiver,
             retweet_receiver,
+            reply_receiver,
+            liked_receiver,
+            follow_request_receiver,
+            send_read_message,
+            recevie_message
         )

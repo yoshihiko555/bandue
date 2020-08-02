@@ -1,5 +1,6 @@
 <template>
 	<div>
+
 		<div v-for='(tweet, index) in tweetList' :key='`tweet.author-${index}`'>
 			<v-card
 				flat
@@ -175,8 +176,16 @@
 			</v-card>
 		</div>
 
-		<div v-if='nextPage != null && tweetLoading || initLoading === true'>
+		<div v-if='nextPage != null && tweetLoading || initLoading'>
 			<Loading></Loading>
+		</div>
+
+		<div v-if='tweetList.length === 0 && !initLoading'>
+			<v-card
+				flat
+			>
+				<v-card-title>ツイートがありません。</v-card-title>
+			</v-card>
 		</div>
 
 		<!-- モーダル設定 -->
@@ -266,13 +275,13 @@
 			scrollY: 0,
 			scrollMax: 0,
 			initLoading: true,
-      tweetLoading: true,
+      		tweetLoading: true,
 			replyDetailDialog: false,
 		}),
 		created () {
 			this.$eventHub.$on('create-tweet', this.tweetUpdate)
-      window.addEventListener('scroll', this.handleScroll)
-    },
+      		window.addEventListener('scroll', this.handleScroll)
+    	},
 		mounted: function () {
 			console.log('ツイートリストフラグ:', this.tweetListFlg)
 			console.log('ユーザーネーム:', this.username)
@@ -415,7 +424,7 @@
 			tweetUserUnFollow (tweet) {
 				this.$axios({
 					method: 'POST',
-					url: '/api/users/unfollow/',
+					url: '/api/users/unFollow/',
 					data: {
 						target_user : tweet.author,
 						isTweetList : true,

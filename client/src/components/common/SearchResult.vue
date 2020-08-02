@@ -142,9 +142,7 @@
                       <v-spacer></v-spacer>
                       <span class='follow_btn ml-8'>
                         <follow
-                          :username='user.username'
-                          :isBlocked='user.isBlocked'
-                          :isPrivate='user.isPrivate'
+                          :profileData='user'
                         ></follow>
                       </span>
                     </v-card-title>
