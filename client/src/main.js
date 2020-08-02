@@ -20,7 +20,6 @@ require('@/static/scss/main.scss')
 
 Vue.config.productionTip = false
 Vue.prototype.$store = store
-// Vue.prototype.$vuetify = vuetify
 
 Vue.use(VueSession)
 Vue.use(eventHub)
@@ -41,7 +40,6 @@ new Vue({
   store,
   vuetify,
   created () {
-      console.log('OK')
       sessionStorage.setItem('initialState', JSON.stringify(initialState))
       this.$vuetify.theme.isDark = this.$store.state.settings.isDark
   },

@@ -138,7 +138,7 @@ class ProfileUpdateView(generics.RetrieveUpdateDestroyAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class SignUpView(generics.CreateAPIView):
+class SignUpView(generics.CreateAPIView, GetLoginUserMixin):
 
     permission_classes = (permissions.AllowAny,)
     queryset = mUser.objects.all()

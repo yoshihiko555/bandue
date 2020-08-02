@@ -143,7 +143,7 @@
 				if (Con.PROFILE_EVENT.includes(event)) {
 					var username = info.send_user.username
 					this.$router.push('/profile/' + username)
-					Com.reload(this.$router)
+					// Com.reload(this.$router)
 				} else if (Con.TWEET_EVENT.includes(event)) {
 					console.log(info.target_tweet_info)
 					this.showTweetDetail(info.target_tweet_info)

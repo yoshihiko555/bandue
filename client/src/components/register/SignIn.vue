@@ -1,88 +1,113 @@
 <template>
-	<v-card
-		class='pa-3 signin_wrap'
-		outlined
-		width=400
-	>
-		<v-card-title class="text-center">
-			<h1 class="register_title">BandueにSignInする</h1>
-		</v-card-title>
+    <v-app id='signin_wrap'>
+        <Header/>
+        <v-container
+			fluid
+			class='pa-0'    
+        >
+            <v-row>
+                <v-col cols='12' class="pa-0">
+                    <v-row
+                        align='center'
+                        justify='center'
+                        class='teal darken-4 register_card_wrap'
+                    >
+                        <v-card
+                            class='pa-3 signin_wrap'
+                            outlined
+                            width=400
+                        >
+                            <v-card-title class="text-center">
+                                <h1 class="register_title">BandueにSignInする</h1>
+                            </v-card-title>
 
-		<v-alert
-			dense
-			outlined
-			type='error'
-			transition='scale-transition'
-			v-show='checkAuth'
-		>
-			<strong>ユーザー名</strong>、または<strong>パスワード</strong>が間違っています。再度入力し直してください。
-		</v-alert>
+                            <v-alert
+                                dense
+                                outlined
+                                type='error'
+                                transition='scale-transition'
+                                v-show='checkAuth'
+                            >
+                                <strong>ユーザー名</strong>、または<strong>パスワード</strong>が間違っています。再度入力し直してください。
+                            </v-alert>
 
-		<v-form ref='form' v-model='valid'>
-			<v-text-field
-				v-model='credentials.username'
-				:rules='rules.username'
-				:counter='70'
-				maxlength='70'
-				label='Mail or UserId'
-				required
-				clearable
-				tabindex='1'
-			></v-text-field>
+                            <v-form ref='form' v-model='valid'>
+                                <v-text-field
+                                    v-model='credentials.username'
+                                    :rules='rules.username'
+                                    :counter='70'
+                                    maxlength='70'
+                                    label='Mail or UserId'
+                                    required
+                                    clearable
+                                    tabindex='1'
+                                ></v-text-field>
 
-			<v-text-field
-				v-model='credentials.password'
-				:append-icon='showPassword ? "mdi-eye" : "mdi-eye-off"'
-				:rules='rules.password'
-				:counter='70'
-				:type='showPassword ? "text" : "password"'
-				maxlength='70'
-				label='Password'
-				required
-				tabindex='2'
-				@click:append='showPassword = !showPassword'
-				:class='{icon_hide:isIcon}'
-				@keyup='passAction'
-				ref='pass'
-			></v-text-field>
+                                <v-text-field
+                                    v-model='credentials.password'
+                                    :append-icon='showPassword ? "mdi-eye" : "mdi-eye-off"'
+                                    :rules='rules.password'
+                                    :counter='70'
+                                    :type='showPassword ? "text" : "password"'
+                                    maxlength='70'
+                                    label='Password'
+                                    required
+                                    tabindex='2'
+                                    @click:append='showPassword = !showPassword'
+                                    :class='{icon_hide:isIcon}'
+                                    @keyup='passAction'
+                                    ref='pass'
+                                ></v-text-field>
 
-			<v-col class='text-center' cols='12'>
-				<v-btn
-					depressed
-					x-large
-					class='teal lighten-4'
-					:disabled='!valid'
-					@click='signin'
-					tabindex='3'
-				>SignIn</v-btn>
-			</v-col>
+                                <v-col class='text-center' cols='12'>
+                                    <v-btn
+                                        depressed
+                                        x-large
+                                        class='teal lighten-4'
+                                        :disabled='!valid'
+                                        @click='signin'
+                                        tabindex='3'
+                                    >SignIn</v-btn>
+                                </v-col>
 
-			<v-row>
+                                <v-row>
 
-				<v-col class='text-center' cols='6'>
-					<v-btn
-						href='#'
-					>パスワードを<br>お忘れですか？</v-btn>
-				</v-col>
-				<v-col class='text-center' cols='6'>
-					<v-btn
-						to='/signup'
-						@click='reload'
-					>SignUp</v-btn>
-				</v-col>
-
-			</v-row>
-		</v-form>
-	</v-card>
+                                    <v-col class='text-center' cols='6'>
+                                        <v-btn
+                                            href='#'
+                                        >パスワードを<br>お忘れですか？</v-btn>
+                                    </v-col>
+                                    <v-col class='text-center' cols='6'>
+                                        <v-btn
+                                            to='/signup'
+                                            @click='reload'
+                                        >SignUp</v-btn>
+                                    </v-col>
+                                </v-row>
+                            </v-form>
+                        </v-card>
+                    </v-row>
+                </v-col>
+            </v-row>
+        </v-container>
+        <Footer/>
+    </v-app>
 </template>
 
 <script>
+    import Header from '../common/Header'
+    import Footer from '../common/Footer'
+
 	import { mapState } from 'vuex'
-	import { Common } from '@/static/js/common'
+    import { Common } from '@/static/js/common'
 
 	const Com = new Common()
 	export default {
-		name: 'signin',
+        name: 'signin',
+        components: {
+            Header,
+            Footer,
+        },
 		data: () => ({
 			valid: true,
 			showPassword: false,
@@ -113,7 +138,7 @@
 			},
 
 			reload () {
-				Com.reload(this.$router)
+				// Com.reload(this.$router)
 			},
 
 			passAction (e) {
@@ -136,7 +161,7 @@
 </script>
 
 <style lang='scss'>
-#register_wrap {
+#signin_wrap {
 	> div {
 		min-height: inherit;
 	}

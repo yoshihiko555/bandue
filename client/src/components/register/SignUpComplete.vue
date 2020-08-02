@@ -32,7 +32,7 @@ export default {
   methods: {
 	  signin () {
 		this.$router.push('/signin/')
-		Com.reload(this.$router)
+		// Com.reload(this.$router)
 	  }
   }
 }

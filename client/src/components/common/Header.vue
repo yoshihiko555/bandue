@@ -2,7 +2,7 @@
 	<v-container id='header_wrap'>
 		<v-row>
 			<v-col cols='12'>
-				<h1 class='logo' @click='reload'><img src='@/static/img/Logo_Icon&Text.png' alt="logo" width="150"><router-link to='/'></router-link></h1>
+				<router-link to='/'><h1 class='logo'><img src='@/static/img/Logo_Icon&Text.png' alt="logo" width="150"></h1></router-link>
 			</v-col>
 		</v-row>
 	</v-container>
@@ -18,9 +18,9 @@
 
 		}),
 		methods: {
-			reload () {
-				Com.reload(this.$router)
-			}
+			// reload () {
+			// 	Com.reload(this.$router)
+			// }
 		}
 	}
 </script>

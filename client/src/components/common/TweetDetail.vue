@@ -52,7 +52,7 @@
 				this.$emit('closeModal')
 			},
 			reload () {
-				Com.reload(this.$router)
+				// Com.reload(this.$router)
 			},
 		}
 	}

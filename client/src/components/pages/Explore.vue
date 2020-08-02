@@ -128,7 +128,7 @@
 				this.$store.dispatch('AuthCheckAction', this.credentials)
 			},
 			reload () {
-				Com.reload(this.$router)
+				// Com.reload(this.$router)
 			},
 
  			passAction (e) {

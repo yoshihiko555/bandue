@@ -122,7 +122,6 @@
 				})
 				.then(res => {
                     if (this.unreadMessages.length) {
-                        console.log('ここにきた')
                         this.$axios({
                             url: '/api/message/message_read/',
                             method: 'PUT',

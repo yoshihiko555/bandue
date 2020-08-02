@@ -33,7 +33,7 @@ export default {
   methods: {
     top () {
       this.$router.push('/')
-      Com.reload(this.$router)
+    //   Com.reload(this.$router)
     }
   }
 }

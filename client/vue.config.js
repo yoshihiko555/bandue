@@ -8,26 +8,26 @@ module.exports = {
 
     // publicPathはdjango-webpack-loaderがパスをbundleにリダイレクトしたときに
     // http://192.168.33.12:8080/http://192.168.33.12:8080みたいに意味不明なURLを生み出さないための回避策
-    publicPath: 'http://localhost:8080',
+    // publicPath: 'http://localhost:8080',
 
     // ビルド先のディレクトリの設定
-    outputDir: './bundles/',
+    // outputDir: './bundles/',
     assetsDir: 'static',
 
-    pages: {
-        // MPAのための設定
-        // それぞれのページ毎にエントリーポイントを設定している
-        main: {
-            entry: 'src/entry/main.js',
-            template: 'public/index.html',
-            filename: 'main.html'
-        },
-        register: {
-            entry: 'src/entry/register.js',
-            template: 'public/index.html',
-            filename: 'register.html'
-        },
-    },
+    // pages: {
+    //     // MPAのための設定
+    //     // それぞれのページ毎にエントリーポイントを設定している
+    //     main: {
+    //         entry: 'src/entry/main.js',
+    //         template: 'public/index.html',
+    //         filename: 'main.html'
+    //     },
+    //     register: {
+    //         entry: 'src/entry/register.js',
+    //         template: 'public/index.html',
+    //         filename: 'register.html'
+    //     },
+    // },
 
     css: {
         loaderOptions: {
@@ -46,9 +46,9 @@ module.exports = {
         .splitChunks(false)
 
         // webpak-stats.jsonの出力先を設定
-        config
-        .plugin('BundleTracker')
-        .use(BundleTracker, [{ filename: '../client/webpak-stats.json' }])
+        // config
+        // .plugin('BundleTracker')
+        // .use(BundleTracker, [{ filename: '../client/webpak-stats.json' }])
 
         // 開発サーバーの設定
         config.devServer

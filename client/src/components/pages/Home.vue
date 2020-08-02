@@ -65,7 +65,7 @@
 
       if (!this.isAuth) {
           this.$router.push('/signin')
-          Com.reload(this.$router)
+        //   Com.reload(this.$router)
       }
 			const url = 'ws://' + window.location.host + '/ws/user/' + this.$store.state.loginUser + '/'
 			this.ws = new WebSocket(url)
@@ -79,7 +79,7 @@
     },
 		methods: {
 			reload () {
-				Com.reload(this.$router)
+				// Com.reload(this.$router)
 			}
 		}
 	}
