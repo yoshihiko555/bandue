@@ -18,11 +18,11 @@
 			if (this.$store.state.isAuth) {
 				// HOMEへ
 				this.$router.push('/home')
-				Com.reload(this.$router)
+				// Com.reload(this.$router)
 			} else {
 				// 未認証ページへ
 				this.$router.push('/explore')
-				Com.reload(this.$router)
+				// Com.reload(this.$router)
 			}
 		},
 

@@ -56,7 +56,7 @@ const settings = {
             .then(res => {
                 this.dispatch('settings/updateIsDark', res.data.setting.isDark)
                 router.push('/')
-                Com.reload(router)
+                // Com.reload(router)
             })
             .catch(e => {
                 console.log(e)

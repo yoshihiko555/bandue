@@ -324,14 +324,16 @@
 			init: true,
 		}),
 		created () {
-			const currentPath = this.$route.path
+            const currentPath = this.$route.path
 			const pattern = /\/profile\/(.+?)\/.*/
 			const result = currentPath.match(pattern)
-			this.username = result[1]
-			const loginUser = this.$store.state.loginUser
-			if (loginUser === this.username) {
-				this.isMe = true
-			}
+            // this.username = result[1]
+            this.username = this.$route.params.username
+            const loginUser = this.$store.state.loginUser
+            this.isMe = loginUser === this.username
+			// if (loginUser === this.username) {
+			// 	this.isMe = true
+			// }
 		},
 		mounted: function () {
 			this.loading = true
@@ -364,13 +366,13 @@
 
 				if (statusCode === 404) {
 					this.$router.push('/404')
-					this.reload()
+					// this.reload()
 				} else if (statusCode === 403) {
 					console.log('認証で拒否された')
 				}
 			},
 			reload() {
-				Com.reload(this.$router)
+				// Com.reload(this.$router)
 			},
 			showTweetList () {
 				this.profileData.tweet_limit_level = 0

@@ -306,7 +306,7 @@ export default {
       }
     },
     reload () {
-      Com.reload(this.$router)
+    //   Com.reload(this.$router)
     }
   }
 }

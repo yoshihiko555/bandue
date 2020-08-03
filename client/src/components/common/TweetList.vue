@@ -320,7 +320,7 @@
 				console.log(this.tweetList)
 			},
 			reload () {
-				Com.reload(this.$router)
+				// Com.reload(this.$router)
 			},
 			tweetEditMethods (i, tweet) {
 				const methodsList = [

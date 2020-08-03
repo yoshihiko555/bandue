@@ -10,8 +10,7 @@
 						<v-list-item
 							v-for='(item, i) in items'
 							:key='i'
-							:to='item.url'
-							@click='SidebarMethods(i)'
+							@click='SidebarMethods(item)'
 						>
 							<v-list-item-icon>
 								<v-icon v-text='item.icon'></v-icon>
@@ -136,19 +135,19 @@
 		},
 
 		methods: {
-			SidebarMethods (i) {
-				const methodsList = [
-					this.reload,				// HOME
-					this.reload,				// BBS
-					this.reload,				// Message
-					this.reload,				// Info
-					this.toProfile,				// Profile
-					this.reload,				// Setting
-					this.togleSignoutModal		// Signout
-				]
-				if (methodsList[i] !== '') {
+			SidebarMethods (item) {
+				const methodsList = {
+					Home: this.reload,				// HOME
+					BBS: this.reload,				// BBS
+                    Message: this.reload,   		// Message
+					Info: this.reload,				// Info
+					Profile: this.toProfile,		// Profile
+					Setting: this.reload,			// Setting
+					Signout: this.togleSignoutModal	// Signout
+                }
+				if (methodsList[item.title] !== '') {
 					// メソッドが定義されている
-					methodsList[i]()
+					methodsList[item.title](item.url)
 				}
 			},
 
@@ -156,13 +155,19 @@
 				this.dialog = !this.dialog
 			},
 
-			toProfile () {
-				this.$router.push(this.$store.state.loginUser)
-				Com.reload(this.$router)
+			toProfile (url) {
+                this.$router.push({
+                    name: 'Profile',
+                    params: {
+                        username: this.$store.state.loginUser
+                    }
+                })
+				// Com.reload(this.$router)
 			},
 
-			reload () {
-				Com.reload(this.$router)
+			reload (url) {
+                this.$router.push(url)
+				// Com.reload(this.$router)
 			},
 			cntUpInfo(menu) {
 				this.items[Con.SIDEBAR_INDEX[menu]].info_content++
@@ -174,7 +179,6 @@
 				this.items[Con.SIDEBAR_INDEX[menu]].info_content = 0
             },
             removeMessageInfo (cnt) {
-                console.log(cnt)
                 this.items[Con.SIDEBAR_INDEX.Message].info_content -= cnt
             }
 		}

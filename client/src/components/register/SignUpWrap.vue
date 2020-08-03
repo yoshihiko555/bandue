@@ -16,35 +16,20 @@
 					<!-- Django側から受け取ったviewの値で表示するコンポーネントを判定
 					0 = signup
 					1 = signin -->
-					<div v-if='view == 0'>
-						<!-- TODO : 切替時のアニメーション追加 -->
-						<!-- 以下のtransitionでwrapしてあげると、アニメーションの使用が可能になるけど、まだ使い方がよくわからない -->
-						<!-- <transition name='fade' mode='out-in'> -->
-						<keep-alive>
-							<!-- pageメソッドでコンポーネントの切り替え
-							子コンポーネントのsignuo-change-viewが発火されたことを確認して、signupViewメソッドが発火
-							signupViewメソッドで受け取ったsignUpCntで表示切り替え -->
-							<component
-								:is='page'
-								@signup-change-view='signupView'
-								:data='credentials'
-							></component>
-						</keep-alive>
-						<!-- </transition> -->
-					</div>
-
-					<div v-else-if='view == 1'>
-						<SignIn
-							signup-url='this.signupUrl'
-						>
-						</SignIn>
-					</div>
-
-					<div v-else-if='view == 2'>
-						<SignUpComplete>
-						</SignUpComplete>
-					</div>
-
+                    <!-- TODO : 切替時のアニメーション追加 -->
+                    <!-- 以下のtransitionでwrapしてあげると、アニメーションの使用が可能になるけど、まだ使い方がよくわからない -->
+                    <!-- <transition name='fade' mode='out-in'> -->
+                    <keep-alive>
+                        <!-- pageメソッドでコンポーネントの切り替え
+                        子コンポーネントのsignuo-change-viewが発火されたことを確認して、signupViewメソッドが発火
+                        signupViewメソッドで受け取ったsignUpCntで表示切り替え -->
+                        <component
+                            :is='page'
+                            @signup-change-view='signupView'
+                            :data='credentials'
+                        ></component>
+                    </keep-alive>
+                    <!-- </transition> -->
 					</v-row>
 				</v-col>
 			</v-row>

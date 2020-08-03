@@ -248,7 +248,7 @@
 					console.log(res)
 					this.$store.commit('initState')
 					this.$router.push('/')
-					Com.reload(this.$router)
+					// Com.reload(this.$router)
 				})
 				.catch(e => {
 					console.log(e)

@@ -54,7 +54,7 @@
 				console.log('サインアウト')
 				this.$store.commit('initState')
 				this.$router.push('/')
-				Com.reload(this.$router)
+				// Com.reload(this.$router)
 			}
 		}
 	}

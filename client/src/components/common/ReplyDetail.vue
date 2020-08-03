@@ -167,7 +167,7 @@
             },
             toProfile (tweet) {
                 this.$router.push('/profile/' + tweet.author + '/')
-                Com.reload(this.$router)
+                // Com.reload(this.$router)
             },
         }
     }
