@@ -111,7 +111,7 @@ class ProfileSerializer(DynamicFieldsModelSerializer):
 
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True, required=False)
-
+    created_at = serializers.SerializerMethodField()
     followees = ProfileSubSerializer(many=True)
     followers = serializers.SerializerMethodField()
     followees_count = serializers.IntegerField(source='followees.count')
@@ -158,6 +158,9 @@ class ProfileSerializer(DynamicFieldsModelSerializer):
             'isFollow',
             'isSendFollowRequest',
         ]
+
+    def get_created_at(self, obj):
+        return obj.created_at.strftime('%Y年%m月%d日')
 
     def get_followers(self, obj):
         return ProfileSubSerializer(mUser.objects.filter(followees=obj), many=True).data
@@ -322,6 +325,8 @@ class TweetSerializer(DynamicFieldsModelSerializer):
     userIcon = serializers.SerializerMethodField()
     isBlocked = serializers.SerializerMethodField(read_only=True)
     isSendFollowRequest = serializers.SerializerMethodField(read_only=True)
+    created_at = serializers.SerializerMethodField()
+    updated_at = serializers.SerializerMethodField()
 
 
     def __init__(self, *args, **kwargs):
@@ -365,6 +370,14 @@ class TweetSerializer(DynamicFieldsModelSerializer):
             'isBlocked',
             'isSendFollowRequest',
         ]
+
+    def get_created_at(self, obj):
+        return obj.created_at.strftime('%Y年%m月%d日')
+
+
+    def get_updated_at(self, obj):
+        return obj.updated_at.strftime('%Y年%m月%d日')
+
 
     def get_hashTag(self, obj):
 
@@ -585,6 +598,10 @@ class TweetSerializer(DynamicFieldsModelSerializer):
             return (now - timedelta(days=diff.days)).strftime('%Y/%m/%d')
 
         if diff.days != 0:
+
+            if diff.days >= 3:
+                return obj.created_at.strftime('%Y年%m月%d日')
+
             return str(diff.days) + '日'
 
         if diff.seconds // 60 == 0:

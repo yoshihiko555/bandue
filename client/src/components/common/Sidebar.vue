@@ -52,9 +52,11 @@
 
 	export default {
 		name: 'Sidebar',
+
 		components: {
 			SignOut
 		},
+
 		data: () => ({
 			sidebarItem: 7,
 			dialog: false,
@@ -169,18 +171,22 @@
                 this.$router.push(url)
 				// Com.reload(this.$router)
 			},
+
 			cntUpInfo(menu) {
 				this.items[Con.SIDEBAR_INDEX[menu]].info_content++
 			},
+
 			cntDownInfo(menu) {
 				this.items[Con.SIDEBAR_INDEX[menu]].info_content--
 			},
+
 			cntZeroInfo(menu) {
 				this.items[Con.SIDEBAR_INDEX[menu]].info_content = 0
             },
+
             removeMessageInfo (cnt) {
                 this.items[Con.SIDEBAR_INDEX.Message].info_content -= cnt
-            }
+            },
 		}
 	}
 </script>

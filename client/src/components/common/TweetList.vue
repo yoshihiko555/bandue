@@ -1,12 +1,50 @@
 <template>
 	<div>
 
+		<!-- ツイートループここから -->
 		<div v-for='(tweet, index) in tweetList' :key='`tweet.author-${index}`'>
 			<v-card
 				flat
 				class='tweet_wrap'
 				@click.self.native='showTweetDetail(tweet)'
 			>
+
+				<!-- リツイートしてたら -->
+				<div
+					v-if='tweet.isRetweeted'
+					class='mt-3 ml-12 retweet_info'
+				>
+					<v-icon
+						color='green lighten-1'
+					>mdi-repeat</v-icon>
+					リツイート済み
+				</div>
+
+				<!-- フォローしてるユーザーがリツイートしてたら -->
+				<div
+					v-else-if='tweet.followees_in_retweet_users.length != 0'
+					class='followees_in_retweet_users retweet_info mt-3 ml-12'
+				>
+					<v-icon
+						color='green lighten-1'
+					>mdi-repeat</v-icon>
+					{{ tweet.followees_in_retweet_users[0].username }} さんがリツイート
+				</div>
+
+				<!-- フォローしてるユーザーがいいねしてたら -->
+				<div
+					v-else-if='tweet.followees_in_retweet_users.length == 0
+					 && tweet.followees_in_liked.length != 0'
+					class='followees_in_liked retweet_info mt-3 ml-12'
+				>
+					<v-icon
+						color='red lighten-3'
+						ref='tweet_isLiked'
+					>mdi-heart</v-icon>
+					{{ tweet.followees_in_liked[0].username }} さんがいいねしました
+				</div>
+
+				<!-- タイトル部分ここから -->
 				<v-card-title>
 					<v-avatar>
 						<v-img v-if='tweet.userIcon !== "/media/"' :src='tweet.userIcon'></v-img>
@@ -17,38 +55,10 @@
 						:to='{ name : "Profile", params : { username: tweet.author}}'
 						class='tweet_author z10'
 					>{{ tweet.author }}</router-link>
-					<span class='ml-8' style='font-size:50%;'>{{ tweet.updated_at }}</span>
-					<span v-if='tweet.isRetweeted'>
-						<v-icon
-							class='mr-1 retweet'
-							color='green lighten-1'
-						>mdi-repeat</v-icon>
-						リツイート済み
-					</span>
-					<span
-						v-else-if='tweet.followees_in_retweet_users.length != 0'
-						class='followees_in_retweet_users'
-					>
-						<v-icon
-							class='mr-1 retweet'
-							color='green lighten-1'
-						>mdi-repeat</v-icon>
-						{{ tweet.followees_in_retweet_users[0].username }} さんがリツイート
-					</span>
-					<span
-						v-else-if='tweet.followees_in_retweet_users.length == 0
-						 && tweet.followees_in_liked.length != 0'
-						class='followees_in_liked'
-					>
-						<v-icon v-if='!tweet.isLiked'
-								color='red lighten-3'
-								ref='tweet_isLiked'
-						>mdi-heart</v-icon>
-						{{ tweet.followees_in_liked[0].username }} さんがいいねしました
-					</span>
 
 					<v-spacer></v-spacer>
 
+					<!-- 作成日時 -->
 					<span class='created_time'>
 						{{ tweet.created_time }}
 					</span>
@@ -107,6 +117,8 @@
 						</v-menu>
 					</div>
 				</v-card-title>
+				<!-- タイトル部分ここまで -->
+
 				<!-- 内容 -->
 				<v-card-text>
 					{{ tweet.content }}
@@ -115,66 +127,78 @@
 				<div>
 					<img :src='tweet.images' width="100">
 				</div>
+
+				<!-- ツイートカード下部ここから -->
 				<v-container>
 					<v-row>
-						<div
-							v-if='tweet.reply_count != 0
-								|| tweet.isReply === true'
-							class='reply_wrap'
+						<v-col
+							cols='5'
 						>
 							<div
-								v-if='tweet.isRetweet'
+								v-if='tweet.reply_count != 0
+									|| tweet.isReply === true'
+								class='reply_wrap'
 							>
-								<v-btn
-									text
-									color='primary'
-									class='reply_text z10'
-									@click='showReplyDetail(tweet)'
-								>このスレッドを表示</v-btn>
-							</div>
-							<div
-								v-else
-							>
-								<v-avatar
-									size='34'
-									class='reply_img'
+								<div
+									v-if='tweet.isRetweet'
 								>
-									<v-img src='@/static/img/default_icon.jpeg'></v-img>
-								</v-avatar>
-								<v-btn
-									text
-									color='primary'
-									class='reply_text z10'
-									@click='showReplyDetail(tweet)'
-								>このスレッドを表示</v-btn>
-							</div>
-						</div>
-						<v-spacer></v-spacer>
-						<v-card-actions>
-							<v-list-item>
-								<v-list-item-content v-for='tag in tweet.hashTag' :key='tag.title'>
-									<v-list-item-title>{{ tag.title }}</v-list-item-title>
-								</v-list-item-content>
-								<v-row
-									align='center'
-									justify='end'
+									<v-btn
+										text
+										color='primary'
+										class='reply_text z10'
+										@click='showReplyDetail(tweet)'
+									>このスレッドを表示</v-btn>
+								</div>
+								<div
+									v-else
 								>
-									<reply
-										:tweet=tweet
-									></reply>
-									<retweet
-										:tweet=tweet
-									></retweet>
-									<like
-										:tweet=tweet
-									></like>
-								</v-row>
-							</v-list-item>
-						</v-card-actions>
+									<v-avatar
+										size='34'
+										class='reply_img'
+									>
+										<v-img src='@/static/img/default_icon.jpeg'></v-img>
+									</v-avatar>
+									<v-btn
+										text
+										color='primary'
+										class='reply_text z10'
+										@click='showReplyDetail(tweet)'
+									>このスレッドを表示</v-btn>
+								</div>
+							</div>
+						</v-col>
+						<v-col
+							cols='7'
+						>
+							<v-card-actions>
+								<v-list-item>
+									<v-list-item-content v-for='tag in tweet.hashTag' :key='tag.title'>
+										<v-list-item-title>{{ tag.title }}</v-list-item-title>
+									</v-list-item-content>
+									<v-row
+										align='center'
+										justify='end'
+									>
+										<reply
+											:tweet=tweet
+										></reply>
+										<retweet
+											:tweet=tweet
+										></retweet>
+										<like
+											:tweet=tweet
+										></like>
+									</v-row>
+								</v-list-item>
+							</v-card-actions>
+						</v-col>
 					</v-row>
 				</v-container>
+				<!-- ツイートカード下部ここまで -->
+
 			</v-card>
 		</div>
+		<!-- ツイートループここまで -->
 
 		<div v-if='nextPage != null && tweetLoading || initLoading'>
 			<Loading></Loading>
@@ -183,8 +207,11 @@
 		<div v-if='tweetList.length === 0 && !initLoading'>
 			<v-card
 				flat
+				class='tweet_not_found_wrap'
 			>
-				<v-card-title>ツイートがありません。</v-card-title>
+				<v-card-title
+					class='tweet_not_found'
+				>ツイートが見つかりません。</v-card-title>
 			</v-card>
 		</div>
 
@@ -225,6 +252,7 @@
 
 	export default {
 		name: 'TweetList',
+
 		props: {
 			tweetListFlg: {
 				type: Number,
@@ -235,6 +263,7 @@
 				required: false
 			}
 		},
+
 		components: {
 			TweetEdit,
 			TweetDetail,
@@ -244,6 +273,7 @@
 			Loading,
 			ReplyDetail,
 		},
+
 		data: () => ({
 			tweetList: [],
 			kebabMenu: [
@@ -278,10 +308,12 @@
       		tweetLoading: true,
 			replyDetailDialog: false,
 		}),
+
 		created () {
 			this.$eventHub.$on('create-tweet', this.tweetUpdate)
       		window.addEventListener('scroll', this.handleScroll)
     	},
+
 		mounted: function () {
 			console.log('ツイートリストフラグ:', this.tweetListFlg)
 			console.log('ユーザーネーム:', this.username)
@@ -310,6 +342,7 @@
 				this.initLoading = false
 			})
 		},
+
 		methods: {
 			tweetUpdate (res) {
 				console.log('tweet更新')
@@ -319,9 +352,11 @@
 				this.tweetList.unshift(res.data)
 				console.log(this.tweetList)
 			},
+
 			reload () {
 				// Com.reload(this.$router)
 			},
+
 			tweetEditMethods (i, tweet) {
 				const methodsList = [
 					this.showTweetEdit,
@@ -332,6 +367,7 @@
 					methodsList[i](tweet)
 				}
 			},
+
 			showTweetEdit (tweet) {
 				this.tweetEditDialog = true
 				this.selectTweet = tweet
@@ -342,6 +378,7 @@
 				this.tweetDetailDialog = false
 				this.replyDetailDialog = false
 			},
+
 			// TODO 削除前に確認モーダル表示
 			showDeleteDialog (tweet) {
 				this.$axios({
@@ -356,10 +393,13 @@
 					console.log(e)
 				})
 			},
+
 			showTweetDetail (tweet) {
 				this.tweetDetailDialog = true
 				this.selectTweet = tweet
 			},
+
+			// 次のページを読み込む
 			next () {
 				if (this.nextPage !== null) {
 					console.log('ツイートリストフラグ:', this.tweetListFlg)
@@ -387,6 +427,8 @@
 					})
 				}
 			},
+
+			// スクロールを制御して、最後らへんまでいったら次ページがあれば読み込む
 			handleScroll () {
 				this.scrollY = window.scrollY
 				this.scrollMax = document.body.scrollHeight - window.innerHeight
@@ -398,11 +440,15 @@
 					}
 				}
 			},
+
+			// リプライの詳細を表示
 			showReplyDetail (tweet) {
 				console.log('showReplyDetail')
 				this.replyDetailDialog = true
 				this.selectTweet = tweet
 			},
+
+			// ツイートユーザーをフォローするメソッド
 			tweetUserFollow (tweet) {
 				console.log('tweetUserFollow')
 				this.$axios({
@@ -421,6 +467,8 @@
 					console.log(e)
 				})
 			},
+
+			// ツイートユーザーのフォローを解除するメソッド
 			tweetUserUnFollow (tweet) {
 				this.$axios({
 					method: 'POST',
@@ -438,6 +486,7 @@
 					console.log(e)
 				})
 			},
+
 			mute (tweet) {
 				this.$axios({
 					method: 'POST',
@@ -454,6 +503,7 @@
 					console.log(e)
 				})
 			},
+
 			block (tweet) {
 				this.$axios({
 					method: 'POST',
@@ -470,6 +520,7 @@
 					console.log(e)
 				})
 			},
+
 			tweetUserMethod (i, tweet) {
 				let tweetUserMethodList = [
 					this.mute,
@@ -494,6 +545,10 @@
 			width: 100%;
 			height: 100%;
 			z-index: 0;
+		}
+
+		.retweet_info {
+			font-size: 13px;
 		}
 
 		.reply_wrap {
@@ -529,6 +584,12 @@
 
 		.created_time {
 			font-size: 14px;
+		}
+	}
+
+	.tweet_not_found_wrap {
+		.tweet_not_found {
+			font-size: 16px;
 		}
 	}
 

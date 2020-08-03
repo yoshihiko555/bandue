@@ -38,22 +38,27 @@
                 required: true
             },
         },
+
         components: {
             ReplyModal,
             BlockDialog,
         },
+
         data: () => ({
             replyModalDialog: false,
             selectTweet: {},
             isBlocked: false,
             isBlockedDialog: false,
         }),
+
         created () {
             this.isBlocked = this.tweet.isBlocked
         },
+
         mounted: function () {
 
         },
+
         methods: {
             showReplyModal (tweet) {
                 if (this.isBlocked) {
@@ -64,10 +69,13 @@
                     this.selectTweet = tweet
                 }
             },
+
             closeModal () {
                 this.replyModalDialog = false
                 this.isBlockedDialog = false
             },
+
+            // リプライするメソッド
             reply (content) {
                 console.log('reply')
                 console.log(content)
