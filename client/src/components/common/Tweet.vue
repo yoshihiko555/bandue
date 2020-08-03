@@ -58,7 +58,9 @@
 
 	export default {
 		props: ['data'],
+
 		name: 'Tweet',
+
 		data: () => ({
 			valid: true,
 			loading: false,
@@ -67,6 +69,7 @@
 			file: null,
 			previewSrc: '',
 		}),
+
 		methods: {
 			tweet () {
 				var tweetData
@@ -102,6 +105,7 @@
 					console.log(e.response)
 				})
 			},
+
 			inputFile (e) {
 				reader.readAsDataURL(e)
 				reader.onload = e => {
@@ -110,12 +114,14 @@
 				this.file = e
 				this.showImage = true
 			},
+
 			delete_image () {
 				this.file = null
 				this.previewSrc = ''
 				this.$refs.input.lazyValue = ''
 				this.showImage = false
-			}
+			},
+
 		}
 	}
 </script>

@@ -252,6 +252,7 @@ class SearchView(BaseListAPIView):
                 'isRetweet',
                 'isRetweeted',
                 'retweet_count',
+                'userIcon',
             ]
             if searchFlg == self.MEDIA:
                 fields.append('images')

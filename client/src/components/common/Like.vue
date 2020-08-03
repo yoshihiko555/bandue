@@ -35,52 +35,51 @@
                 required: true
             }
         },
+
         data: () => ({
-          isBlocked: false,
-          isBlockedDialog: false,
+            isBlocked: false,
+            isBlockedDialog: false,
         }),
+
         components: {
-          BlockDialog
+            BlockDialog
         },
+
         created () {
-          this.isBlocked = this.tweet.isBlocked
+            this.isBlocked = this.tweet.isBlocked
         },
+
         methods: {
-          liked (tweet) {
 
-            if (this.isBlocked) {
-              this.isBlockedDialog = true
-            } else {
-              if (tweet.isLiked) {
-                tweet.liked_count--
-              } else {
-                tweet.liked_count++
-              }
-              tweet.isLiked = !tweet.isLiked
+            // いいねするメソッド
+            liked (tweet) {
+                if (this.isBlocked) {
+                    this.isBlockedDialog = true
+                } else {
+                    (tweet.isLiked) ? tweet.liked_count-- : tweet.liked_count++
+                }
+                this.tweet.isLiked = !this.tweet.isLiked
 
-              const targetUrl = 'liked'
-              this.$axios({
-                method: 'POST',
-                url: '/api/tweet/' + targetUrl + '/',
-                data: {
-                  target_tweet_pk : tweet.pk
-                },
-              })
-              .then(res => {
-                console.log(res)
-              })
-              .catch(e => {
-                console.log(e)
-              })
-            }
-    			},
-          closeModal () {
-            this.isBlockedDialog = false
-          }
-        }
+                this.$axios({
+                    method: 'POST',
+                    url: '/api/tweet/liked/',
+                    data: {
+                        target_tweet_pk : this.tweet.pk
+                    },
+                })
+                .then(res => {
+                    console.log(res)
+                })
+                .catch(e => {
+                    console.log(e)
+                })
+            },
 
+            closeModal () {
+                this.isBlockedDialog = false
+            },
+        },
     }
-
 </script>
 
 <style>

@@ -39,18 +39,23 @@
 
 	export default {
 		name: 'TweetDetail',
+
 		props: ['tweet', 'tweetDetailDialog'],
+
 		data: () => ({
 		}),
+
 		components: {
 			Reply,
 			Retweet,
 			Like,
 		},
+
 		methods: {
 			closeModal () {
 				this.$emit('closeModal')
 			},
+
 			reload () {
 				// Com.reload(this.$router)
 			},

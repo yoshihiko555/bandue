@@ -41,49 +41,49 @@
                 required: true
             }
         },
+
         components: {
             RetweetConfirm,
             BlockDialog,
         },
+
         data: () => ({
             retweetConfirmDialog: false,
             selectTweet: {},
             isBlocked: false,
             isBlockedDialog: false,
         }),
+
         created () {
-          this.isBlocked = this.tweet.isBlocked
+            this.isBlocked = this.tweet.isBlocked
         },
+
         methods: {
             retweetConfirm (tweet) {
-              if (this.isBlocked) {
-                this.isBlockedDialog = true
-              } else {
+                if (this.isBlocked) {
+                    this.isBlockedDialog = true
+                    return
+                }
+
                 this.retweetConfirmDialog = true
                 this.selectTweet = tweet
-              }
             },
+
             closeModal () {
                 this.retweetConfirmDialog = false
                 this.isBlockedDialog = false
             },
+
+            // リツイートするメソッド
             retweet () {
-                console.log('retweet')
-                let tweet = this.selectTweet
+                (this.tweet.isRetweeted) ? this.tweet.retweet_count-- : this.tweet.retweet_count++
 
-                if (tweet.isRetweeted) {
-                    tweet.retweet_count--
-                } else {
-                    tweet.retweet_count++
-                }
-                tweet.isRetweeted = !tweet.isRetweeted
-
-                const targetUrl = 'retweet'
+                this.tweet.isRetweeted = !this.tweet.isRetweeted
                 this.$axios({
                     method: 'POST',
-                    url: '/api/tweet/' + targetUrl + '/',
+                    url: '/api/tweet/retweet/',
                     data: {
-                        target_tweet_pk : tweet.pk
+                        target_tweet_pk : this.tweet.pk
                     },
                 })
                 .then(res => {
@@ -94,7 +94,6 @@
                 })
                 this.retweetConfirmDialog = false
                 this.selectTweet = {}
-
             },
         }
     }

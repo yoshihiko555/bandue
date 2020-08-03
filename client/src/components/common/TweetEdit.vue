@@ -53,6 +53,7 @@
 			closeModal () {
 				this.$emit('closeModal')
 			},
+
 			tweetEdit () {
 				this.$axios({
 					method: 'PUT',
@@ -68,7 +69,8 @@
 				.catch(e => {
 					console.log(e)
 				})
-			}
+			},
+			
 		}
 	}
 </script>

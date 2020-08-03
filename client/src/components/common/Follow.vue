@@ -2,23 +2,30 @@
     <span>
         <span v-if='profileData.isSendFollowRequest'>
             <v-btn
-                class='blue lighten-5 ma-3'
+                class='follow_btn blue lighten-5'
                 color='white'
                 @click='clearFollowRequest'
+                height=height
+                width=width
+                v-bind:style='followBtnStyleObject'
             >フォロー申請中</v-btn>
         </span>
+
         <span v-else>
             <v-btn v-if='profileData.isFollow'
-                class='blue lighten-4 ma-3'
+                class='follow_btn blue lighten-4'
                 color='white'
                 @click='unFollow'
+                v-bind:style='followBtnStyleObject'
             >フォローを外す</v-btn>
             <v-btn v-else
-                class='blue lighten-4 ma-3'
+                class='follow_btn outlined'
                 color='white'
                 @click='follow'
+                v-bind:style='followBtnStyleObject'
             >フォローする</v-btn>
         </span>
+
         <BlockDialog
           @closeModal='closeModal'
           :username='profileData.username'
@@ -34,19 +41,28 @@
     const IS_FOLLOW = 1
     export default {
         name: 'Follow',
+
         props: [
-          'profileData'
+          'profileData',
+          'followBtnStyleObject',
         ],
+
         data: () => ({
             isBlockedDialog: false,
         }),
+
         components: {
           BlockDialog
         },
-        created () {
 
+        created () {
+        },
+        mounted: function () {
+            console.log(this.styleObject)
         },
         methods: {
+
+            // フォローするメソッド
             follow () {
                 console.log('followMethod')
                 const {isFollow, isPrivate, isBlocked} = this.profileData
@@ -73,6 +89,8 @@
                     })
                 }
             },
+
+            // フォロー解除するメソッド
             unFollow () {
                 this.profileData.isFollow = false
                 this.$axios({
@@ -89,12 +107,16 @@
                     console.log(e)
                 })
             },
+
             closeModal () {
                 this.isBlockedDialog = false
             },
+
             showBlockedDialog () {
                 this.isBlockedDialog = true
             },
+
+            // フォロー申請を送るメソッド
             sendFollowRequest () {
                 console.log('sendFollowRequest')
                 this.profileData.isSendFollowRequest = true
@@ -112,6 +134,7 @@
                     console.log(e)
                 })
             },
+
             clearFollowRequest () {
                 // フォロー申請をキャンセル。そのうち実装。
             },
@@ -120,5 +143,7 @@
 </script>
 
 <style>
-
+    .search_follow_btn {
+        font-size: 100px;
+    }
 </style>
