@@ -8,11 +8,13 @@ module.exports = {
 
     // publicPathはdjango-webpack-loaderがパスをbundleにリダイレクトしたときに
     // http://192.168.33.12:8080/http://192.168.33.12:8080みたいに意味不明なURLを生み出さないための回避策
-    // publicPath: 'http://localhost:8080',
+    // publicPath: 'http://localhost:8000',
+    // publicPath: '/bandue/',
 
     // ビルド先のディレクトリの設定
-    // outputDir: './bundles/',
+    outputDir: '../server/',
     assetsDir: 'static',
+    indexPath: 'templates/index.html',
 
     // pages: {
     //     // MPAのための設定
