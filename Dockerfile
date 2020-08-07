@@ -1,5 +1,7 @@
 FROM continuumio/anaconda3
 
+WORKDIR /home/bandue/server
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
   net-tools \
   sudo \
@@ -23,8 +25,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   conda install -c conda-forge django-cors-headers && \
   conda install -c conda-forge django-webpack-loader && \
   conda install -c anaconda python-memcached && \
+  conda install -c anaconda psycopg2 && \
+  conda install -c conda-forge whitenoise && \
+  conda install -c anaconda gunicorn && \
   python -m pip install -U channels && \
   pip install channels_redis && \
   npm install -g yarn && \
   yarn global add add @vue/cli
-WORKDIR /home/bandue/
+
+COPY ./server .
+
+RUN python manage.py collectstatic --noinput
+
+MAINTAINER admin
+
+ENV USER admin
+
+RUN useradd -m ${USER}
+RUN gpasswd -a ${USER} sudo
+RUN echo "${USER}:test_pass" | chpasswd
+USER ${USER}
+
+CMD gunicorn server.wsgi:application --bind 0.0.0.0:$PORT
