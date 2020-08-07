@@ -13,10 +13,11 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 import datetime
 import logging
+# import django_heroku
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FRONTEND_DIR = os.path.join(os.path.dirname(BASE_DIR), 'client')
+# FRONTEND_DIR = os.path.join(os.path.dirname(BASE_DIR), 'client')
 
 
 # Quick-start development settings - unsuitable for production
@@ -32,6 +33,8 @@ ALLOWED_HOSTS = [
     '192.168.33.12',
     '192.168.33.13',
     'localhost',
+    '127.0.0.1',
+    'bandue.herokuapp.com',
 ]
 
 
@@ -80,14 +83,14 @@ REST_FRAMEWORK = {
     }
 }
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': '127.0.0.1:11211',
-        # 'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-        # 'LOCATION': 'cache',
-    }
-}
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+#         'LOCATION': '127.0.0.1:11211',
+#         # 'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+#         # 'LOCATION': 'cache',
+#     }
+# }
 
 # JWT認証設定
 JWT_AUTH = {
@@ -100,13 +103,13 @@ JWT_AUTH = {
 }
 
 # webpak-stats.jsonの読み込み設定
-WEBPACK_LOADER = {
-    'DEFAULT' : {
-        'CACHE' : DEBUG,
-        'BUNDLE_DIR_NAME' : 'bundles/',
-        'STATS_FILE' : os.path.join(FRONTEND_DIR, 'webpak-stats.json'),
-    }
-}
+# WEBPACK_LOADER = {
+#     'DEFAULT' : {
+#         'CACHE' : DEBUG,
+#         'BUNDLE_DIR_NAME' : 'bundles/',
+#         'STATS_FILE' : os.path.join(FRONTEND_DIR, 'webpak-stats.json'),
+#     }
+# }
 
 CHANNEL_LAYERS = {
     'default': {
@@ -119,6 +122,7 @@ CHANNEL_LAYERS = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -197,8 +201,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(FRONTEND_DIR, 'bundles/static')]
+# STATICFILES_DIRS = [os.path.join(FRONTEND_DIR, 'bundles/static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # LOGIN_URL = 'api:login'
