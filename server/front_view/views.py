@@ -10,23 +10,24 @@ import json
 
 logger = logging.getLogger(__name__)
 
-class IsAuthView(TemplateView):
-    template_name = 'pages/isAuth.html'
+# class IsAuthView(TemplateView):
+#     template_name = 'pages/isAuth.html'
 
 class HomeView(TemplateView):
-    template_name = 'pages/home.html'
+    # template_name = 'pages/home.html'
+    template_name = 'index.html'
 
-class ExploreView(TemplateView):
-    template_name = 'pages/explore.html'
+# class ExploreView(TemplateView):
+#     template_name = 'pages/explore.html'
 
-class SignUpView(TemplateView):
-    template_name = 'register/signup.html'
+# class SignUpView(TemplateView):
+#     template_name = 'register/signup.html'
 
-class SignInView(TemplateView):
-    template_name = 'register/signin.html'
+# class SignInView(TemplateView):
+#     template_name = 'register/signin.html'
 
-class SignUpCompleteView(TemplateView):
-    template_name = 'register/signup_complete.html'
+# class SignUpCompleteView(TemplateView):
+#     template_name = 'register/signup_complete.html'
 
     # # 認証の制限時間を設定
     # timeout_seconds = getattr(settings, 'ACTIVATION_TIMEOUT_SECONDS', 60*60*24)
@@ -59,9 +60,9 @@ class SignUpCompleteView(TemplateView):
     #
     #     return HttpResponseBadRequest()
 
-class ProfileView(TemplateView):
-    template_name = 'pages/profile.html'
-    lookup_field = 'username'
+# class ProfileView(TemplateView):
+#     template_name = 'pages/profile.html'
+#     lookup_field = 'username'
 
     # def get_context_data(self, *arg, **kwargs):
     #     logger.info(self.request.user)
@@ -72,17 +73,17 @@ class ProfileView(TemplateView):
     #
     #     return context
 
-class MessageView(TemplateView):
-    template_name = 'pages/message.html'
+# class MessageView(TemplateView):
+#     template_name = 'pages/message.html'
 
-class SettingView(TemplateView):
-    template_name = 'pages/setting.html'
+# class SettingView(TemplateView):
+#     template_name = 'pages/setting.html'
 
-class BbsView(TemplateView):
-    template_name = 'pages/bbs.html'
+# class BbsView(TemplateView):
+#     template_name = 'pages/bbs.html'
 
-class InfoView(TemplateView):
-    template_name = 'pages/info.html'
+# class InfoView(TemplateView):
+#     template_name = 'pages/info.html'
 
-class PageNotFoundView(TemplateView):
-    template_name = 'pages/404.html'
+# class PageNotFoundView(TemplateView):
+#     template_name = 'pages/404.html'

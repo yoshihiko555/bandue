@@ -28,6 +28,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   conda install -c anaconda psycopg2 && \
   conda install -c conda-forge whitenoise && \
   conda install -c anaconda gunicorn && \
+  conda install -c conda-forge dj-database-url && \
   python -m pip install -U channels && \
   pip install channels_redis && \
   npm install -g yarn && \
