@@ -9,6 +9,10 @@ export default {
 			xsrfCookieName:'csrftoken',
 			xsrfHeaderName: 'X-CSRFTOKEN',
 			timeout: 10000,
+			proxy: {
+				host: 'https://cors-anywhere.herokuapp.com/',
+				port: 9000,
+			}
 		})
 		// リクエストのデフォルト定義
 		http.interceptors.request.use((config) => {

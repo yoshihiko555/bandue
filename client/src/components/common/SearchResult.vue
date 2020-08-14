@@ -267,7 +267,7 @@
 
     export default {
         name: 'SearchResult',
-        
+
         props: {
             'searchText': {
                 type: String,
@@ -332,7 +332,7 @@
                 var trimedTextList = [...new Set(trimedText.split(/\s+/))]
                 var searchWord = trimedTextList.join(',')
                 console.log('検索文字列 : ' + searchWord)
-                this.$axios.get('api/search/', {
+                this.$axios.get('/api/search/', {
                     params: {
                         searchFlg: searchFlg,
                         searchText: searchWord

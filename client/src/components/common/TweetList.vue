@@ -316,23 +316,18 @@
 
 		mounted: function () {
 			console.log('ツイートリストフラグ:', this.tweetListFlg)
-			console.log('ユーザーネーム:', this.username)
-			console.log('ログインユーザー:', this.$store.state.loginUser)
 			const loginUser = this.$store.state.loginUser
 			const targetUser = (this.username !== undefined) ? this.username : loginUser
-			this.$axios.get('api/tweet/', {
+			console.log('targetUser : ', targetUser)
+			this.$axios.get('/api/tweet/', {
 				params: {
 					tweetListFlg: this.tweetListFlg,
 					targetUser: targetUser,
 				}
 			})
 			.then(res => {
-				for (var i in res.data.results) {
-					var updatedAt = res.data.results[i].updated_at.substr(0, 10)
-					res.data.results[i].updated_at = updatedAt
-				}
+				console.log('ツイート取得成功', res)
 				this.tweetList = res.data.results
-				console.log('ツイート一覧',this.tweetList)
 				this.nextPage = res.data.next
 				this.tweetLoading = false
 				if (this.initLoading === true) this.initLoading = false

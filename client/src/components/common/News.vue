@@ -26,9 +26,7 @@
         }),
         mounted () {
             axios({
-                url: 'http://newsapi.org/v2/top-headlines?' +
-                     'country=jp&' +
-                     'apiKey=' + process.env.VUE_APP_NEWS_API,
+                url: '/api/news/',
                 method: 'GET',
             })
             .then(res => {

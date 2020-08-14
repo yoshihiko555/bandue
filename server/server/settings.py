@@ -20,7 +20,6 @@ import dj_database_url
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # FRONTEND_DIR = os.path.join(os.path.dirname(BASE_DIR), 'client')
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
@@ -31,11 +30,7 @@ SECRET_KEY = 'c&h4a)zuz(@kt1((c67*d!^-gclzlq!!!!@t)ljh0$9e+q7w81'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '192.168.33.12',
-    '192.168.33.13',
-    'localhost',
-    '127.0.0.1',
-    'bandue.herokuapp.com',
+    '*'
 ]
 
 
@@ -93,6 +88,7 @@ REST_FRAMEWORK = {
 #     }
 # }
 
+
 # JWT認証設定
 JWT_AUTH = {
     'JWT_VERIFY': True,
@@ -115,8 +111,12 @@ JWT_AUTH = {
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        # 'CONFIG': {
+        #     "hosts": [('172.17.0.1', 6379)],
+        # },
+        # 'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('172.17.0.1', 6379)],
+            'hosts':[os.environ.get('REDIS_URL', 'redis://localhost:6379')],
         },
     },
 }
@@ -206,7 +206,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 # STATICFILES_DIRS = [os.path.join(FRONTEND_DIR, 'bundles/static')]
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "staticfiles")]
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'

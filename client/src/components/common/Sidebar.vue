@@ -115,7 +115,9 @@
 
 		mounted: function () {
 
-			const url = 'ws://' + window.location.host + '/ws/user/' + this.$store.state.loginUser + '/'
+			const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws'
+            const url = scheme + '://' + window.location.host + '/ws/user/' + this.$store.state.loginUser + '/'
+
 			this.ws = new WebSocket(url)
 
 			this.ws.onmessage = e => {

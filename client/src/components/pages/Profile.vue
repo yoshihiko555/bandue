@@ -373,13 +373,12 @@
 
 		mounted: function () {
 			this.loading = true
-			this.$axios.get('/api/profile/' + this.username)
+			this.$axios.get('/api/profile/' + this.username + '/')
 			.then(res => {
-				res.data.created_at = res.data.created_at.substr(0, 10)
+				console.log(res)
 				this.profileData = res.data
 				this.icon = this.profileData.icon
 				this.header = this.profileData.header
-				console.log(res)
 				this.loading = false
 				this.init = false
 			})

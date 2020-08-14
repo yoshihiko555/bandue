@@ -61,7 +61,6 @@ module.exports = {
         .watchOptions({ poll: 1000 , ignored: /node_modules/, aggregateTimeout: 300 })
         .https(false)
         .headers({ 'Access-Control-Allow-Origin': ['\*'] })
-
         config.resolve.alias
         // 完全ビルドにすることで、Django側でVueコンポーネントを使用可能にする
         .set('vue$', 'vue/dist/vue.esm.js')

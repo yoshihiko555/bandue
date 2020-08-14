@@ -19,5 +19,6 @@ urlpatterns = [
     path('', include(router.urls)),
     path('search/', views.SearchView.as_view(), name='search'),
     path('setting/<int:pk>/', views.SettingView.as_view(), name='setting'),
+    path('news/', views.NewsView.as_view(), name='news'),
     # path('setting/<str:username>/', views.SettingView.as_view(), name='setting'),
 ]

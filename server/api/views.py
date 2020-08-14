@@ -8,6 +8,10 @@ from django.db.models import Q
 from django.db import transaction
 import logging
 import re
+import requests
+import json
+import environ
+import os
 from rest_framework import generics, permissions, authentication
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -65,6 +69,15 @@ from .paginations import (
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+logger.debug('=====Base_DIR=====')
+logger.debug(BASE_DIR)
+
+env = environ.Env()
+env.read_env(os.path.join(BASE_DIR, '.env'))
+
 
 
 class BaseListAPIView(generics.ListAPIView, GetLoginUserMixin):
@@ -313,3 +326,15 @@ class SettingView(generics.RetrieveUpdateAPIView, GetLoginUserMixin):
     queryset = mSetting.objects.all()
     serializer_class = MSettingSerializer
     # lookup_field = 'target__username'
+
+
+class NewsView(generics.ListAPIView):
+    permission_classes = (permissions.AllowAny,)
+
+    def list(self, request, *args, **kwargs):
+        api_key = 'd7d75dcaf739452ca7063bab74332196'
+        headers = {'content-type': 'application/json'}
+        url = 'https://newsapi.org/v2/top-headlines?country=jp&apiKey=' + api_key
+        response = requests.get(url, headers=headers)
+
+        return Response(response.json(), status=status.HTTP_200_OK)

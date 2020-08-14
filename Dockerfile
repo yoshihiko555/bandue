@@ -29,6 +29,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   conda install -c conda-forge whitenoise && \
   conda install -c anaconda gunicorn && \
   conda install -c conda-forge dj-database-url && \
+  conda install -c conda-forge django-environ && \
+  conda install -c conda-forge daphne && \
   python -m pip install -U channels && \
   pip install channels_redis && \
   npm install -g yarn && \
@@ -47,4 +49,4 @@ RUN gpasswd -a ${USER} sudo
 RUN echo "${USER}:test_pass" | chpasswd
 USER ${USER}
 
-CMD gunicorn server.wsgi:application --bind 0.0.0.0:$PORT
+CMD daphne -b 0.0.0.0 -p $PORT server.asgi:application
