@@ -13,8 +13,11 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 import datetime
 import logging
-# import django_heroku
+import environ
 import dj_database_url
+
+env = environ.Env()
+env.read_env('.env')
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,15 +27,21 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'c&h4a)zuz(@kt1((c67*d!^-gclzlq!!!!@t)ljh0$9e+q7w81'
+# SECRET_KEY = 'c&h4a)zuz(@kt1((c67*d!^-gclzlq!!!!@t)ljh0$9e+q7w81'
+SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+if os.environ['DJANGO_ENV'] == 'production':
+    # 本番
+    DEBUG = False
+    ALLOWED_HOSTS = ['*']
 
-ALLOWED_HOSTS = [
-    '*'
-]
-
+else:
+    # 開発
+    DEBUG = True
+    ALLOWED_HOSTS = [
+        'localhost',
+    ]
 
 # Application definition
 
@@ -44,8 +53,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    # Django既存のAuth認証で行けるならそれでもOK?
-    # 一旦試しになしでやってみる
     'rest_framework_jwt',
     'webpack_loader',
     'api.apps.ApiConfig',
@@ -111,15 +118,20 @@ JWT_AUTH = {
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('172.17.0.1', 6379)],
+        },
         # 'CONFIG': {
-        #     "hosts": [('172.17.0.1', 6379)],
+        #     'hosts':[os.environ.get('REDIS_URL', 'redis://localhost:6379')],
         # },
-        # 'BACKEND': 'channels_redis.core.RedisChannelLayer',
+    },
+}
+if not DEBUG:
+    CHANNEL_LAYERS['default'].update({
         'CONFIG': {
             'hosts':[os.environ.get('REDIS_URL', 'redis://localhost:6379')],
         },
-    },
-}
+    })
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -206,15 +218,23 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 # STATICFILES_DIRS = [os.path.join(FRONTEND_DIR, 'bundles/static')]
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # LOGIN_URL = 'api:login'
 # LOGIN_REDIRECT_URL 'api:index'
 
 AUTH_USER_MODEL = 'api.mUser'
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+EMAIL_HOST = 'smtp.googlemail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
+EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
+EMAIL_USE_TLS = True
 
 if DEBUG:
     logging.basicConfig(
@@ -226,6 +246,7 @@ if DEBUG:
     CORS_ORIGIN_WHITELIST = (
         'http://localhost:8080',
     )
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 else:
     logging.basicConfig(
@@ -235,3 +256,8 @@ else:
         # filename = 'logs/debug.log',
         # filemode = 'a'
     )
+    INSTALLED_APPS += [
+        'cloudinary',
+        'cloudinary_storage',
+    ]
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'

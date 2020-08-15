@@ -56,8 +56,7 @@
 		},
 		data: () => ({
 			isAuth: false,
-	    lodding: true,
-			ws: null,
+	        lodding: true,
 		}),
 		mounted: function () {
 			this.isAuth = this.$store.state.isAuth

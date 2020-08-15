@@ -33,10 +33,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   conda install -c conda-forge daphne && \
   python -m pip install -U channels && \
   pip install channels_redis && \
+  pip install dj3-cloudinary-storage && \
   npm install -g yarn && \
   yarn global add add @vue/cli
 
 COPY ./server .
+
+ENV DJANGO_ENV production
 
 RUN python manage.py collectstatic --noinput
 

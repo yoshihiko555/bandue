@@ -18,14 +18,13 @@
 </template>
 
 <script>
-    import axios from 'axios'
     export default {
         name: 'News',
         data: () => ({
             article: null,
         }),
         mounted () {
-            axios({
+            this.$axios({
                 url: '/api/news/',
                 method: 'GET',
             })

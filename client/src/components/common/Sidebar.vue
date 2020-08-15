@@ -115,8 +115,9 @@
 
 		mounted: function () {
 
-			const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws'
-            const url = scheme + '://' + window.location.host + '/ws/user/' + this.$store.state.loginUser + '/'
+            const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws'
+            const hostName = process.env.NODE_ENV !== 'production' ? process.env.VUE_APP_BASE_URL : window.location.host
+            const url = scheme + '://' + hostName + '/ws/user/' + this.$store.state.loginUser + '/'
 
 			this.ws = new WebSocket(url)
 
