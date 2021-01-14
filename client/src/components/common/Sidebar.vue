@@ -107,6 +107,10 @@
 		}),
 
 		created () {
+			this.$eventHub.$off('cntUpInfo')
+			this.$eventHub.$off('cntDownInfo')
+            this.$eventHub.$off('cntZeroInfo')
+            this.$eventHub.$off('removeMessageInfo')
 			this.$eventHub.$on('cntUpInfo', this.cntUpInfo)
 			this.$eventHub.$on('cntDownInfo', this.cntDownInfo)
             this.$eventHub.$on('cntZeroInfo', this.cntZeroInfo)
@@ -114,12 +118,13 @@
 		},
 
 		mounted: function () {
-
-            const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws'
+			const scheme = window.location.protocol === 'https:' ? 'wss' : 'ws'
             const hostName = process.env.NODE_ENV !== 'production' ? process.env.VUE_APP_BASE_URL : window.location.host
             const url = scheme + '://' + hostName + '/ws/user/' + this.$store.state.loginUser + '/'
 
-			this.ws = new WebSocket(url)
+			if (this.ws === undefined || this.ws.readyState !== 1) {
+				this.ws = new WebSocket(url)
+			}
 
 			this.ws.onmessage = e => {
 				var receiveData = JSON.parse(e.data)
@@ -139,6 +144,10 @@
 			})
 		},
 
+		beforeDestroy: function () {
+			this.closeWs()
+		},
+
 		methods: {
 			SidebarMethods (item) {
 				const methodsList = {
@@ -152,7 +161,10 @@
                 }
 				if (methodsList[item.title] !== '') {
 					// メソッドが定義されている
-					methodsList[item.title](item.url)
+					if (this.$route.name.toUpperCase() !== item.title.toUpperCase()) {
+						methodsList[item.title](item.url)
+						this.closeWs()
+					}
 				}
 			},
 
@@ -190,6 +202,12 @@
             removeMessageInfo (cnt) {
                 this.items[Con.SIDEBAR_INDEX.Message].info_content -= cnt
             },
+
+			closeWs () {
+				if (this.ws !== undefined && this.ws.readyState !== 3) {
+					this.ws.close()
+				}
+			}
 		}
 	}
 </script>

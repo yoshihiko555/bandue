@@ -158,6 +158,8 @@
             }
         },
         created () {
+			this.$eventHub.$off('create-room')
+			this.$eventHub.$off('clear-cnt')
 			this.$eventHub.$on('create-room', this.roomsUpdate)
 			this.$eventHub.$on('clear-cnt', this.clearCount)
 		},

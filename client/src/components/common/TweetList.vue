@@ -310,6 +310,7 @@
 		}),
 
 		created () {
+			this.$eventHub.$off('create-tweet')
 			this.$eventHub.$on('create-tweet', this.tweetUpdate)
       		window.addEventListener('scroll', this.handleScroll)
     	},

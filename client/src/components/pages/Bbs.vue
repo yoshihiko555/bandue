@@ -176,6 +176,7 @@
             entryListFlg: 0,
 		}),
 		created () {
+			this.$eventHub.$off('create-article')
 			this.$eventHub.$on('create-article', this.articleUpdate)
 		},
 		mounted: function () {
@@ -200,7 +201,7 @@
                 console.log('記事更新', res.data)
 				this.articleList.push(res.data)
             },
-            
+
             tabChange(i) {
                 console.log('タブ変更')
                 this.entryListFlg = i
@@ -234,7 +235,7 @@
 					console.log(e)
 				})
             },
-            
+
 			reload () {
 				// Com.reload(this.$router)
 			},

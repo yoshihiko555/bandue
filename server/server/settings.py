@@ -230,11 +230,12 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 AUTH_USER_MODEL = 'api.mUser'
 
-EMAIL_HOST = 'smtp.googlemail.com'
+EMAIL_HOST = 'smtp.sendgrid.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = os.environ['EMAIL_HOST_USER']
-EMAIL_HOST_PASSWORD = os.environ['EMAIL_HOST_PASSWORD']
+EMAIL_HOST_USER = 'apiKey'
+EMAIL_HOST_PASSWORD = os.environ['SENDGRID_API_KEY']
 EMAIL_USE_TLS = True
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 if DEBUG:
     logging.basicConfig(
@@ -246,7 +247,6 @@ if DEBUG:
     CORS_ORIGIN_WHITELIST = (
         'http://localhost:8080',
     )
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 else:
     logging.basicConfig(
@@ -261,3 +261,9 @@ else:
         'cloudinary_storage',
     ]
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': os.environ['CLOUD_NAME'],
+        'API_KEY':  os.environ['CLOUDINARY_API_KEY'],
+        'API_SECRET': os.environ['CLOUDINARY_API_SECRET']
+    }
